@@ -158,6 +158,9 @@ class Table(TexEnvironment):
     def add_rule(self, *args, **kwargs):
         self.tabular.add_rule(*args, **kwargs)
 
+    def highlight_best(self, *args, **kwargs):
+        self.tabular.highlight_best(*args, **kwargs)
+
     def _build(self):
         if self.caption:
             self.body.append(f"\caption{{{self.caption}}}")
@@ -185,6 +188,7 @@ class Tabular(TexEnvironment):
         self.data = np.full(shape, '', dtype=object)
         self.rules = {}
         self.multicells = []
+        self.highlights = []
 
     def __getitem__(self, idx):
         return self.data[idx]
@@ -209,6 +213,39 @@ class Tabular(TexEnvironment):
             self.data[i,j] = value # Top left corner of slice contains the value
         else:
             self.data[idx] = value
+
+    def highlight_best(self, rows=None, cols=None, mode='high', highlight='bold'):
+        """
+        Args:
+            rows (int or tuple of 2 ints or None or slice): Start and stop of the rows of the region of interest. If None, all the rows are selected.
+            cols (int or tuple of 2 ints or None or slice): Start and stop of the columns of the region of interest. If None, all the columns are selected.
+            mode (str, either 'high' or 'low'): Determines what is the best value.
+            highlight (str, either 'bold' or 'italic'): The best value will be highlighted following this parameter.
+        """
+        if rows is None:
+            rows = slice(slice(None).indices(self.shape[0]))
+        if cols is None:
+            cols = slice(slice(None).indices(self.shape[1]))
+
+        if isinstance(rows, int):
+            rows = slice(rows, rows+1)
+        if isinstance(cols, int):
+            cols = slice(cols, cols+1)
+
+        if isinstance(rows, tuple):
+            rows = slice(*rows)
+        if isinstance(cols, tuple):
+            cols = slice(*cols)
+
+        if mode == 'high':
+            idx = np.argmax(self.data[rows, cols], axis=None)
+        elif mode == 'low':
+            idx = np.argmin(self.data[rows, cols], axis=None)
+
+        i, j = np.unravel_index(idx, self.data[rows, cols].shape)
+        i += rows.start
+        j += cols.start
+        self.highlights.append((i,j,highlight))
 
     def add_rule(self, row, col_start=None, col_end=None, trim_right=False, trim_left=False):
         """
@@ -275,6 +312,13 @@ class Tabular(TexEnvironment):
                     entry = str(value)
                 self.data[i,j] = entry
 
+        for i, j, highlight in self.highlights:
+            if highlight == 'bold':
+                command = "\\textbf{{{0}}}"
+            elif highlight == 'italic':
+                command = "\\textit{{{0}}}"
+            self.data[i,j] = command.format(self.data[i,j])
+
         table_format = np.array([[' & ']*(self.shape[1]-1) + ['\\\\']]*self.shape[0], dtype=str)
         table_format = self._apply_multicells(table_format)
         for i, (row, row_format) in enumerate(zip(self.data, table_format)):
@@ -302,10 +346,14 @@ if __name__ == "__main__":
     table[0,1:] = 'Title'
     table[1:,0] = 'Types'
     table[2:4,2:4] = 'test'
-    table.add_rule(0, 1)#, trim_left=True, trim_right='1em')
-    # print(table.tabular.rules)
+    table.add_rule(0, 1, trim_left=True, trim_right='1em')
     table.label = 'test'
     table.caption = 'test'
 
+    table.highlight_best(1, (1,5), 'low', 'bold')
+    table.highlight_best(4, (1,5), 'low', 'bold')
+    table.highlight_best((1,5), 1, 'high', 'italic')
+    table.highlight_best((1,5), 4, 'high', 'italic')
+
     doc.build()
-    print(doc.body)
+    # print(doc.body)
