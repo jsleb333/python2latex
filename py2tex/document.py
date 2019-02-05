@@ -119,14 +119,14 @@ class Table(TexEnvironment):
     """
 
     """
-    def __init__(self, position='h!', shape=(1,1), **kwargs):
+    def __init__(self, position='h!', shape=(1,1), alignment='c', float_format='.2f', **kwargs):
         """
         Args:
 
         """
         super().__init__('table', options=position, **kwargs)
         self.head += '\n\centering'
-        self.tabular = Tabular(shape, **kwargs)
+        self.tabular = Tabular(shape, alignment, float_format, **kwargs)
         self.body = [self.tabular]
 
     def __getitem__(self, i):
@@ -158,7 +158,7 @@ class Tabular(TexEnvironment):
         self.parent_doc.add_package('booktabs')
 
         self.shape = shape
-        self.alignment = np.array([alignment], dtype=str)
+        self.alignment = np.array([alignment]*shape[1], dtype=str)
         self.float_format = float_format
         self.data = np.empty(shape, dtype=object)
         self.rules = {}
@@ -198,7 +198,7 @@ class Tabular(TexEnvironment):
 
     def build(self):
         row, col = self.data.shape
-        self.head += f"{{{'c'*col}}}\n\\toprule"
+        self.head += f"{{{''.join(self.alignment)}}}\n\\toprule"
         self.tail = '\\bottomrule\n' + self.tail
 
         for i, row in enumerate(self.data):
@@ -229,7 +229,7 @@ if __name__ == "__main__":
     row = 4
     data = np.array([[np.random.rand() for i in range(j,j+col)] for j in range(1, col*row, col)])
 
-    table = sec.new_table(shape=data.shape)
+    table = sec.new_table(shape=data.shape, alignment='c', float_format='.2f')
     table[:,:] = data
     table[0] = 'Title'
     table.add_rule(0)#, trim_left=True, trim_right='1em')
