@@ -1,5 +1,7 @@
-from collections import OrderedDict
 import os
+from subprocess import DEVNULL, STDOUT, check_call
+
+import numpy as np
 
 
 class TexFile:
@@ -14,7 +16,7 @@ class TexFile:
             file.write(tex)
 
     def compile_to_pdf(self):
-        os.system(f"pdflatex {self.filename}")
+        check_call(['pdflatex', self.filename], stdout=DEVNULL, stderr=STDOUT)
 
 
 class TexEnvironment:
@@ -37,8 +39,8 @@ class TexEnvironment:
         self.body.append(env)
         return env
 
-    def new_table(self, *parameters, position='h!'):
-        table = Table(*parameters, position, parent_doc=self.parent_doc)
+    def new_table(self, *parameters, position='h!', **options):
+        table = Table(*parameters, position, parent_doc=self.parent_doc, **options)
         self.body.append(table)
         return table
 
@@ -117,43 +119,121 @@ class Table(TexEnvironment):
     """
 
     """
-    def __init__(self, position='h!', **kwargs):
+    def __init__(self, position='h!', shape=(1,1), **kwargs):
         """
         Args:
 
         """
         super().__init__('table', options=position, **kwargs)
-        self.parent_doc.add_package('booktabs')
         self.head += '\n\centering'
-        self.table = [[]]
-        self.body = [self.table]
+        self.tabular = Tabular(shape, **kwargs)
+        self.body = [self.tabular]
 
     def __getitem__(self, i):
-        pass
+        return self.tabular[i]
 
-    def __setitem__(self, i):
-        pass
+    def __setitem__(self, i, value):
+        self.tabular[i] = value
 
-    def build_table(self):
-        table = TexEnvironment('tabular', '\\textwidth', '')
+    def add_rule(self, *args, **kwargs):
+        self.tabular.add_rule(*args, **kwargs)
 
     def build(self):
-        self.build_table()
-        self.body[0] = self.table
-        self.body[0] = ''
+        super().build()
+
+
+class Tabular(TexEnvironment):
+    """
+    Implements the 'tabular' environment from the package 'booktabs'.
+    """
+    def __init__(self, shape=(1,1), alignment='c', float_format='.2f', **kwargs):
+        """
+        Args:
+            shape (tuple of 2 ints):
+            alignment (str, either 'c', 'r', or 'l'):
+            float_format (str): Standard Python float format available.
+            kwargs: See TexEnvironment keyword arguments.
+        """
+        super().__init__('tabular', **kwargs)
+        self.parent_doc.add_package('booktabs')
+
+        self.shape = shape
+        self.alignment = np.array([alignment], dtype=str)
+        self.float_format = float_format
+        self.data = np.empty(shape, dtype=object)
+        self.rules = {}
+
+    def __getitem__(self, i):
+        return self.data[i]
+
+    def __setitem__(self, i, value):
+        self.data[i] = value
+
+    def add_rule(self, row, col_start=None, col_end=None, trim_right=False, trim_left=False):
+        """
+        Args:
+            row (int): Row number under which the rule will be placed.
+            col_start, col_end (int or None): Columns from which the rule will stretch. Standard slicing indexing from Python is used (first index is 0, last is excluded, not the same as LaTeX). If both are None (default) and both trim are False, the rule will go all the way across and will be a standard "\midrule". Else, the "\cmidrule" command is used.
+            trim_left (bool or str): Whether to trim the left end of the rule or not. If True, default trim length is used ('.5em'). If a string, can be any valid LaTeX distance.
+            trim_right (bool or str): Same a trim_left, but for the right end.
+        """
+        r = 'r' if trim_right else ''
+        if isinstance(trim_right, str):
+            r += f"{{{trim_right}}}"
+        l = 'l' if trim_left else ''
+        if isinstance(trim_left, str):
+            l += f"{{{trim_left}}}"
+        self.rules[row] = (col_start, col_end, r+l)
+
+    def build_rule(self, start, end, trim):
+        if start is None and end is None and not trim:
+            rule = "\midrule"
+        else:
+            rule = "\cmidrule"
+            if trim:
+                rule += f"({trim})"
+            start, end, step = slice(start, end).indices(self.shape[1])
+            rule += f"{{{start+1}-{end}}}"
+        return rule
+
+    def build(self):
+        row, col = self.data.shape
+        self.head += f"{{{'c'*col}}}\n\\toprule"
+        self.tail = '\\bottomrule\n' + self.tail
+
+        for i, row in enumerate(self.data):
+            for j, value in enumerate(row):
+                if isinstance(value, float):
+                    entry = f'{{value:{self.float_format}}}'.format(value=value)
+                else:
+                    entry = str(value)
+                self.data[i,j] = entry
+
+        for i, row in enumerate(self.data):
+            self.body.append(' & '.join(row) + '\\\\')
+            if i in self.rules:
+                rule = self.build_rule(*self.rules[i])
+                self.body.append(rule)
+                print(rule)
+
         super().build()
 
 
 if __name__ == "__main__":
-    d = Document('Tata', 'article', '12pt')
-    print(d.parent_doc)
+    doc = Document('Test', 'article', '12pt')
 
-    sec1 = d.new_environment('section', 'Koko')
-    sec1.add_text("""This is section 100.""")
-    print(sec1.parent_doc)
+    sec = doc.new_environment('section', 'Testing tables')
+    sec.add_text("This section tests tables.")
 
-    table1 = sec1.new_table()
-    print(table1.parent_doc)
+    col = 4
+    row = 4
+    data = np.array([[np.random.rand() for i in range(j,j+col)] for j in range(1, col*row, col)])
 
-    d.build()
-    print(d.body)
+    table = sec.new_table(shape=data.shape)
+    table[:,:] = data
+    table[0] = 'Title'
+    table.add_rule(0)#, trim_left=True, trim_right='1em')
+    # print(table.tabular.rules)
+
+    doc.build()
+    print(doc.body)
