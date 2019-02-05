@@ -20,7 +20,7 @@ class TexFile:
 
 
 class TexEnvironment:
-    def __init__(self, env_name, *parameters, options=None, parent_doc=None):
+    def __init__(self, env_name, *parameters, options=None, label_pos='top', parent_doc=None):
         self.env_name = env_name
         self.body = [] # List of Environments or texts
         self.head = '\\begin{{{env_name}}}'.format(env_name=env_name)
@@ -30,6 +30,8 @@ class TexEnvironment:
         if options:
             self.head += f"[{options}]"
         self.parent_doc = parent_doc
+        self.label_pos = label_pos
+        self.label = ''
 
     def add_text(self, text):
         self.body.append(text)
@@ -48,6 +50,13 @@ class TexEnvironment:
         return f'TexEnvironment {self.env_name}'
 
     def build(self):
+        label = f"\label{{{self.env_name}:{self.label}}}"
+        if self.label:
+            if self.label_pos == 'top':
+                self.head += '\n' + label
+            else:
+                self.tail = label + '\n' + self.tail
+
         for i in range(len(self.body)):
             line = self.body[i]
             if isinstance(line, TexEnvironment):
@@ -124,10 +133,11 @@ class Table(TexEnvironment):
         Args:
 
         """
-        super().__init__('table', options=position, **kwargs)
+        super().__init__('table', options=position, label_pos='bottom', **kwargs)
         self.head += '\n\centering'
         self.tabular = Tabular(shape, alignment, float_format, **kwargs)
         self.body = [self.tabular]
+        self.caption = ''
 
     def __getitem__(self, i):
         return self.tabular[i]
@@ -139,6 +149,8 @@ class Table(TexEnvironment):
         self.tabular.add_rule(*args, **kwargs)
 
     def build(self):
+        if self.caption:
+            self.body.append(f"\caption{{{self.caption}}}")
         super().build()
 
 
@@ -223,6 +235,7 @@ if __name__ == "__main__":
     doc = Document('Test', 'article', '12pt')
 
     sec = doc.new_environment('section', 'Testing tables')
+    sec.label = 'tables_test'
     sec.add_text("This section tests tables.")
 
     col = 4
@@ -234,6 +247,8 @@ if __name__ == "__main__":
     table[0] = 'Title'
     table.add_rule(0)#, trim_left=True, trim_right='1em')
     # print(table.tabular.rules)
+    table.label = 'test'
+    table.caption = 'test'
 
     doc.build()
     print(doc.body)
