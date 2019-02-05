@@ -21,6 +21,14 @@ class TexFile:
 
 class TexEnvironment:
     def __init__(self, env_name, *parameters, options=None, label_pos='top', parent_doc=None):
+        """
+        Args:
+            env_name (str): Name of the environment.
+            parameters (tuple of str): Parameters of the environment, appended inside curly braces {}.
+            options (tuple of str): Options to pass to the environment, appended inside brackets [].
+            label_pos (str, either 'top' or 'bottom'): Position of the label inside the environment.
+            parent_doc (Document object): Parent document of the environment. Used mainly to be able to add packages.
+        """
         self.env_name = env_name
         self.body = [] # List of Environments or texts
         self.head = '\\begin{{{env_name}}}'.format(env_name=env_name)
@@ -131,7 +139,9 @@ class Table(TexEnvironment):
     def __init__(self, position='h!', shape=(1,1), alignment='c', float_format='.2f', **kwargs):
         """
         Args:
-
+            position (str, either 'h', 't', 'b', with optional '!'): position of the float. Default is 't'. Combinaisons of letters allow more flexibility.
+            kwargs: See TexEnvironment keyword arguments.
+            others: See Tabular arguments.
         """
         super().__init__('table', options=position, label_pos='bottom', **kwargs)
         self.head += '\n\centering'
@@ -139,11 +149,11 @@ class Table(TexEnvironment):
         self.body = [self.tabular]
         self.caption = ''
 
-    def __getitem__(self, i):
-        return self.tabular[i]
+    def __getitem__(self, idx):
+        return self.tabular[idx]
 
-    def __setitem__(self, i, value):
-        self.tabular[i] = value
+    def __setitem__(self, idx, value):
+        self.tabular[idx] = value
 
     def add_rule(self, *args, **kwargs):
         self.tabular.add_rule(*args, **kwargs)
@@ -163,7 +173,7 @@ class Tabular(TexEnvironment):
         Args:
             shape (tuple of 2 ints):
             alignment (str, either 'c', 'r', or 'l'):
-            float_format (str): Standard Python float format available.
+            float_format (str): Standard Python float formating available.
             kwargs: See TexEnvironment keyword arguments.
         """
         super().__init__('tabular', **kwargs)
@@ -172,14 +182,33 @@ class Tabular(TexEnvironment):
         self.shape = shape
         self.alignment = np.array([alignment]*shape[1], dtype=str)
         self.float_format = float_format
-        self.data = np.empty(shape, dtype=object)
+        self.data = np.full(shape, '', dtype=object)
         self.rules = {}
+        self.multicells = []
 
-    def __getitem__(self, i):
-        return self.data[i]
+    def __getitem__(self, idx):
+        return self.data[idx]
 
-    def __setitem__(self, i, value):
-        self.data[i] = value
+    def __setitem__(self, idx, value):
+        if isinstance(idx, tuple):
+            i, j = idx
+        else:
+            i, j = idx, slice(None)
+
+        if isinstance(value, (str, int, float)) and (isinstance(i, slice) or isinstance(j, slice)):
+            # There are multirows or multicolumns to treat
+            self.parent_doc.add_package('multicol')
+            self.parent_doc.add_package('multirow')
+            self.data[i,j] = '' # Erase old value
+            self.multicells.append((i,j)) # Save position of multiple cells span
+            if isinstance(i, slice):
+                i, stop, end = i.indices(self.shape[0])
+            if isinstance(j, slice):
+                j, stop, end = j.indices(self.shape[1])
+
+            self.data[i,j] = value # Top left corner of slice contains the value
+        else:
+            self.data[idx] = value
 
     def add_rule(self, row, col_start=None, col_end=None, trim_right=False, trim_left=False):
         """
@@ -208,6 +237,32 @@ class Tabular(TexEnvironment):
             rule += f"{{{start+1}-{end}}}"
         return rule
 
+    def build_table_format(self):
+        table_format = np.array([[' & ']*(self.shape[1]-1) + ['\\\\']]*self.shape[0], dtype=str)
+        # Applying multicells
+        for slice_i, slice_j in self.multicells:
+            if isinstance(slice_j, slice):
+                start_j, stop_j, step = slice_j.indices(self.shape[1])
+            else:
+                start_j, stop_j = slice_j, slice_j+1
+            if isinstance(slice_i, slice):
+                start_i, stop_i, step = slice_i.indices(self.shape[1])
+            else:
+                start_i, stop_i = slice_i, slice_i+1
+
+            table_format[start_i, slice(start_j, stop_j-1)] = ''
+            cell_shape = table_format[slice_i, slice_j].shape
+
+            if isinstance(slice_i, int):
+                self.data[start_i, start_j] = f"\multicolumn{{{cell_shape[0]}}}{{{self.alignment[start_j]}}}{{{self.data[start_i, start_j]}}}"
+            else:
+                self.data[start_i, start_j] = f"\multirow{{{cell_shape[0]}}}{{*}}{{{self.data[start_i, start_j]}}}"
+
+            if isinstance(slice_j, slice) and isinstance(slice_i, slice):
+                self.data[start_i, start_j] = f"\multicolumn{{{cell_shape[1]}}}{{{self.alignment[start_j]}}}{{{self.data[start_i, start_j]}}}"
+
+        return table_format
+
     def build(self):
         row, col = self.data.shape
         self.head += f"{{{''.join(self.alignment)}}}\n\\toprule"
@@ -221,8 +276,9 @@ class Tabular(TexEnvironment):
                     entry = str(value)
                 self.data[i,j] = entry
 
-        for i, row in enumerate(self.data):
-            self.body.append(' & '.join(row) + '\\\\')
+        table_format = self.build_table_format()
+        for i, (row, row_format) in enumerate(zip(self.data, table_format)):
+            self.body.append(''.join(item for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
                 rule = self.build_rule(*self.rules[i])
                 self.body.append(rule)
@@ -242,10 +298,12 @@ if __name__ == "__main__":
     row = 4
     data = np.array([[np.random.rand() for i in range(j,j+col)] for j in range(1, col*row, col)])
 
-    table = sec.new_table(shape=data.shape, alignment='c', float_format='.2f')
-    table[:,:] = data
-    table[0] = 'Title'
-    table.add_rule(0)#, trim_left=True, trim_right='1em')
+    table = sec.new_table(shape=(row+1, col+1), alignment='c', float_format='.2f')
+    table[1:,1:] = data
+    table[0,1:] = 'Title'
+    table[1:,0] = 'Types'
+    table[2:4,2:4] = 'test'
+    table.add_rule(0, 1)#, trim_left=True, trim_right='1em')
     # print(table.tabular.rules)
     table.label = 'test'
     table.caption = 'test'
