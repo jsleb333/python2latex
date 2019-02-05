@@ -1,3 +1,8 @@
 .vscode/
 .vs/
 py2tex.code-workspace
+
+*.tex
+*.log
+*.aux
+*.pdf

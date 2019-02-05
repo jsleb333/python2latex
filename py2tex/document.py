@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import os
 
 
 class TexFile:
@@ -6,19 +7,28 @@ class TexFile:
     Class that compiles python to tex code. Manages write/read tex.
     """
     def __init__(self, filename):
-        self.filename = filename
+        self.filename = filename + '.tex'
+
+    def save(self, tex):
+        with open(self.filename, 'w', encoding='utf8') as file:
+            file.write(tex)
+
+    def compile(self):
+        os.system(f"pdflatex {self.filename}")
 
 
 class Environment:
     def __init__(self, env_name):
         self.env_name = env_name
         self.body = [] # List of Environments
+        self.env_options = ()
 
     def add_text(self, text):
         self.body.append(text)
 
-    def new_environment(self, env_name):
+    def new_environment(self, env_name, *options):
         env = Environment(env_name)
+        env.env_options = options
         self.body.append(env)
         return env
 
@@ -31,7 +41,10 @@ class Environment:
             if isinstance(line, Environment):
                 line.build()
                 self.body[i] = line.body
-        self.body = [f'\\begin{{{self.env_name}}}'] + self.body + [f'\\end{{{self.env_name}}}']
+        first_line = f'\\begin{{{self.env_name}}}'
+        if self.env_options:
+            first_line += f"{{{','.join(self.env_options)}}}"
+        self.body = [first_line] + self.body + [f'\\end{{{self.env_name}}}']
         self.body = '\n'.join(self.body)
 
 
@@ -48,7 +61,7 @@ class Document(Environment):
             options.append(f"{key}={value}")
         options = '[' + ','.join(options) + ']'
 
-        self.body = ["\documentclass{options}{{{doc_type}}}".format(options=options, doc_type=doc_type)]
+        self.header = [f"\documentclass{options}{{{doc_type}}}"]
 
         self.packages = {'inputenc':'utf8',
                          'geometry':''}
@@ -64,7 +77,7 @@ class Document(Environment):
     def set_margins(self, margins, top=None, bottom=None):
         self.margins = {'top':margins,
                          'bottom':margins,
-                         'margins':margins}
+                         'margin':margins}
         if top is not None:
             self.margins['top'] = top
         if bottom is not None:
@@ -73,22 +86,22 @@ class Document(Environment):
         self.packages['geometry'] = ','.join(key+'='+value for key, value in self.margins.items())
 
     def build(self):
-        packages = []
         for package, options in self.packages.items():
             if options:
                 options = '[' + options + ']'
-            packages.append(f"\\usepackage{options}{{{package}}}")
-        self.body = packages + self.body
+            self.header.append(f"\\usepackage{options}{{{package}}}")
+        self.header = '\n'.join(self.header)
 
         super().build()
-
+        self.file.save(self.header + '\n' + self.body)
+        self.file.compile()
 
 
 if __name__ == "__main__":
     d = Document('Tata', 'article', '12pt')
     print(d.body)
 
-    sec1 = d.new_environment('section')
+    sec1 = d.new_environment('section', 'Yoyo')
     sec1.add_text("""This is section 1.""")
 
     d.build()
