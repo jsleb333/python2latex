@@ -18,22 +18,20 @@ class TexFile:
 
 
 class TexEnvironment:
-    def __init__(self, env_name):
+    def __init__(self, env_name, *parameters, options=None):
         self.env_name = env_name
-        self.body = [] # List of Environments
-        self.head = '\\begin{{{env_name}}}'
-        self.tail = '\\end{{{env_name}}}'
+        self.body = [] # List of Environments or texts
+        self.head = '\\begin{{{env_name}}}'.format(env_name=env_name)
+        self.tail = '\\end{{{env_name}}}'.format(env_name=env_name)
+        self.head += f"{{{','.join(parameters)}}}"
+        if options:
+            self.head += f"[{options}]"
 
     def add_text(self, text):
         self.body.append(text)
 
     def new_environment(self, env_name, *parameters, options=None):
-        env = TexEnvironment(env_name)
-        env.head = env.head.format(env_name=env_name)
-        env.head += f"{{{','.join(parameters)}}}"
-        if options:
-            env.head += f"[{options}]"
-        env.tail = env.tail.format(env_name=env_name)
+        env = TexEnvironment(env_name, *parameters, options=None)
         self.body.append(env)
         return env
 
@@ -107,7 +105,7 @@ if __name__ == "__main__":
     d = Document('Tata', 'article', '12pt')
     print(d.body)
 
-    sec1 = d.new_environment('section', 'Yoyo')
+    sec1 = d.new_environment('section', 'Koko')
     sec1.add_text("""This is section 100.""")
 
     d.build()
