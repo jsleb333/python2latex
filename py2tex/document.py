@@ -15,7 +15,7 @@ class TexFile:
         with open(self.filename, 'w', encoding='utf8') as file:
             file.write(tex)
 
-    def compile_to_pdf(self):
+    def _compile_to_pdf(self):
         check_call(['pdflatex', self.filename], stdout=DEVNULL, stderr=STDOUT)
 
 
@@ -57,7 +57,7 @@ class TexEnvironment:
     def __repr__(self):
         return f'TexEnvironment {self.env_name}'
 
-    def build(self):
+    def _build(self):
         label = f"\label{{{self.env_name}:{self.label}}}"
         if self.label:
             if self.label_pos == 'top':
@@ -68,7 +68,7 @@ class TexEnvironment:
         for i in range(len(self.body)):
             line = self.body[i]
             if isinstance(line, TexEnvironment):
-                line.build()
+                line._build()
                 self.body[i] = line.body
         first_line = f'\\begin{{{self.env_name}}}'
 
@@ -127,9 +127,9 @@ class Document(TexEnvironment):
             self.header.append(f"\\usepackage{options}{{{package}}}")
         self.header = '\n'.join(self.header)
 
-        super().build()
+        super()._build()
         self.file.save(self.header + '\n' + self.body)
-        self.file.compile_to_pdf()
+        self.file._compile_to_pdf()
 
 
 class Table(TexEnvironment):
@@ -158,10 +158,10 @@ class Table(TexEnvironment):
     def add_rule(self, *args, **kwargs):
         self.tabular.add_rule(*args, **kwargs)
 
-    def build(self):
+    def _build(self):
         if self.caption:
             self.body.append(f"\caption{{{self.caption}}}")
-        super().build()
+        super()._build()
 
 
 class Tabular(TexEnvironment):
@@ -226,7 +226,7 @@ class Tabular(TexEnvironment):
             l += f"{{{trim_left}}}"
         self.rules[row] = (col_start, col_end, r+l)
 
-    def build_rule(self, start, end, trim):
+    def _build_rule(self, start, end, trim):
         if start is None and end is None and not trim:
             rule = "\midrule"
         else:
@@ -237,7 +237,7 @@ class Tabular(TexEnvironment):
             rule += f"{{{start+1}-{end}}}"
         return rule
 
-    def build_table_format(self):
+    def _build_table_format(self):
         table_format = np.array([[' & ']*(self.shape[1]-1) + ['\\\\']]*self.shape[0], dtype=str)
         # Applying multicells
         for slice_i, slice_j in self.multicells:
@@ -263,7 +263,7 @@ class Tabular(TexEnvironment):
 
         return table_format
 
-    def build(self):
+    def _build(self):
         row, col = self.data.shape
         self.head += f"{{{''.join(self.alignment)}}}\n\\toprule"
         self.tail = '\\bottomrule\n' + self.tail
@@ -276,15 +276,14 @@ class Tabular(TexEnvironment):
                     entry = str(value)
                 self.data[i,j] = entry
 
-        table_format = self.build_table_format()
+        table_format = self._build_table_format()
         for i, (row, row_format) in enumerate(zip(self.data, table_format)):
             self.body.append(''.join(item for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
-                rule = self.build_rule(*self.rules[i])
+                rule = self._build_rule(*self.rules[i])
                 self.body.append(rule)
-                print(rule)
 
-        super().build()
+        super()._build()
 
 
 if __name__ == "__main__":
