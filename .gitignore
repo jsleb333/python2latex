@@ -6,3 +6,4 @@ py2tex.code-workspace
 *.log
 *.aux
 *.pdf
+*.synctex.gz

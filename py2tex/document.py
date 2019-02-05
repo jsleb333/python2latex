@@ -18,22 +18,29 @@ class TexFile:
 
 
 class TexEnvironment:
-    def __init__(self, env_name, *parameters, options=None):
+    def __init__(self, env_name, *parameters, options=None, parent_doc=None):
         self.env_name = env_name
         self.body = [] # List of Environments or texts
         self.head = '\\begin{{{env_name}}}'.format(env_name=env_name)
         self.tail = '\\end{{{env_name}}}'.format(env_name=env_name)
-        self.head += f"{{{','.join(parameters)}}}"
+        if parameters:
+            self.head += f"{{{','.join(parameters)}}}"
         if options:
             self.head += f"[{options}]"
+        self.parent_doc = parent_doc
 
     def add_text(self, text):
         self.body.append(text)
 
     def new_environment(self, env_name, *parameters, options=None):
-        env = TexEnvironment(env_name, *parameters, options=None)
+        env = TexEnvironment(env_name, *parameters, options=None, parent_doc=self.parent_doc)
         self.body.append(env)
         return env
+
+    def new_table(self, *parameters, position='h!'):
+        table = Table(*parameters, position, parent_doc=self.parent_doc)
+        self.body.append(table)
+        return table
 
     def __repr__(self):
         return f'TexEnvironment {self.env_name}'
@@ -60,6 +67,8 @@ class Document(TexEnvironment):
         self.tail = '\\end{document}'
         self.filename = filename
         self.file = TexFile(filename)
+        self.parent_doc = self
+
         options = list(options)
         for key, value in kwoptions.items():
             options.append(f"{key}={value}")
@@ -70,6 +79,9 @@ class Document(TexEnvironment):
         self.packages = {'inputenc':'utf8',
                          'geometry':''}
         self.set_margins('2.5cm')
+
+    def __repr__(self):
+        return f'Document {self.filename}'
 
     def add_package(self, package, *options, **kwoptions):
         options = f"[{','.join(options)}]" if options else ''
@@ -101,12 +113,47 @@ class Document(TexEnvironment):
         self.file.compile_to_pdf()
 
 
+class Table(TexEnvironment):
+    """
+
+    """
+    def __init__(self, position='h!', **kwargs):
+        """
+        Args:
+
+        """
+        super().__init__('table', options=position, **kwargs)
+        self.parent_doc.add_package('booktabs')
+        self.head += '\n\centering'
+        self.table = [[]]
+        self.body = [self.table]
+
+    def __getitem__(self, i):
+        pass
+
+    def __setitem__(self, i):
+        pass
+
+    def build_table(self):
+        table = TexEnvironment('tabular', '\\textwidth', '')
+
+    def build(self):
+        self.build_table()
+        self.body[0] = self.table
+        self.body[0] = ''
+        super().build()
+
+
 if __name__ == "__main__":
     d = Document('Tata', 'article', '12pt')
-    print(d.body)
+    print(d.parent_doc)
 
     sec1 = d.new_environment('section', 'Koko')
     sec1.add_text("""This is section 100.""")
+    print(sec1.parent_doc)
+
+    table1 = sec1.new_table()
+    print(table1.parent_doc)
 
     d.build()
     print(d.body)
