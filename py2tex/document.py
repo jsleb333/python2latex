@@ -237,8 +237,7 @@ class Tabular(TexEnvironment):
             rule += f"{{{start+1}-{end}}}"
         return rule
 
-    def _build_table_format(self):
-        table_format = np.array([[' & ']*(self.shape[1]-1) + ['\\\\']]*self.shape[0], dtype=str)
+    def _apply_multicells(self, table_format):
         # Applying multicells
         for slice_i, slice_j in self.multicells:
             if isinstance(slice_j, slice):
@@ -276,7 +275,8 @@ class Tabular(TexEnvironment):
                     entry = str(value)
                 self.data[i,j] = entry
 
-        table_format = self._build_table_format()
+        table_format = np.array([[' & ']*(self.shape[1]-1) + ['\\\\']]*self.shape[0], dtype=str)
+        table_format = self._apply_multicells(table_format)
         for i, (row, row_format) in enumerate(zip(self.data, table_format)):
             self.body.append(''.join(item for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
