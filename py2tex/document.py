@@ -13,47 +13,53 @@ class TexFile:
         with open(self.filename, 'w', encoding='utf8') as file:
             file.write(tex)
 
-    def compile(self):
+    def compile_to_pdf(self):
         os.system(f"pdflatex {self.filename}")
 
 
-class Environment:
+class TexEnvironment:
     def __init__(self, env_name):
         self.env_name = env_name
         self.body = [] # List of Environments
-        self.env_options = ()
+        self.head = '\\begin{{{env_name}}}'
+        self.tail = '\\end{{{env_name}}}'
 
     def add_text(self, text):
         self.body.append(text)
 
-    def new_environment(self, env_name, *options):
-        env = Environment(env_name)
-        env.env_options = options
+    def new_environment(self, env_name, *parameters, options=None):
+        env = TexEnvironment(env_name)
+        env.head = env.head.format(env_name=env_name)
+        env.head += f"{{{','.join(parameters)}}}"
+        if options:
+            env.head += f"[{options}]"
+        env.tail = env.tail.format(env_name=env_name)
         self.body.append(env)
         return env
 
     def __repr__(self):
-        return f'Environment {self.env_name}'
+        return f'TexEnvironment {self.env_name}'
 
     def build(self):
         for i in range(len(self.body)):
             line = self.body[i]
-            if isinstance(line, Environment):
+            if isinstance(line, TexEnvironment):
                 line.build()
                 self.body[i] = line.body
         first_line = f'\\begin{{{self.env_name}}}'
-        if self.env_options:
-            first_line += f"{{{','.join(self.env_options)}}}"
-        self.body = [first_line] + self.body + [f'\\end{{{self.env_name}}}']
+
+        self.body = [self.head] + self.body + [self.tail]
         self.body = '\n'.join(self.body)
 
 
-class Document(Environment):
+class Document(TexEnvironment):
     """
     Tex document class.
     """
     def __init__(self, filename, doc_type, *options, **kwoptions):
         super().__init__('document')
+        self.head = '\\begin{document}'
+        self.tail = '\\end{document}'
         self.filename = filename
         self.file = TexFile(filename)
         options = list(options)
@@ -94,7 +100,7 @@ class Document(Environment):
 
         super().build()
         self.file.save(self.header + '\n' + self.body)
-        self.file.compile()
+        self.file.compile_to_pdf()
 
 
 if __name__ == "__main__":
@@ -102,7 +108,7 @@ if __name__ == "__main__":
     print(d.body)
 
     sec1 = d.new_environment('section', 'Yoyo')
-    sec1.add_text("""This is section 1.""")
+    sec1.add_text("""This is section 100.""")
 
     d.build()
     print(d.body)
