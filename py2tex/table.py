@@ -1,30 +1,5 @@
 import numpy as np
-from py2tex.document import TexEnvironment, Document
-
-
-class AreaSelector:
-    """
-    Select an area of the table using the getitem brackets to have slices.
-    """
-    def __init__(self, table):
-        self.table = table
-        self[:,:] # Whole table is selected by default
-
-    def __getitem__(self, idx):
-        self.table.selected_area = self._convert_idx_to_slice(idx)
-        self.table.selected_area_size = self.table.data[self.table.selected_area].size
-        return self.table
-
-    def _convert_idx_to_slice(self, idx):
-        if isinstance(idx, tuple):
-            i, j = idx
-        else:
-            i, j = idx, slice(None)
-        if isinstance(i, int):
-            i = slice(i, i+1)
-        if isinstance(j, int):
-            j = slice(j, j+1)
-        return i, j
+from py2tex.document import TexEnvironment
 
 
 class Table(TexEnvironment):
@@ -33,6 +8,7 @@ class Table(TexEnvironment):
         - Supports slices to set items.
         - Easy and automatic multirow and multicolumn cells.
         - Automatically highlights best value inside a region of the table.
+    To do so, the brackets access ("__getitem__") have been repurposed to select an area and returns the table with the selected area. To access the actual data inside the table, use the 'data' attribute.
     """
     def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, **kwargs):
         """
@@ -60,17 +36,32 @@ class Table(TexEnvironment):
         self.float_format = float_format
         self.data = np.full(shape, '', dtype=object)
 
-        self.select_area = AreaSelector(self)
-
         self.rules = {}
         self.multicells = []
         self.highlights = []
 
+        # By default, whole table is selected
+        self.selected_area = (slice(None), slice(None))
+        self.selected_area_size = self.data.size
+
     def __getitem__(self, idx):
-        return self.select_area[idx]
+        self.selected_area = self._convert_idx_to_slice(idx)
+        self.selected_area_size = self.data[self.selected_area].size
+        return self
+
+    def _convert_idx_to_slice(self, idx):
+        if isinstance(idx, tuple):
+            i, j = idx
+        else:
+            i, j = idx, slice(None)
+        if isinstance(i, int):
+            i = slice(i, i+1)
+        if isinstance(j, int):
+            j = slice(j, j+1)
+        return i, j
 
     def __setitem__(self, idx, value):
-        self.select_area[idx]
+        self[idx] # Selects area
 
         if isinstance(value, (str, int, float)) and self.selected_area_size > 1:
             # There are multirows or multicolumns to treat
@@ -216,6 +207,7 @@ class Table(TexEnvironment):
 
 
 if __name__ == "__main__":
+    from py2tex.document import Document
     doc = Document('Test', 'article', '12pt')
 
     sec = doc.new(TexEnvironment('section', 'Testing tables'))
@@ -224,7 +216,7 @@ if __name__ == "__main__":
 
     col = 4
     row = 4
-    data = np.array([[np.random.rand() for i in range(j,j+col)] for j in range(1, col*row, col)])
+    data = np.random.rand(row, col)
 
     table = sec.new(Table(shape=(row+1, col+1), alignment='c', float_format='.2f'))
     table[1:,1:] = data
