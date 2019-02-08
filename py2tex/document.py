@@ -235,45 +235,29 @@ class Tabular(TexEnvironment):
         self.parent_doc.add_package('multirow')
 
         self.data[self.selected_area] = '' # Erase old value
-        self.multicells.append(self.selected_area) # Save position of multiple cells span
-        print(self.multicells)
+        multicell_params = (self.selected_area, v_align, h_align, v_shift)
+        self.multicells.append(multicell_params) # Save position of multiple cells span
 
         i, j = self.selected_area[0].start, self.selected_area[1].start
         self.data[i,j] = value # Top left corner of slice contains the value
 
-
-    def highlight_best(self, rows=None, cols=None, mode='high', highlight='bold'):
+    def highlight_best(self, mode='high', highlight='bold'):
         """
+        Highlights the best value inside the selected area of the table.
+
         Args:
-            rows (int or tuple of 2 ints or None or slice): Start and stop of the rows of the region of interest. If None, all the rows are selected.
-            cols (int or tuple of 2 ints or None or slice): Start and stop of the columns of the region of interest. If None, all the columns are selected.
             mode (str, either 'high' or 'low'): Determines what is the best value.
             highlight (str, either 'bold' or 'italic'): The best value will be highlighted following this parameter.
         """
-        if rows is None:
-            rows = slice(slice(None).indices(self.shape[0]))
-        if cols is None:
-            cols = slice(slice(None).indices(self.shape[1]))
-
-        if isinstance(rows, int):
-            rows = slice(rows, rows+1)
-        if isinstance(cols, int):
-            cols = slice(cols, cols+1)
-
-        if isinstance(rows, tuple):
-            rows = slice(*rows)
-        if isinstance(cols, tuple):
-            cols = slice(*cols)
-
         if mode == 'high':
-            idx = np.argmax(self.data[rows, cols], axis=None)
+            idx = np.argmax(self.data[self.selected_area], axis=None)
         elif mode == 'low':
-            idx = np.argmin(self.data[rows, cols], axis=None)
+            idx = np.argmin(self.data[self.selected_area], axis=None)
 
-        i, j = np.unravel_index(idx, self.data[rows, cols].shape)
-        i += rows.start
-        j += cols.start
-        self.highlights.append((i,j,highlight))
+        i, j = np.unravel_index(idx, self.data[self.selected_area].shape)
+        i += self.selected_area[0].start
+        j += self.selected_area[1].start
+        self.highlights.append((i, j, highlight))
 
     def add_rule(self, row, col_start=None, col_end=None, trim_right=False, trim_left=False):
         """
@@ -304,26 +288,24 @@ class Tabular(TexEnvironment):
 
     def _apply_multicells(self, table_format):
         # Applying multicells
-        for slice_i, slice_j in self.multicells:
-            if isinstance(slice_j, slice):
-                start_j, stop_j, step = slice_j.indices(self.shape[1])
-            else:
-                start_j, stop_j = slice_j, slice_j+1
-            if isinstance(slice_i, slice):
-                start_i, stop_i, step = slice_i.indices(self.shape[1])
-            else:
-                start_i, stop_i = slice_i, slice_i+1
+        for idx, v_align, h_align, v_shift in self.multicells:
+
+            start_i, stop_i, step = idx[0].indices(self.shape[0])
+            start_j, stop_j, step = idx[1].indices(self.shape[1])
 
             table_format[start_i, slice(start_j, stop_j-1)] = ''
-            cell_shape = table_format[slice_i, slice_j].shape
+            cell_shape = table_format[idx].shape
 
-            if isinstance(slice_i, int):
-                self.data[start_i, start_j] = f"\multicolumn{{{cell_shape[0]}}}{{{self.alignment[start_j]}}}{{{self.data[start_i, start_j]}}}"
+            if start_i == stop_i - 1:
+                self.data[start_i, start_j] = f"\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
             else:
-                self.data[start_i, start_j] = f"\multirow{{{cell_shape[0]}}}{{*}}{{{self.data[start_i, start_j]}}}"
+                shift = ''
+                if v_shift:
+                    shift = f'[{v_shift}]'
+                self.data[start_i, start_j] = f"\multirow{{{cell_shape[0]}}}{{{v_align}}}{shift}{{{self.data[start_i, start_j]}}}"
 
-            if isinstance(slice_j, slice) and isinstance(slice_i, slice):
-                self.data[start_i, start_j] = f"\multicolumn{{{cell_shape[1]}}}{{{self.alignment[start_j]}}}{{{self.data[start_i, start_j]}}}"
+            if start_j < stop_j - 1 and start_i < stop_i - 1:
+                self.data[start_i, start_j] = f"\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
 
         return table_format
 
@@ -370,25 +352,19 @@ if __name__ == "__main__":
     data = np.array([[np.random.rand() for i in range(j,j+col)] for j in range(1, col*row, col)])
 
     table = sec.new_table(shape=(row+1, col+1), alignment='c', float_format='.2f')
-    table[0,0] = 8
     table[1:,1:] = data
     table[0,1:] = 'Title'
-    table[1:,0] = 'Types'
+    table[1:,0].multicell('Types', v_shift='3pt')
     table[2:4,2:4] = 'test'
     table.add_rule(0, 1, trim_left=True, trim_right='1em')
     table.label = 'test'
     table.caption = 'test'
 
-    table.highlight_best(1, (1,5), 'low', 'bold')
-    table.highlight_best(4, (1,5), 'low', 'bold')
-    table.highlight_best((1,5), 1, 'high', 'italic')
-    table.highlight_best((1,5), 4, 'high', 'italic')
+    table[1,1:].highlight_best('low', 'bold')
+    table[4,1:].highlight_best('low', 'bold')
+    table[1:,1].highlight_best('high', 'italic')
+    table[1:,4].highlight_best('high', 'italic')
 
-    print(table.tabular.selected_area)
-    print(table.tabular.select_area[1:,2:])
-    print(table.tabular.selected_area)
-    print(table.tabular.select_area[0,0:])
-    print(table.tabular.selected_area)
 
     doc.build()
     # print(doc.body)
