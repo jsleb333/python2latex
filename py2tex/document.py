@@ -167,6 +167,31 @@ class Table(TexEnvironment):
         super()._build()
 
 
+class AreaSelector:
+    """
+    Select an area of the table using the getitem brackets to have slices.
+    """
+    def __init__(self, table):
+        self.table = table
+        self[:,:] # Whole table is selected by default
+
+    def __getitem__(self, idx):
+        self.table.selected_area = self._convert_idx_to_slice(idx)
+        self.table.selected_area_size = self.table.data[self.table.selected_area].size
+        return self.table
+
+    def _convert_idx_to_slice(self, idx):
+        if isinstance(idx, tuple):
+            i, j = idx
+        else:
+            i, j = idx, slice(None)
+        if isinstance(i, int):
+            i = slice(i, i+1)
+        if isinstance(j, int):
+            j = slice(j, j+1)
+        return i, j
+
+
 class Tabular(TexEnvironment):
     """
     Implements the 'tabular' environment from the package 'booktabs'.
@@ -186,33 +211,36 @@ class Tabular(TexEnvironment):
         self.alignment = np.array([alignment]*shape[1], dtype=str)
         self.float_format = float_format
         self.data = np.full(shape, '', dtype=object)
+
+        self.select_area = AreaSelector(self)
+
         self.rules = {}
         self.multicells = []
         self.highlights = []
 
     def __getitem__(self, idx):
-        return self.data[idx]
+        return self.select_area[idx]
 
     def __setitem__(self, idx, value):
-        if isinstance(idx, tuple):
-            i, j = idx
-        else:
-            i, j = idx, slice(None)
+        self.select_area[idx]
 
-        if isinstance(value, (str, int, float)) and (isinstance(i, slice) or isinstance(j, slice)):
+        if isinstance(value, (str, int, float)) and self.selected_area_size > 1:
             # There are multirows or multicolumns to treat
-            self.parent_doc.add_package('multicol')
-            self.parent_doc.add_package('multirow')
-            self.data[i,j] = '' # Erase old value
-            self.multicells.append((i,j)) # Save position of multiple cells span
-            if isinstance(i, slice):
-                i, stop, end = i.indices(self.shape[0])
-            if isinstance(j, slice):
-                j, stop, end = j.indices(self.shape[1])
-
-            self.data[i,j] = value # Top left corner of slice contains the value
+            self.multicell(value)
         else:
             self.data[idx] = value
+
+    def multicell(self, value, v_align='*', h_align='c', v_shift=None):
+        self.parent_doc.add_package('multicol')
+        self.parent_doc.add_package('multirow')
+
+        self.data[self.selected_area] = '' # Erase old value
+        self.multicells.append(self.selected_area) # Save position of multiple cells span
+        print(self.multicells)
+
+        i, j = self.selected_area[0].start, self.selected_area[1].start
+        self.data[i,j] = value # Top left corner of slice contains the value
+
 
     def highlight_best(self, rows=None, cols=None, mode='high', highlight='bold'):
         """
@@ -342,6 +370,7 @@ if __name__ == "__main__":
     data = np.array([[np.random.rand() for i in range(j,j+col)] for j in range(1, col*row, col)])
 
     table = sec.new_table(shape=(row+1, col+1), alignment='c', float_format='.2f')
+    table[0,0] = 8
     table[1:,1:] = data
     table[0,1:] = 'Title'
     table[1:,0] = 'Types'
@@ -354,6 +383,12 @@ if __name__ == "__main__":
     table.highlight_best(4, (1,5), 'low', 'bold')
     table.highlight_best((1,5), 1, 'high', 'italic')
     table.highlight_best((1,5), 4, 'high', 'italic')
+
+    print(table.tabular.selected_area)
+    print(table.tabular.select_area[1:,2:])
+    print(table.tabular.selected_area)
+    print(table.tabular.select_area[0,0:])
+    print(table.tabular.selected_area)
 
     doc.build()
     # print(doc.body)
