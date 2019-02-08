@@ -29,56 +29,31 @@ class AreaSelector:
 
 class Table(TexEnvironment):
     """
-    Implements a 'table' environment as a floating object. Wraps many features for easy usage and flexibility, such as:
+    Implements a floating 'table' environment. Wraps many features for easy usage and flexibility, such as:
         - Supports slices to set items.
         - Easy and automatic multirow and multicolumn cells.
         - Automatically highlights best value inside a region of the table.
     """
-    def __init__(self, position='h!', shape=(1,1), alignment='c', float_format='.2f', **kwargs):
+    def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, **kwargs):
         """
         Args:
-            position (str, either 'h', 't', 'b', with optional '!'): position of the float. Default is 't'. Combinaisons of letters allow more flexibility.
+            shape (tuple of 2 ints): Shape of the table.
+            alignment (str or sequence of str, either 'c', 'r', or 'l'): Alignment of the text inside the columns.
+            float_format (str): Standard Python float formating available.
+            as_float_env (bool): If True (default), will wrap a 'tabular' environment with a floating 'table' environment. If False, only the 'tabular' is constructed.
+            position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
             kwargs: See TexEnvironment keyword arguments.
-            others: See Tabular arguments.
         """
+        self.as_float_env = as_float_env
         super().__init__('table', options=position, label_pos='bottom', **kwargs)
-        self.head += '\n\centering'
-        self.tabular = Tabular(shape, alignment, float_format, **kwargs)
+        if self.as_float_env:
+            self.head += '\n\centering'
+        else:
+            self.head, self.tail = '', ''
+        self.tabular = TexEnvironment('tabular')
+        self.add_package('booktabs')
         self.body = [self.tabular]
         self.caption = ''
-
-    def __getitem__(self, idx):
-        return self.tabular[idx]
-
-    def __setitem__(self, idx, value):
-        self.tabular[idx] = value
-
-    def add_rule(self, *args, **kwargs):
-        self.tabular.add_rule(*args, **kwargs)
-
-    def highlight_best(self, *args, **kwargs):
-        self.tabular.highlight_best(*args, **kwargs)
-
-    def build(self):
-        if self.caption:
-            self.body.append(f"\caption{{{self.caption}}}")
-        return super().build()
-
-
-class Tabular(TexEnvironment):
-    """
-    Implements the 'tabular' environment from the package 'booktabs'.
-    """
-    def __init__(self, shape=(1,1), alignment='c', float_format='.2f', **kwargs):
-        """
-        Args:
-            shape (tuple of 2 ints):
-            alignment (str, either 'c', 'r', or 'l'):
-            float_format (str): Standard Python float formating available.
-            kwargs: See TexEnvironment keyword arguments.
-        """
-        super().__init__('tabular', **kwargs)
-        self.add_package('booktabs')
 
         self.shape = shape
         self.alignment = np.array([alignment]*shape[1], dtype=str)
@@ -168,7 +143,7 @@ class Tabular(TexEnvironment):
             self.rules[row] = []
         self.rules[row].append((col_start, col_stop, r+l))
 
-    def build_rule(self, start, end, trim):
+    def _build_rule(self, start, end, trim):
         if start is None and end is None and not trim:
             rule = "\midrule"
         else:
@@ -204,9 +179,10 @@ class Tabular(TexEnvironment):
 
     def build(self):
         row, col = self.data.shape
-        self.head += f"{{{''.join(self.alignment)}}}\n\\toprule"
-        self.tail = '\\bottomrule\n' + self.tail
+        self.tabular.head += f"{{{''.join(self.alignment)}}}\n\\toprule"
+        self.tabular.tail = '\\bottomrule\n' + self.tabular.tail
 
+        # Format floats
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
                 if isinstance(value, float):
@@ -215,6 +191,7 @@ class Tabular(TexEnvironment):
                     entry = str(value)
                 self.data[i,j] = entry
 
+        # Apply highlights
         for i, j, highlight in self.highlights:
             if highlight == 'bold':
                 command = "\\textbf{{{0}}}"
@@ -222,15 +199,19 @@ class Tabular(TexEnvironment):
                 command = "\\textit{{{0}}}"
             self.data[i,j] = command.format(self.data[i,j])
 
+        # Build the tabular
         table_format = np.array([[' & ']*(self.shape[1]-1) + ['\\\\']]*self.shape[0], dtype=str)
         table_format = self._apply_multicells(table_format)
         for i, (row, row_format) in enumerate(zip(self.data, table_format)):
-            self.body.append(''.join(item for pair in zip(row, row_format) for item in pair))
+            self.tabular.body.append(''.join(item for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
                 for rule in self.rules[i]:
-                    rule = self.build_rule(*rule)
-                    self.body.append(rule)
+                    rule = self._build_rule(*rule)
+                    self.tabular.body.append(rule)
+        self.tabular.build()
 
+        if self.caption and self.as_float_env:
+            self.body.append(f"\caption{{{self.caption}}}")
         return super().build()
 
 

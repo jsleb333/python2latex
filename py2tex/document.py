@@ -137,6 +137,7 @@ class Document(TexEnvironment):
             self.header.append(f"\\usepackage{options}{{{package}}}")
         self.header = '\n'.join(self.header)
 
-        self.file.save(self.header + '\n' + tex)
+        tex = self.header + '\n' + tex
+        self.file.save(tex)
         self.file._compile_to_pdf()
         return tex
