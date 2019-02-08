@@ -38,7 +38,7 @@ class Table(TexEnvironment):
         """
         Args:
             shape (tuple of 2 ints): Shape of the table.
-            alignment (str or sequence of str, either 'c', 'r', or 'l'): Alignment of the text inside the columns.
+            alignment (str or sequence of str, either 'c', 'r', or 'l'): Alignment of the text inside the columns. If a sequence, it should be the same length as the number of columns. If only a string, it will be used for all columns.
             float_format (str): Standard Python float formating available.
             as_float_env (bool): If True (default), will wrap a 'tabular' environment with a floating 'table' environment. If False, only the 'tabular' is constructed.
             position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
@@ -56,7 +56,7 @@ class Table(TexEnvironment):
         self.caption = ''
 
         self.shape = shape
-        self.alignment = np.array([alignment]*shape[1], dtype=str)
+        self.alignment = [alignment]*shape[1] if len(alignment) == 1 else alignment
         self.float_format = float_format
         self.data = np.full(shape, '', dtype=object)
 
