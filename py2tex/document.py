@@ -231,6 +231,15 @@ class Tabular(TexEnvironment):
             self.data[idx] = value
 
     def multicell(self, value, v_align='*', h_align='c', v_shift=None):
+        """
+        Merges the selected area into a single cell.
+
+        Args:
+            value (str, int or float): Value of the cell.
+            v_align (str, ex. '*'): '*' means the same alignment of the other cells in the row. See LaTeX 'multirow' documentation.
+            h_align (str, ex. 'c', 'l' or 'r'): See LaTeX 'multicolumn' documentation.
+            v_shift (str, any valid length of LaTeX): Vertical shift of the text position of multirow merging.
+        """
         self.parent_doc.add_package('multicol')
         self.parent_doc.add_package('multirow')
 
@@ -259,11 +268,12 @@ class Tabular(TexEnvironment):
         j += self.selected_area[1].start
         self.highlights.append((i, j, highlight))
 
-    def add_rule(self, row, col_start=None, col_end=None, trim_right=False, trim_left=False):
+    def add_rule(self, position='below', trim_right=False, trim_left=False):
         """
+        Adds a rule below or above the selected area of the table.
+
         Args:
-            row (int): Row number under which the rule will be placed.
-            col_start, col_end (int or None): Columns from which the rule will stretch. Standard slicing indexing from Python is used (first index is 0, last is excluded, not the same as LaTeX). If both are None (default) and both trim are False, the rule will go all the way across and will be a standard "\midrule". Else, the "\cmidrule" command is used.
+            position (str, either 'below' or 'above'): Position of the rule below or above the selected area.
             trim_left (bool or str): Whether to trim the left end of the rule or not. If True, default trim length is used ('.5em'). If a string, can be any valid LaTeX distance.
             trim_right (bool or str): Same a trim_left, but for the right end.
         """
@@ -273,7 +283,17 @@ class Tabular(TexEnvironment):
         l = 'l' if trim_left else ''
         if isinstance(trim_left, str):
             l += f"{{{trim_left}}}"
-        self.rules[row] = (col_start, col_end, r+l)
+
+        row_start, row_stop, row_step = self.selected_area[0].indices(self.shape[0])
+        if position == 'below':
+            row = row_stop - 1
+        else:
+            row = row_start
+        col_start, col_stop, col_step = self.selected_area[1].indices(self.shape[1])
+
+        if row not in self.rules:
+            self.rules[row] = []
+        self.rules[row].append((col_start, col_stop, r+l))
 
     def _build_rule(self, start, end, trim):
         if start is None and end is None and not trim:
@@ -334,8 +354,9 @@ class Tabular(TexEnvironment):
         for i, (row, row_format) in enumerate(zip(self.data, table_format)):
             self.body.append(''.join(item for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
-                rule = self._build_rule(*self.rules[i])
-                self.body.append(rule)
+                for rule in self.rules[i]:
+                    rule = self._build_rule(*rule)
+                    self.body.append(rule)
 
         super()._build()
 
@@ -353,10 +374,11 @@ if __name__ == "__main__":
 
     table = sec.new_table(shape=(row+1, col+1), alignment='c', float_format='.2f')
     table[1:,1:] = data
-    table[0,1:] = 'Title'
-    table[1:,0].multicell('Types', v_shift='3pt')
     table[2:4,2:4] = 'test'
-    table.add_rule(0, 1, trim_left=True, trim_right='1em')
+    table[0,1:].multicell('Title', h_align='l')
+    table[1:,0].multicell('Types', v_align='*', v_shift='3pt')
+    table[0,1:3].add_rule(trim_left=True, trim_right='.3em')
+    table[0,3:].add_rule(trim_left='.3em', trim_right=True)
     table.label = 'test'
     table.caption = 'test'
 
