@@ -20,6 +20,16 @@ class TexFile:
 
 
 class TexEnvironment:
+    """
+    Implements a basic TexEnvironment as
+    \begin{env}
+        ...
+    \end{env}
+
+    Allows recursive use of environment inside others.
+    Add new environments with the method 'new' and add standard text with 'add_text'.
+    Add LaTeX packages needed for this environment with 'add_package'.
+    """
     def __init__(self, env_name, *parameters, options=None, label_pos='top'):
         """
         Args:
@@ -57,7 +67,12 @@ class TexEnvironment:
     def __repr__(self):
         return f'TexEnvironment {self.env_name}'
 
-    def _build(self):
+    def build(self):
+        """
+        Builds recursively the environments of the body and converts it to .tex.
+        Returns the .tex string of the file.
+        """
+        tex = []
         label = f"\label{{{self.env_name}:{self.label}}}"
         if self.label:
             if self.label_pos == 'top':
@@ -65,26 +80,26 @@ class TexEnvironment:
             else:
                 self.tail = label + '\n' + self.tail
 
-        for i in range(len(self.body)):
-            text_or_env = self.body[i]
+        for text_or_env in self.body:
             if isinstance(text_or_env, TexEnvironment):
-                text_or_env._build()
-                self.body[i] = text_or_env.body
+                built_env = text_or_env.build()
+                tex.append(built_env)
                 self.packages.update(text_or_env.packages)
-        first_line = f'\\begin{{{self.env_name}}}'
+            else:
+                tex.append(text_or_env)
 
-        self.body = [self.head] + self.body + [self.tail]
-        self.body = '\n'.join(self.body)
+        tex = [self.head] + tex + [self.tail]
+        return '\n'.join(tex)
 
 
 class Document(TexEnvironment):
     """
     Tex document class.
+    Has a body, a header and a dict of packages updated recursively with other TexEnvironment nested inside the body.
+    The 'build' method writes all text to a .tex file and compiles it to pdf.
     """
     def __init__(self, filename, doc_type, *options, **kwoptions):
         super().__init__('document')
-        self.head = '\\begin{document}'
-        self.tail = '\\end{document}'
         self.filename = filename
         self.file = TexFile(filename)
 
@@ -114,7 +129,7 @@ class Document(TexEnvironment):
         self.packages['geometry'] = ','.join(key+'='+value for key, value in self.margins.items())
 
     def build(self):
-        super()._build()
+        tex = super().build()
 
         for package, options in self.packages.items():
             if options:
@@ -122,5 +137,6 @@ class Document(TexEnvironment):
             self.header.append(f"\\usepackage{options}{{{package}}}")
         self.header = '\n'.join(self.header)
 
-        self.file.save(self.header + '\n' + self.body)
+        self.file.save(self.header + '\n' + tex)
         self.file._compile_to_pdf()
+        return tex

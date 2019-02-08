@@ -59,10 +59,10 @@ class Table(TexEnvironment):
     def highlight_best(self, *args, **kwargs):
         self.tabular.highlight_best(*args, **kwargs)
 
-    def _build(self):
+    def build(self):
         if self.caption:
             self.body.append(f"\caption{{{self.caption}}}")
-        super()._build()
+        return super().build()
 
 
 class Tabular(TexEnvironment):
@@ -168,7 +168,7 @@ class Tabular(TexEnvironment):
             self.rules[row] = []
         self.rules[row].append((col_start, col_stop, r+l))
 
-    def _build_rule(self, start, end, trim):
+    def build_rule(self, start, end, trim):
         if start is None and end is None and not trim:
             rule = "\midrule"
         else:
@@ -202,7 +202,7 @@ class Tabular(TexEnvironment):
 
         return table_format
 
-    def _build(self):
+    def build(self):
         row, col = self.data.shape
         self.head += f"{{{''.join(self.alignment)}}}\n\\toprule"
         self.tail = '\\bottomrule\n' + self.tail
@@ -228,10 +228,10 @@ class Tabular(TexEnvironment):
             self.body.append(''.join(item for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
                 for rule in self.rules[i]:
-                    rule = self._build_rule(*rule)
+                    rule = self.build_rule(*rule)
                     self.body.append(rule)
 
-        super()._build()
+        return super().build()
 
 
 if __name__ == "__main__":
