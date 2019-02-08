@@ -7,3 +7,5 @@ py2tex.code-workspace
 *.aux
 *.pdf
 *.synctex.gz
+
+*.cpython*
