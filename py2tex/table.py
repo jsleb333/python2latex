@@ -1,5 +1,5 @@
 import numpy as np
-from py2tex.document import TexEnvironment
+from py2tex import TexEnvironment
 
 
 class Table(TexEnvironment):
@@ -206,7 +206,7 @@ class Table(TexEnvironment):
 
 
 if __name__ == "__main__":
-    from py2tex.document import Document
+    from py2tex import Document
     doc = Document('Test', 'article', '12pt')
 
     sec = doc.new(TexEnvironment('section', 'Testing tables'))
