@@ -91,21 +91,30 @@ class Table(TexEnvironment):
 
     def highlight_best(self, mode='high', highlight='bold'):
         """
-        Highlights the best value inside the selected area of the table.
+        Highlights the best value inside the selected area of the table. Ignores text.
 
         Args:
             mode (str, either 'high' or 'low'): Determines what is the best value.
             highlight (str, either 'bold' or 'italic'): The best value will be highlighted following this parameter.
         """
+        i_best, j_best = None, None
         if mode == 'high':
-            idx = np.argmax(self.data[self.selected_area], axis=None)
+            best = -np.inf
+            value_is_better_than_best = lambda value, best: value > best
         elif mode == 'low':
-            idx = np.argmin(self.data[self.selected_area], axis=None)
+            best = np.inf
+            value_is_better_than_best = lambda value, best: value < best
 
-        i, j = np.unravel_index(idx, self.data[self.selected_area].shape)
-        i += self.selected_area[0].start
-        j += self.selected_area[1].start
-        self.highlights.append((i, j, highlight))
+        for i, row in enumerate(self.data[self.selected_area]):
+            for j, value in enumerate(row):
+                if isinstance(value, (float, int)) and value_is_better_than_best(value, best):
+                    i_best, j_best = i, j
+                    best = value
+
+        if i_best is None: return # No best have been found (i.e. no floats or ints in selected area)
+        i_best += self.selected_area[0].start
+        j_best += self.selected_area[1].start
+        self.highlights.append((i_best, j_best, highlight))
 
     def add_rule(self, position='below', trim_right=False, trim_left=False):
         """
@@ -207,31 +216,27 @@ class Table(TexEnvironment):
 
 if __name__ == "__main__":
     from py2tex import Document
-    doc = Document('Test', 'article', '12pt')
+    doc = Document(filename='Test', doc_type='article', options=('12pt',))
 
-    sec = doc.new(TexEnvironment('section', 'Testing tables'))
-    sec.label = 'tables_test'
+    sec = doc.new_section('Testing tables')
     sec.add_text("This section tests tables.")
 
-    col = 4
-    row = 4
+    col, row = 4, 4
     data = np.random.rand(row, col)
 
     table = sec.new(Table(shape=(row+1, col+1), alignment='c', float_format='.2f'))
-    table[1:,1:] = data
-    table[2:4,2:4] = 'test'
-    table[0,1:].multicell('Title', h_align='c')
+    table.caption = 'test' # Set a caption if desired
+    table[1:,1:] = data # Set entries with a slice
+
+    table[2:4,2:4] = 'test' # Set multicell areas with a slice too
+    table[0,1:].multicell('Title', h_align='c') # Set a multicell with custom parameters
     table[1:,0].multicell('Types', v_align='*', v_shift='-2pt')
-    table[0,1:3].add_rule(trim_left=True, trim_right='.3em')
+
+    table[0,1:3].add_rule(trim_left=True, trim_right='.3em') # Add rules with parameters where you want
     table[0,3:].add_rule(trim_left='.3em', trim_right=True)
-    table.label = 'test'
-    table.caption = 'test'
 
-    table[1,1:].highlight_best('low', 'bold')
-    table[4,1:].highlight_best('low', 'bold')
-    table[1:,1].highlight_best('high', 'italic')
-    table[1:,4].highlight_best('high', 'italic')
+    table[1:,1:].highlight_best('low')
+    table[4,1:].highlight_best()
 
-
-    doc.build()
-    # print(doc.body)
+    tex = doc.build()
+    # print(tex)
