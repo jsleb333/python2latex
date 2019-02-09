@@ -30,12 +30,13 @@ class TexEnvironment:
     Add new environments with the method 'new' and add standard text with 'add_text'.
     Add LaTeX packages needed for this environment with 'add_package'.
     """
-    def __init__(self, env_name, *parameters, options=None, label_pos='top'):
+    def __init__(self, env_name, *parameters, options=None, label='', label_pos='top'):
         """
         Args:
             env_name (str): Name of the environment.
             parameters (tuple of str): Parameters of the environment, appended inside curly braces {}.
             options (tuple of str): Options to pass to the environment, appended inside brackets [].
+            label (str): Label of the environment if needed.
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the environment.
         """
         self.env_name = env_name
@@ -48,7 +49,7 @@ class TexEnvironment:
             self.head += f"[{options}]"
         self.packages = {}
         self.label_pos = label_pos
-        self.label = ''
+        self.label = label
 
     def add_package(self, package, *options, **kwoptions):
         options = f"[{','.join(options)}]" if options else ''
@@ -128,6 +129,14 @@ class Document(TexEnvironment):
 
         self.packages['geometry'] = ','.join(key+'='+value for key, value in self.margins.items())
 
+    def new_section(self, name, label=''):
+        """
+        Args:
+            name (str): Name of the section.
+            label (str): Label of the section to refer to.
+        """
+        return self.new(Section(name, label=label))
+
     def build(self):
         tex = super().build()
 
@@ -141,3 +150,45 @@ class Document(TexEnvironment):
         self.file.save(tex)
         self.file._compile_to_pdf()
         return tex
+
+
+class Section(TexEnvironment):
+    """
+    Implements a LaTeX section.
+    """
+    def __init__(self, name, label=''):
+        """
+        Args:
+            name (str): Name of the section.
+            label (str): Label of the section to refer to.
+        """
+        super().__init__('section', name, label=label)
+
+    def new_subsection(self, name, label=''):
+        """
+        Args:
+            name (str): Name of the subsection.
+            label (str): Label of the subsection to refer to.
+        """
+        return self.new(Subsection(name, label=label))
+
+
+class Subsection(TexEnvironment):
+    """
+    Implements a LaTeX subsection.
+    """
+    def __init__(self, name, label=''):
+        """
+        Args:
+            name (str): Name of the subsection.
+            label (str): Label of the subsection to refer to.
+        """
+        super().__init__('subsection', name, label=label)
+
+    def new_subsubsection(self, name, label=''):
+        """
+        Args:
+            name (str): Name of the subsubsection.
+            label (str): Label of the subsubsection to refer to.
+        """
+        return self.new(TexEnvironment('subsubsection', name, label=label))
