@@ -28,7 +28,7 @@ import numpy as np
 
 doc = Document(filename='Test', doc_type='article', options=('12pt',))
 
-sec = doc.new_section('Testing tables', label='tables_test')
+sec = doc.new_section('Testing tables')
 sec.add_text("This section tests tables.")
 
 col, row = 4, 4
@@ -51,3 +51,23 @@ table[4,1:].highlight_best('low', 'bold')
 tex = doc.build()
 print(tex)
 ```
+
+### Create an unsupported environment
+```python
+from py2tex import Document, TexEnvironment
+
+doc = Document(filename='Test', doc_type='article', options=('12pt',))
+
+sec = doc.new_section('Unsupported env')
+sec.add_text("This section shows how to create unsupported env if needed.")
+
+spam = sec.new(TexEnvironment('spam', 'options', label='spam_label'))
+spam.add_text('Inside spam env!')
+
+tex = doc.build(compile_to_pdf=False)
+print(tex)
+```
+
+## How it works
+
+This LaTeX wrapper is based on the TexEnvironment class. Each such environment possesses a body attribute consisting in a list of strings and of other TexEnvironments. The 'build' method then converts every TexEnvironment to a tex string recursively. This step makes sure every environment is properly between a '\begin{env}' and a '\end{env}'. Converting the document to a string only at the end allows to do operation in the order desired, hence providing flexibility. The 'build' method can be called on any TexEnvironment, return the tex string representation of the environment. However, only the Document class 'build' method will also compile it to an actual pdf.
