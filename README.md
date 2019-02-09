@@ -21,7 +21,7 @@ print(tex) # Prints the tex string that generated the pdf
 
 ### Create a table from a numpy array
 
-This example shows how to generate automatically a table from data taken directly from a numpy array. The module allows to add merged cells easily, to add rules where you want and even to highlight the best value automatically inside a specified area!
+This example shows how to generate automatically a table from data taken directly from a numpy array. The module allows to add merged cells easily, to add rules where you want and even to highlight the best value automatically inside a specified area! To ease these operations, the the square brackets ('getitem') operator have been repurposed to select an area of the table instead of returning the actual values contained in the table. Once an area is selected, use the 'multicell', 'add_rule' or 'highlight_best' methods. To get the actual values inside the table, one can use the 'data' attribute of the table.
 ```python
 from py2tex import Document, Table
 import numpy as np
@@ -36,9 +36,9 @@ data = np.random.rand(row, col)
 
 table = sec.new(Table(shape=(row+1, col+1), alignment='c', float_format='.2f'))
 table.caption = 'test' # Set a caption if desired
-table[1:,1:] = data # Set entries with a slice
+table[1:,1:] = data # Set entries with a slice directly from a numpy array!
 
-table[2:4,2:4] = 'test' # Set multicell areas with a slice too
+table[2:4,2:4] = 'test' # Set multicell areas with a slice too. The value is contained in the top left cell (here it would be cell (2,2))
 table[0,1:].multicell('Title', h_align='c') # Set a multicell with custom parameters
 table[1:,0].multicell('Types', v_align='*', v_shift='-2pt')
 
