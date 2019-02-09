@@ -21,7 +21,7 @@ print(tex) # Prints the tex string that generated the pdf
 
 ### Create a table from a numpy array
 
-This example shows how to generate automatically a table from data taken directly from a numpy array. The module allows to add merged cells easily, to add rule easily and even to highlight the best value automatically inside a specified area!
+This example shows how to generate automatically a table from data taken directly from a numpy array. The module allows to add merged cells easily, to add rules where you want and even to highlight the best value automatically inside a specified area!
 ```python
 from py2tex import Document, Table
 import numpy as np
