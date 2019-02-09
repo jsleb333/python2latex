@@ -60,6 +60,10 @@ class Table(TexEnvironment):
             j = slice(j, j+1)
         return i, j
 
+    @property
+    def top_left_corner_of_selected_area(self):
+        return self.selected_area[0].indices(self.shape[0])[0], self.selected_area[1].indices(self.shape[1])[0]
+
     def __setitem__(self, idx, value):
         self[idx] # Selects area
 
@@ -86,8 +90,7 @@ class Table(TexEnvironment):
         multicell_params = (self.selected_area, v_align, h_align, v_shift)
         self.multicells.append(multicell_params) # Save position of multiple cells span
 
-        i, j = self.selected_area[0].start, self.selected_area[1].start
-        self.data[i,j] = value # Top left corner of slice contains the value
+        self.data[self.top_left_corner_of_selected_area] = value
 
     def highlight_best(self, mode='high', highlight='bold'):
         """
@@ -112,8 +115,9 @@ class Table(TexEnvironment):
                     best = value
 
         if i_best is None: return # No best have been found (i.e. no floats or ints in selected area)
-        i_best += self.selected_area[0].start
-        j_best += self.selected_area[1].start
+        top_i, left_j = self.top_left_corner_of_selected_area
+        i_best += top_i
+        j_best += left_j
         self.highlights.append((i_best, j_best, highlight))
 
     def add_rule(self, position='below', trim_right=False, trim_left=False):
@@ -235,8 +239,8 @@ if __name__ == "__main__":
     table[0,1:3].add_rule(trim_left=True, trim_right='.3em') # Add rules with parameters where you want
     table[0,3:].add_rule(trim_left='.3em', trim_right=True)
 
-    table[1:,1:].highlight_best('low')
-    table[4,1:].highlight_best()
+    table[1].highlight_best('low')
+    table[4].highlight_best()
 
     tex = doc.build()
     # print(tex)
