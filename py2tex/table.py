@@ -127,7 +127,7 @@ class Table(TexEnvironment):
         if position == 'below':
             row = row_stop - 1
         else:
-            row = row_start
+            row = row_start - 1
         col_start, col_stop, col_step = self.selected_area[1].indices(self.shape[1])
 
         if row not in self.rules:
@@ -146,7 +146,6 @@ class Table(TexEnvironment):
         return rule
 
     def _apply_multicells(self, table_format):
-        # Applying multicells
         for idx, v_align, h_align, v_shift in self.multicells:
 
             start_i, stop_i, step = idx[0].indices(self.shape[0])
@@ -222,7 +221,7 @@ if __name__ == "__main__":
     table[1:,1:] = data
     table[2:4,2:4] = 'test'
     table[0,1:].multicell('Title', h_align='c')
-    table[1:,0].multicell('Types', v_align='*', v_shift='3pt')
+    table[1:,0].multicell('Types', v_align='*', v_shift='-2pt')
     table[0,1:3].add_rule(trim_left=True, trim_right='.3em')
     table[0,3:].add_rule(trim_left='.3em', trim_right=True)
     table.label = 'test'
