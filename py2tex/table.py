@@ -9,6 +9,10 @@ class Table(TexEnvironment):
         - Easy and automatic multirow and multicolumn cells.
         - Automatically highlights best value inside a region of the table.
     To do so, the brackets access ("__getitem__") have been repurposed to select an area and returns the table with the selected area. To access the actual data inside the table, use the 'data' attribute.
+
+    TODO:
+        - Split 'highlight_best' into a 'highlight' method to allow manual highlighting.
+        - Maybe: Add a 'insert_row' and 'insert_column' methods.
     """
     def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, **kwargs):
         """
