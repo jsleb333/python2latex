@@ -137,7 +137,7 @@ class Document(TexEnvironment):
         """
         return self.new(Section(name, label=label))
 
-    def build(self):
+    def build(self, save_to_disk=True, compile_to_pdf=True):
         tex = super().build()
 
         for package, options in self.packages.items():
@@ -147,8 +147,12 @@ class Document(TexEnvironment):
         self.header = '\n'.join(self.header)
 
         tex = self.header + '\n' + tex
-        self.file.save(tex)
-        self.file._compile_to_pdf()
+        if save_to_disk:
+            self.file.save(tex)
+
+        if compile_to_pdf:
+            self.file.save(tex)
+            self.file._compile_to_pdf()
         return tex
 
 
