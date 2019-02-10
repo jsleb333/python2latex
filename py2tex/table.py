@@ -27,12 +27,12 @@ class Table(TexEnvironment):
         self.as_float_env = as_float_env
         super().__init__('table', options=position, label_pos='bottom', **kwargs)
         if self.as_float_env:
-            self.head += '\n\centering'
+            self.body.append(r'\centering')
         else:
             self.head, self.tail = '', ''
         self.tabular = TexEnvironment('tabular')
         self.add_package('booktabs')
-        self.body = [self.tabular]
+        self.body.append(self.tabular)
         self.caption = ''
 
         self.shape = shape

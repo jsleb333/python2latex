@@ -30,7 +30,7 @@ class TexEnvironment:
     Add new environments with the method 'new' and add standard text with 'add_text'.
     Add LaTeX packages needed for this environment with 'add_package'.
     """
-    def __init__(self, env_name, *parameters, options=None, label='', label_pos='top'):
+    def __init__(self, env_name, *parameters, options=(), label='', label_pos='top', **kwoptions):
         """
         Args:
             env_name (str): Name of the environment.
@@ -43,10 +43,10 @@ class TexEnvironment:
         self.body = [] # List of Environments or texts
         self.head = '\\begin{{{env_name}}}'.format(env_name=env_name)
         self.tail = '\\end{{{env_name}}}'.format(env_name=env_name)
-        if parameters:
-            self.head += f"{{{','.join(parameters)}}}"
-        if options:
-            self.head += f"[{options}]"
+
+        self.parameters = parameters
+        self.options = options if isinstance(options, tuple) else (options,)
+        self.kwoptions = kwoptions
         self.packages = {}
         self.label_pos = label_pos
         self.label = label
@@ -73,6 +73,15 @@ class TexEnvironment:
         Builds recursively the environments of the body and converts it to .tex.
         Returns the .tex string of the file.
         """
+        if self.parameters:
+            self.head += f"{{{', '.join(self.parameters)}}}"
+        if self.options or self.kwoptions:
+            kwoptions = ', '.join('='.join((k, str(v))) for k, v in self.kwoptions.items())
+            options = ', '.join(self.options)
+            if kwoptions and options:
+                options += ', '
+            self.head += f"[{options + kwoptions}]"
+
         tex = []
         label = f"\label{{{self.env_name}:{self.label}}}"
         if self.label:
@@ -107,7 +116,7 @@ class Document(TexEnvironment):
         options = list(options)
         for key, value in kwoptions.items():
             options.append(f"{key}={value}")
-        options = '[' + ','.join(options) + ']'
+        options = '[' + ', '.join(options) + ']'
 
         self.header = [f"\documentclass{options}{{{doc_type}}}"]
 
