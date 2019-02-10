@@ -9,3 +9,5 @@ py2tex.code-workspace
 *.synctex.gz
 
 *.cpython*
+
+*.csv
