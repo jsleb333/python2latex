@@ -7,7 +7,7 @@ class Plot(TexEnvironment):
     """
 
     """
-    def __init__(self, *X_Y, plot_name=None, width=r'.8\textwidth', height=r'.45\textwidth', grid=True, marks=False, lines=True, position='h!', as_float_env=True, **kwargs):
+    def __init__(self, *X_Y, plot_name=None, width=r'.8\textwidth', height=r'.45\textwidth', grid=True, marks=False, lines=True, axis_y='left', axis_x='bottom', position='h!', as_float_env=True, **axis_kwoptions):
         """
         Args:
 
@@ -25,7 +25,16 @@ class Plot(TexEnvironment):
         self.tikzpicture = TexEnvironment('tikzpicture')
         self.add_text(self.tikzpicture)
 
-        self.axis = TexEnvironment('axis', width=width, height=height)
+        if grid is True:
+            grid = 'major'
+        elif grid is False:
+            grid = 'none'
+
+        options = ('grid style={dashed,gray!50}',
+                    f'axis y line*={axis_y}',
+                    f'axis x line*={axis_x}',
+                    'axis line style={-latex}')
+        self.axis = TexEnvironment('axis', options=options, width=width, height=height, grid=grid, **axis_kwoptions)
         self.tikzpicture.add_text(self.axis)
         if not marks:
             self.axis.options += ('no marks',)
@@ -55,7 +64,8 @@ class Plot(TexEnvironment):
             line_width = '1.5pt'
 
         self.default_plot_kwoptions = {'line width':line_width,
-                                       'mark size':mark_size}
+                                       'mark size':mark_size,
+                                       }
 
     def add_plot(self, X, Y, *options, **kwoptions):
         options = tuple(opt.replace('_', ' ') for opt in options)
@@ -85,6 +95,8 @@ class Plot(TexEnvironment):
         self.save_to_csv()
         self.build_plots()
 
+        if self.caption and self.as_float_env:
+            self.body.append(f"\caption{{{self.caption}}}")
         return super().build()
 
 
@@ -93,14 +105,17 @@ if __name__ == '__main__':
     import numpy as np
 
     doc = Document('Plot_test', doc_type='article')
+    sec = doc.new_section('Testing plots')
+    sec.add_text("This section tests plots.")
+
     X = np.linspace(0,6,100)
     Y1 = np.sin(X)
     Y2 = np.cos(X)
-    plot = doc.new(Plot(plot_name='plot_test'))
-    plot.caption = 'Plot test'
+    plot = sec.new(Plot(plot_name='plot_test'))
+    plot.caption = 'Plot of the sine and cosine functions.'
 
-    plot.add_plot(X, Y1, 'blue', mark_size='10pt')
-    plot.add_plot(X, Y2, 'orange', line_width='1.2pt')
+    plot.add_plot(X, Y1, 'blue')
+    plot.add_plot(X, Y2, 'orange')
 
     doc.build()
 
