@@ -19,6 +19,8 @@ tex = doc.build() # Builds to tex and compile to pdf
 print(tex) # Prints the tex string that generated the pdf
 ```
 
+![Simple document result](https://github.com/jsleb333/py2tex/blob/master/examples/simple%20document%20example/simple_document_example.jpg)
+
 ### Create a table from a numpy array
 
 This example shows how to generate automatically a table from data taken directly from a numpy array. The module allows to add merged cells easily, to add rules where you want and even to highlight the best value automatically inside a specified area! To ease these operations, the the square brackets ('getitem') operator have been repurposed to select an area of the table instead of returning the actual values contained in the table. Once an area is selected, use the 'multicell', 'add_rule' or 'highlight_best' methods. To get the actual values inside the table, one can use the 'data' attribute of the table.
@@ -51,6 +53,9 @@ table[4,1:].highlight_best('low', 'bold')
 tex = doc.build()
 print(tex)
 ```
+![Table from numpy result](https://github.com/jsleb333/py2tex/blob/master/examples/table%20from%20numpy%20array%20example/table_from_numpy_array_example.jpg)
+
+
 
 ### Create an unsupported environment
 ```python
@@ -69,6 +74,9 @@ align.add_text(r"""e^{i\pi} &= \cos \pi + i \sin \pi\\
 tex = doc.build()
 print(tex)
 ```
+![Unsupported env result](https://github.com/jsleb333/py2tex/blob/master/examples/unsupported%20env%20example/unsupported_env_example.jpg)
+
+
 
 ## How it works
 
