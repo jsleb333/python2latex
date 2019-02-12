@@ -1,11 +1,12 @@
 import setuptools
+from version import version
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="py2tex-jsleb333",
-    version="0.0.1",
+    version=version,
     author="Jean-Samuel Leboeuf",
     author_email="jean-samuel.leboeuf.1@ulaval.ca",
     description="A Python to LaTeX converter",
