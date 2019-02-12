@@ -10,6 +10,11 @@ py2tex.code-workspace
 *.fdb_latexmk
 *.fls
 
+*.csv
+
 *.cpython*
 
+<<<<<<< HEAD
 *.csv
+=======
+>>>>>>> master

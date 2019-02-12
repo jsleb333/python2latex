@@ -112,7 +112,11 @@ class Document(TexEnvironment):
     Has a body, a header and a dict of packages updated recursively with other TexEnvironment nested inside the body.
     The 'build' method writes all text to a .tex file and compiles it to pdf.
     """
+<<<<<<< HEAD
     def __init__(self, filename, doc_type='article', filepath=os.getcwd(), options=(), **kwoptions):
+=======
+    def __init__(self, filename, doc_type='article', filepath='.', options=(), **kwoptions):
+>>>>>>> master
         super().__init__('document')
         self.filename = filename
         self.file = TexFile(filename, filepath)
