@@ -2,6 +2,22 @@
 
 Did you ever feel overwhelmed by the cumbersomeness of LaTeX to produce quality tables and figures? Fear no more, Py2TeX is here! Produce perfect tables automatically and easily, create figures and plots that integrates seamlessly into your tex file, or even write your complete article directly from Python! All that effortlessly (or almost) with Py2TeX. (Plots and figures to come)
 
+## Prerequisites
+
+The package makes use of numpy and assumes a distribution of LaTeX that uses ``pdflatex`` is installed on your computer. Some LaTeX packages are used, such as ``booktabs``, ``tikz``, ``pgfplots`` and ``pgfplotstable``. Your LaTeX distribution should inform you if such package needs to be installed.
+
+## Installation
+
+To install the package on your session, simply clone the repository with
+
+    git clone https://github.com/jsleb333/py2tex.git
+
+then run the command
+
+    pip install .
+
+to make the module known to Python and to be able to import it in any Python shell.
+
 ## Examples
 
 ### Create a simple document

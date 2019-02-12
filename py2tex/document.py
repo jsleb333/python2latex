@@ -20,7 +20,7 @@ class TexFile:
 
     def _compile_to_pdf(self):
         os.chdir(self.filepath)
-        check_call(['pdflatex', self.filename], stdout=DEVNULL, stderr=STDOUT)
+        check_call(['pdflatex', self.filename])#, stdout=DEVNULL, stderr=STDOUT)
 
 
 class TexEnvironment:
