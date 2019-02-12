@@ -96,15 +96,17 @@ class Table(TexEnvironment):
 
         self.data[self.top_left_corner_of_selected_area] = value
 
-    def highlight_best(self, mode='high', highlight='bold'):
+    def highlight_best(self, mode='high', highlight='bold', atol=5e-3, rtol=0):
         """
-        Highlights the best value inside the selected area of the table. Ignores text.
+        Highlights the best value(s) inside the selected area of the table. Ignores text. If multiple values are equal to an absolute tolerance of atol and relative tolerance of rtol, both are highlighted.
 
         Args:
             mode (str, either 'high' or 'low'): Determines what is the best value.
             highlight (str, either 'bold' or 'italic'): The best value will be highlighted following this parameter.
+            atol (float): Absolute tolerance when comparing best.
+            atol (float): Relative tolerance when comparing best.
         """
-        i_best, j_best = None, None
+        best_idx = [(None, None)]
         if mode == 'high':
             best = -np.inf
             value_is_better_than_best = lambda value, best: value > best
@@ -115,14 +117,15 @@ class Table(TexEnvironment):
         for i, row in enumerate(self.data[self.selected_area]):
             for j, value in enumerate(row):
                 if isinstance(value, (float, int)) and value_is_better_than_best(value, best):
-                    i_best, j_best = i, j
+                    best_idx = [(i, j)]
                     best = value
+                elif isinstance(value, (float, int)) and np.isclose(value, best, rtol, atol):
+                    best_idx.append((i, j))
 
-        if i_best is None: return # No best have been found (i.e. no floats or ints in selected area)
+        if best_idx[0][0] is None: return # No best have been found (i.e. no floats or ints in selected area)
         top_i, left_j = self.top_left_corner_of_selected_area
-        i_best += top_i
-        j_best += left_j
-        self.highlights.append((i_best, j_best, highlight))
+        for i, j in best_idx:
+            self.highlights.append((i + top_i, j + left_j, highlight))
 
     def add_rule(self, position='below', trim_right=False, trim_left=False):
         """
@@ -235,6 +238,8 @@ if __name__ == "__main__":
     table = sec.new(Table(shape=(row+1, col+1), alignment='c', float_format='.2f'))
     table.caption = 'test' # Set a caption if desired
     table[1:,1:] = data # Set entries with a slice
+    table[1,1] = 1.0
+    table[1,2] = 0.995
 
     table[2:4,2:4] = 'test' # Set multicell areas with a slice too
     table[0,1:].multicell('Title', h_align='c') # Set a multicell with custom parameters
@@ -243,8 +248,8 @@ if __name__ == "__main__":
     table[0,1:3].add_rule(trim_left=True, trim_right='.3em') # Add rules with parameters where you want
     table[0,3:].add_rule(trim_left='.3em', trim_right=True)
 
-    table[1].highlight_best('low')
-    table[4].highlight_best()
+    table[1].highlight_best()
+    table[4].highlight_best('low')
 
     tex = doc.build()
     # print(tex)
