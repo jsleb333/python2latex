@@ -8,4 +8,7 @@ py2tex.code-workspace
 *.pdf
 *.synctex.gz
 
+*.csv
+
 *.cpython*
+
