@@ -1,3 +1,7 @@
+import os, sys
+sys.path.append(os.getcwd())
+import py2tex
+
 from py2tex import TexEnvironment
 import csv
 from datetime import datetime as dt
@@ -17,6 +21,7 @@ class Plot(TexEnvironment):
         if self.as_float_env:
             self.body.append(r'\centering')
         else:
+            self.options = ()
             self.head, self.tail = '', ''
         self.add_package('tikz')
         self.add_package('pgfplots')
@@ -104,20 +109,21 @@ if __name__ == '__main__':
     from py2tex import Document
     import numpy as np
 
-    doc = Document('Plot_test', doc_type='article')
-    sec = doc.new_section('Testing plots')
-    sec.add_text("This section tests plots.")
+    doc = Document('Plot_test', doc_type='standalone')
+    # sec = doc.new_section('Testing plots')
+    # sec.add_text("This section tests plots.")
 
     X = np.linspace(0,6,100)
     Y1 = np.sin(X)
     Y2 = np.cos(X)
-    plot = sec.new(Plot(plot_name='plot_test'))
+    plot = doc.new(Plot(plot_name='plot_test', as_float_env=False))
     plot.caption = 'Plot of the sine and cosine functions.'
 
     plot.add_plot(X, Y1, 'blue')
     plot.add_plot(X, Y2, 'orange')
 
-    doc.build()
+    tex = doc.build()
+    print(tex)
 
     # import matplotlib.pyplot as plt
     # plt.plot(X, Y1, X, Y2)
