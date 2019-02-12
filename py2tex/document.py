@@ -8,15 +8,19 @@ class TexFile:
     """
     Class that compiles python to tex code. Manages write/read tex.
     """
-    def __init__(self, filename):
+    def __init__(self, filename, filepath):
         self.filename = filename + '.tex'
+        self.filepath = filepath
 
     def save(self, tex):
-        with open(self.filename, 'w', encoding='utf8') as file:
+        os.makedirs(self.filepath, exist_ok=True)
+        filename = os.path.join(self.filepath, self.filename)
+        with open(filename, 'w', encoding='utf8') as file:
             file.write(tex)
 
     def _compile_to_pdf(self):
-        check_call(['pdflatex', self.filename], stdout=DEVNULL, stderr=STDOUT)
+        os.chdir(self.filepath)
+        check_call(['pdflatex', self.filename])#, stdout=DEVNULL, stderr=STDOUT)
 
 
 class TexEnvironment:
@@ -108,10 +112,10 @@ class Document(TexEnvironment):
     Has a body, a header and a dict of packages updated recursively with other TexEnvironment nested inside the body.
     The 'build' method writes all text to a .tex file and compiles it to pdf.
     """
-    def __init__(self, filename, doc_type, *options, **kwoptions):
+    def __init__(self, filename, doc_type='article', filepath='', options=(), **kwoptions):
         super().__init__('document')
         self.filename = filename
-        self.file = TexFile(filename)
+        self.file = TexFile(filename, filepath)
 
         options = list(options)
         for key, value in kwoptions.items():
