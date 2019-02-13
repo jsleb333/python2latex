@@ -1,6 +1,8 @@
 try:
-    from document import Document, TexEnvironment
+    from tex_base import TexFile, TexEnvironment
+    from document import Document
     from table import Table
 except:
-    from .document import Document, TexEnvironment
+    from .tex_base import TexFile, TexEnvironment
+    from .document import Document
     from .table import Table
