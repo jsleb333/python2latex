@@ -44,115 +44,16 @@ class Table(TexEnvironment):
         self.multicells = []
         self.highlights = []
 
-        # By default, whole table is selected
-        self.selected_area = (slice(None), slice(None))
-        self.selected_area_size = self.data.size
-
     def __getitem__(self, idx):
-        self.selected_area = self._convert_idx_to_slice(idx)
-        self.selected_area_size = self.data[self.selected_area].size
-        return self
-
-    def _convert_idx_to_slice(self, idx):
-        if isinstance(idx, tuple):
-            i, j = idx
-        else:
-            i, j = idx, slice(None)
-        if isinstance(i, int):
-            i = slice(i, i+1)
-        if isinstance(j, int):
-            j = slice(j, j+1)
-        return i, j
-
-    @property
-    def top_left_corner_of_selected_area(self):
-        return self.selected_area[0].indices(self.shape[0])[0], self.selected_area[1].indices(self.shape[1])[0]
+        return SelectedArea(self, idx)
 
     def __setitem__(self, idx, value):
-        self[idx] # Selects area
-
-        if isinstance(value, (str, int, float)) and self.selected_area_size > 1:
+        selected_area = self[idx]
+        if isinstance(value, (str, int, float)) and selected_area.size > 1:
             # There are multirows or multicolumns to treat
-            self.multicell(value)
+            selected_area.multicell(value)
         else:
             self.data[idx] = value
-
-    def multicell(self, value, v_align='*', h_align='c', v_shift=None):
-        """
-        Merges the selected area into a single cell.
-
-        Args:
-            value (str, int or float): Value of the cell.
-            v_align (str, ex. '*'): '*' means the same alignment of the other cells in the row. See LaTeX 'multirow' documentation.
-            h_align (str, ex. 'c', 'l' or 'r'): See LaTeX 'multicolumn' documentation.
-            v_shift (str, any valid length of LaTeX): Vertical shift of the text position of multirow merging.
-        """
-        self.add_package('multicol')
-        self.add_package('multirow')
-
-        self.data[self.selected_area] = '' # Erase old value
-        multicell_params = (self.selected_area, v_align, h_align, v_shift)
-        self.multicells.append(multicell_params) # Save position of multiple cells span
-
-        self.data[self.top_left_corner_of_selected_area] = value
-
-    def highlight_best(self, mode='high', highlight='bold', atol=5e-3, rtol=0):
-        """
-        Highlights the best value(s) inside the selected area of the table. Ignores text. If multiple values are equal to an absolute tolerance of atol and relative tolerance of rtol, both are highlighted.
-
-        Args:
-            mode (str, either 'high' or 'low'): Determines what is the best value.
-            highlight (str, either 'bold' or 'italic'): The best value will be highlighted following this parameter.
-            atol (float): Absolute tolerance when comparing best.
-            atol (float): Relative tolerance when comparing best.
-        """
-        best_idx = [(None, None)]
-        if mode == 'high':
-            best = -np.inf
-            value_is_better_than_best = lambda value, best: value > best
-        elif mode == 'low':
-            best = np.inf
-            value_is_better_than_best = lambda value, best: value < best
-
-        for i, row in enumerate(self.data[self.selected_area]):
-            for j, value in enumerate(row):
-                if isinstance(value, (float, int)) and value_is_better_than_best(value, best):
-                    best_idx = [(i, j)]
-                    best = value
-                elif isinstance(value, (float, int)) and np.isclose(value, best, rtol, atol):
-                    best_idx.append((i, j))
-
-        if best_idx[0][0] is None: return # No best have been found (i.e. no floats or ints in selected area)
-        top_i, left_j = self.top_left_corner_of_selected_area
-        for i, j in best_idx:
-            self.highlights.append((i + top_i, j + left_j, highlight))
-
-    def add_rule(self, position='below', trim_right=False, trim_left=False):
-        """
-        Adds a rule below or above the selected area of the table.
-
-        Args:
-            position (str, either 'below' or 'above'): Position of the rule below or above the selected area.
-            trim_left (bool or str): Whether to trim the left end of the rule or not. If True, default trim length is used ('.5em'). If a string, can be any valid LaTeX distance.
-            trim_right (bool or str): Same a trim_left, but for the right end.
-        """
-        r = 'r' if trim_right else ''
-        if isinstance(trim_right, str):
-            r += f"{{{trim_right}}}"
-        l = 'l' if trim_left else ''
-        if isinstance(trim_left, str):
-            l += f"{{{trim_left}}}"
-
-        row_start, row_stop, row_step = self.selected_area[0].indices(self.shape[0])
-        if position == 'below':
-            row = row_stop - 1
-        else:
-            row = row_start - 1
-        col_start, col_stop, col_step = self.selected_area[1].indices(self.shape[1])
-
-        if row not in self.rules:
-            self.rules[row] = []
-        self.rules[row].append((col_start, col_stop, r+l))
 
     def _build_rule(self, start, end, trim):
         if start is None and end is None and not trim:
@@ -161,7 +62,7 @@ class Table(TexEnvironment):
             rule = "\cmidrule"
             if trim:
                 rule += f"({trim})"
-            start, end, step = slice(start, end).indices(self.shape[1])
+            # start, end, step = slice(start, end).indices(self.shape[1])
             rule += f"{{{start+1}-{end}}}"
         return rule
 
@@ -231,7 +132,7 @@ class SelectedArea:
     """
     def __init__(self, table, idx):
         self.table = table
-        self.idx = self._convert_idx_to_slice(idx)
+        self.slices = self._convert_idx_to_slice(idx)
 
     def _convert_idx_to_slice(self, idx):
         if isinstance(idx, tuple):
@@ -243,6 +144,92 @@ class SelectedArea:
         if isinstance(j, int):
             j = slice(j, j+1)
         return i, j
+
+    @property
+    def size(self):
+        return self.table.data[self.slices].size
+
+    @property
+    def idx(self):
+        start_i, stop_i, step_i = self.slices[0].indices(self.table.shape[0])
+        start_j, stop_j, step_j = self.slices[1].indices(self.table.shape[1])
+        return (start_i, start_j), (stop_i, stop_j)
+
+    def add_rule(self, position='below', trim_right=False, trim_left=False):
+        """
+        Adds a rule below or above the selected area of the table.
+
+        Args:
+            position (str, either 'below' or 'above'): Position of the rule below or above the selected area.
+            trim_left (bool or str): Whether to trim the left end of the rule or not. If True, default trim length is used ('.5em'). If a string, can be any valid LaTeX distance.
+            trim_right (bool or str): Same a trim_left, but for the right end.
+        """
+        r = 'r' if trim_right else ''
+        if isinstance(trim_right, str):
+            r += f"{{{trim_right}}}"
+        l = 'l' if trim_left else ''
+        if isinstance(trim_left, str):
+            l += f"{{{trim_left}}}"
+
+        (i_start, j_start), (i_stop, j_stop) = self.idx
+        if position == 'below':
+            i = i_stop - 1
+        else:
+            i = i_start - 1
+
+        if i not in self.table.rules:
+            self.table.rules[i] = []
+        self.table.rules[i].append((j_start, j_stop, r+l))
+
+    def multicell(self, value, v_align='*', h_align='c', v_shift=None):
+        """
+        Merges the selected area into a single cell.
+
+        Args:
+            value (str, int or float): Value of the cell.
+            v_align (str, ex. '*'): '*' means the same alignment of the other cells in the row. See LaTeX 'multirow' documentation.
+            h_align (str, ex. 'c', 'l' or 'r'): See LaTeX 'multicolumn' documentation.
+            v_shift (str, any valid length of LaTeX): Vertical shift of the text position of multirow merging.
+        """
+        self.table.add_package('multicol')
+        self.table.add_package('multirow')
+
+        self.table.data[self.slices] = '' # Erase old value
+        multicell_params = (self.slices, v_align, h_align, v_shift)
+        self.table.multicells.append(multicell_params) # Save position of multiple cells span
+
+        self.table.data[self.idx[0]] = value
+
+    def highlight_best(self, mode='high', highlight='bold', atol=5e-3, rtol=0):
+        """
+        Highlights the best value(s) inside the selected area of the table. Ignores text. If multiple values are equal to an absolute tolerance of atol and relative tolerance of rtol, both are highlighted.
+
+        Args:
+            mode (str, either 'high' or 'low'): Determines what is the best value.
+            highlight (str, either 'bold' or 'italic'): The best value will be highlighted following this parameter.
+            atol (float): Absolute tolerance when comparing best.
+            atol (float): Relative tolerance when comparing best.
+        """
+        best_idx = [(None, None)]
+        if mode == 'high':
+            best = -np.inf
+            value_is_better_than_best = lambda value, best: value > best
+        elif mode == 'low':
+            best = np.inf
+            value_is_better_than_best = lambda value, best: value < best
+
+        for i, row in enumerate(self.table.data[self.slices]):
+            for j, value in enumerate(row):
+                if isinstance(value, (float, int)) and value_is_better_than_best(value, best):
+                    best_idx = [(i, j)]
+                    best = value
+                elif isinstance(value, (float, int)) and np.isclose(value, best, rtol, atol):
+                    best_idx.append((i, j))
+
+        if best_idx[0][0] is None: return # No best have been found (i.e. no floats or ints in selected area)
+        start_i, start_j = self.idx[0]
+        for i, j in best_idx:
+            self.table.highlights.append((i + start_i, j + start_j, highlight))
 
 
 if __name__ == "__main__":
