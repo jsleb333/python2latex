@@ -11,7 +11,6 @@ class Table(TexEnvironment):
     To do so, the brackets access ("__getitem__") have been repurposed to select an area and returns the table with the selected area. To access the actual data inside the table, use the 'data' attribute.
 
     TODO:
-        - Split 'highlight_best' into a 'highlight' method to allow manual highlighting.
         - Maybe: Add a 'insert_row' and 'insert_column' methods.
     """
     def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, **kwargs):
@@ -200,6 +199,18 @@ class SelectedArea:
 
         self.table.data[self.idx[0]] = value
 
+    def highlight(self, highlight='bold'):
+        """
+        Highlights the values inside the selected area.
+
+        Args:
+            highlight (str, either 'bold' or 'italic'): The value will be highlighted following this parameter.
+        """
+        (i_start, j_start), (i_stop, j_stop) = self.idx
+        for i in range(i_start, i_stop):
+            for j in range(j_start, j_stop):
+                self.table.highlights.append((i, j, highlight))
+
     def highlight_best(self, mode='high', highlight='bold', atol=5e-3, rtol=0):
         """
         Highlights the best value(s) inside the selected area of the table. Ignores text. If multiple values are equal to an absolute tolerance of atol and relative tolerance of rtol, both are highlighted.
@@ -229,7 +240,7 @@ class SelectedArea:
         if best_idx[0][0] is None: return # No best have been found (i.e. no floats or ints in selected area)
         start_i, start_j = self.idx[0]
         for i, j in best_idx:
-            self.table.highlights.append((i + start_i, j + start_j, highlight))
+            self.table.highlights.append((i+start_i, j+start_j, highlight))
 
 
 if __name__ == "__main__":
@@ -245,8 +256,9 @@ if __name__ == "__main__":
     table = sec.new(Table(shape=(row+1, col+1), alignment='c', float_format='.2f'))
     table.caption = 'test' # Set a caption if desired
     table[1:,1:] = data # Set entries with a slice
-    table[1,1] = 1.0
-    table[1,2] = 0.995
+    table[1,1] = .6
+    table[1,1:].highlight()
+    # table[1,2] = 0.995
 
     table[2:4,2:4] = 'test' # Set multicell areas with a slice too
     table[0,1:].multicell('Title', h_align='c') # Set a multicell with custom parameters
