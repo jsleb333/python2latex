@@ -131,14 +131,15 @@ class Document(TexEnvironment):
     def __repr__(self):
         return f'Document {self.filename}'
 
-    def set_margins(self, margins, top=None, bottom=None):
+    def set_margins(self, margins='2.5cm', top=None, bottom=None, left=None, right=None):
         self.margins = {'top':margins,
                          'bottom':margins,
-                         'margin':margins}
-        if top is not None:
-            self.margins['top'] = top
-        if bottom is not None:
-            self.margins['bottom'] = bottom
+                         'left':margins,
+                         'right':margins}
+        if top: self.margins['top'] = top
+        if bottom: self.margins['bottom'] = bottom
+        if left: self.margins['left'] = left
+        if right: self.margins['right'] = right
 
         self.packages['geometry'] = ','.join(key+'='+value for key, value in self.margins.items())
 
