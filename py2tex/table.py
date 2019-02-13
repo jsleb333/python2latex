@@ -11,6 +11,7 @@ class Table(TexEnvironment):
     To do so, the brackets access ("__getitem__") have been repurposed to select an area and returns the table with the selected area. To access the actual data inside the table, use the 'data' attribute.
 
     TODO:
+        - Add 'divide_cell' to insert a new sub tabular.
         - Maybe: Add a 'insert_row' and 'insert_column' methods.
     """
     def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, top_rule=True, bottom_rule=True, **kwargs):
@@ -263,6 +264,9 @@ class SelectedArea:
             self.table.highlights.append((i+start_i, j+start_j, highlight))
 
         return self
+
+    def divide_cell(self, shape=(1,1), alignment='c', float_format='.2f'):
+        pass
 
 
 if __name__ == "__main__":
