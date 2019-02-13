@@ -32,6 +32,7 @@ class Table(TexEnvironment):
         if self.as_float_env:
             self.body.append(r'\centering')
         else:
+            self.options = ()
             self.head, self.tail = '', ''
         self.tabular = TexEnvironment('tabular')
         self.add_package('booktabs')
@@ -57,6 +58,9 @@ class Table(TexEnvironment):
             selected_area.multicell(value)
         else:
             self.data[idx] = value
+
+    def __repr__(self):
+        return repr(self.data)
 
     def _build_rule(self, start, end, trim):
         if start is None and end is None and not trim:
@@ -103,10 +107,8 @@ class Table(TexEnvironment):
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
                 if isinstance(value, float):
-                    entry = f'{{value:{self.float_format}}}'.format(value=value)
-                else:
-                    entry = str(value)
-                self.data[i,j] = entry
+                    value = f'{{value:{self.float_format}}}'.format(value=value)
+                self.data[i,j] = build(value)
 
         # Apply highlights
         for i, j, highlight in self.highlights:
@@ -117,10 +119,10 @@ class Table(TexEnvironment):
             self.data[i,j] = command.format(self.data[i,j])
 
         # Build the tabular
-        table_format = np.array([[' & ']*(self.shape[1]-1) + ['\\\\']]*self.shape[0], dtype=str)
+        table_format = np.array([[' & ']*(self.shape[1]-1) + [r'\\']]*self.shape[0], dtype=object)
         table_format = self._apply_multicells(table_format)
         for i, (row, row_format) in enumerate(zip(self.data, table_format)):
-            self.tabular.body.append(''.join(build(item) for pair in zip(row, row_format) for item in pair))
+            self.tabular.body.append(''.join(str(build(item)) for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
                 for rule in self.rules[i]:
                     rule = self._build_rule(*rule)
@@ -152,14 +154,27 @@ class SelectedArea:
         return i, j
 
     @property
+    def data(self):
+        return self.table.data[self.slices]
+    @data.setter
+    def data(self, value):
+        self.table.data[self.slices] = value
+
+    @property
     def size(self):
-        return self.table.data[self.slices].size
+        return self.data.size
 
     @property
     def idx(self):
         start_i, stop_i, step_i = self.slices[0].indices(self.table.shape[0])
         start_j, stop_j, step_j = self.slices[1].indices(self.table.shape[1])
         return (start_i, start_j), (stop_i, stop_j)
+
+    def __repr__(self):
+        return repr(self.data)
+
+    def __str__(self):
+        return str(self.data)
 
     def add_rule(self, position='below', trim_right=False, trim_left=False):
         """
@@ -206,7 +221,7 @@ class SelectedArea:
         self.table.add_package('multicol')
         self.table.add_package('multirow')
 
-        self.table.data[self.slices] = '' # Erase old value
+        self.data = '' # Erase old value
         multicell_params = (self.slices, v_align, h_align, v_shift)
         self.table.multicells.append(multicell_params) # Save position of multiple cells span
 
@@ -250,7 +265,7 @@ class SelectedArea:
             best = np.inf
             value_is_better_than_best = lambda value, best: value < best
 
-        for i, row in enumerate(self.table.data[self.slices]):
+        for i, row in enumerate(self.data):
             for j, value in enumerate(row):
                 if isinstance(value, (float, int)) and value_is_better_than_best(value, best):
                     best_idx = [(i, j)]
@@ -266,42 +281,17 @@ class SelectedArea:
         return self
 
     def divide_cell(self, shape=(1,1), alignment='c', float_format='.2f'):
-        pass
+        """
+        Divides the selected cell in another subtable. Useful for long title to manually cut for example.
 
+        Args:
+            See Table documentation.
 
-if __name__ == "__main__":
-    from py2tex import Document
-    doc = Document(filename='table_from_numpy_array_example', filepath='.', doc_type='article', options=('12pt',))
+        Returns a Table object.
+        """
+        if self.size > 1:
+            raise RuntimeError('Invalid selected area. It should be of size 1.')
 
-    sec = doc.new_section('Testing tables from numpy array')
-    sec.add_text("This section tests tables from numpy array.")
-
-    col, row = 4, 4
-    data = np.random.rand(row, col)
-
-    table = sec.new(Table(shape=(row+1, col+1), alignment='c', float_format='.2f'))
-    # Set a caption if desired
-    table.caption = 'Table from numpy array'
-    # Set entries with a slice directly from a numpy array!
-    table[1:,1:] = data
-
-    # Set multicell areas with a slice too
-    table[2:4,2:4] = 'Array' # The value is stored in the top left cell (here it would be cell (2,2))
-    # Set a multicell with custom parameters
-    table[0,1:].multicell('From', h_align='c')
-    # Chain multiple methods on the same area for easy combinations of operations
-    table[1:,0].multicell('Numpy', v_align='*', v_shift='10pt').highlight('italic')
-
-    # Add rules where you want, as you want
-    table[0,1:3].add_rule(trim_left=True, trim_right='.3em')
-    table[0,3:].add_rule(trim_left='.3em', trim_right=True)
-
-    # Automatically highlight the best value(s) inside the specified slice, ignoring text
-    table[1].highlight_best('low', 'bold') # Whole row 1
-    # Highlights equal or near equal values too!
-    table[4,1] = 1.0
-    table[4,2] = 0.996
-    table[4].highlight_best('high', 'bold') # Whole row 4
-
-    tex = doc.build()
-    print(tex)
+        subtable = Table(shape, alignment, float_format, as_float_env=False, bottom_rule=False, top_rule=False)
+        self.data = subtable
+        return subtable

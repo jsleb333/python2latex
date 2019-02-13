@@ -6,10 +6,10 @@ def build(env):
     """
     Safely builds the environment by calling its method 'build' only if 'env' is not a string.
     """
-    if isinstance(env, str):
-        return env
-    else:
+    if isinstance(env, TexEnvironment):
         return env.build()
+    else:
+        return env
 
 
 class TexFile:
