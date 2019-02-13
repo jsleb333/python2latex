@@ -124,12 +124,9 @@ class TexEnvironment:
                 self.tail = label + '\n' + self.tail
 
         for text_or_env in self.body:
+            tex.append(build(text_or_env))
             if isinstance(text_or_env, TexEnvironment):
-                built_env = text_or_env.build()
-                tex.append(built_env)
                 self.packages.update(text_or_env.packages)
-            else:
-                tex.append(text_or_env)
 
         tex = [self.head] + tex + [self.tail]
         return '\n'.join(tex)

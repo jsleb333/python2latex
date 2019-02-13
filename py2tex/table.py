@@ -1,5 +1,5 @@
 import numpy as np
-from py2tex import TexEnvironment
+from py2tex import TexEnvironment, build
 
 
 class Table(TexEnvironment):
@@ -120,7 +120,7 @@ class Table(TexEnvironment):
         table_format = np.array([[' & ']*(self.shape[1]-1) + ['\\\\']]*self.shape[0], dtype=str)
         table_format = self._apply_multicells(table_format)
         for i, (row, row_format) in enumerate(zip(self.data, table_format)):
-            self.tabular.body.append(''.join(item for pair in zip(row, row_format) for item in pair))
+            self.tabular.body.append(''.join(build(item) for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
                 for rule in self.rules[i]:
                     rule = self._build_rule(*rule)
