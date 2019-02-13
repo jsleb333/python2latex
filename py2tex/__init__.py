@@ -1,6 +1,8 @@
 try:
-    from document import Document, TexEnvironment
+    from tex_base import TexFile, TexEnvironment, build
+    from document import Document
     from table import Table
-except ModuleNotFoundError:
-    from .document import Document, TexEnvironment
+except:
+    from .tex_base import TexFile, TexEnvironment, build
+    from .document import Document
     from .table import Table
