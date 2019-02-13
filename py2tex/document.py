@@ -56,6 +56,14 @@ class TexEnvironment:
         self.label = label
 
     def add_package(self, package, *options, **kwoptions):
+        """
+        Add a package to the preamble. If the package had already been added, the old is removed.
+
+        Args:
+            package (str): The package name.
+            options (tuple of str): Options to pass to the package in brackets.
+            kwoptions (dict of str): Keyword options to pass to the package in brackets.
+        """
         options = f"[{','.join(options)}]" if options else ''
         if kwoptions:
             for key, value in kwoptions.items():
@@ -63,9 +71,22 @@ class TexEnvironment:
         self.packages[package] = options
 
     def add_text(self, text):
+        """
+        Add texts or really any tex commands as a string.
+
+        Args:
+            text (str): Text to add.
+        """
         self.body.append(text)
 
     def new(self, env):
+        """
+        Appends a new environment to the environment then returns it.
+        Args:
+            env (TexEnvironment or subclasses): Environment to append to the current environment.
+
+        Returns env.
+        """
         self.body.append(env)
         return env
 
@@ -112,7 +133,18 @@ class Document(TexEnvironment):
     Has a body, a header and a dict of packages updated recursively with other TexEnvironment nested inside the body.
     The 'build' method writes all text to a .tex file and compiles it to pdf.
     """
-    def __init__(self, filename, doc_type='article', filepath='.', options=(), **kwoptions):
+    def __init__(self, filename, filepath='.', doc_type='article', options=(), **kwoptions):
+        """
+        Args:
+            filename (str): Name of the file without extension.
+            filepath (str): Path where the files will be saved and compiled to pdf.
+            doc_type (str): Any document type LaTeX supports, like 'article', 'standalone', etc.
+            options (tuple of str): Any options that goes between brackets. See template further.
+            kwoptions (keyword options of the document type): Options should be strings. The dict is converted to string when building to tex. See template below.
+
+        The doc_type, options and kwoptions arguments will be compiled in the following way:
+            \documentclass[*options*, *kwoptions*]{doc_type}
+        """
         super().__init__('document')
         self.filename = filename
         self.file = TexFile(filename, filepath)
@@ -132,6 +164,13 @@ class Document(TexEnvironment):
         return f'Document {self.filename}'
 
     def set_margins(self, margins='2.5cm', top=None, bottom=None, left=None, right=None):
+        """
+        Sets margins of the document. Default is 2.5cm on all sides.
+
+        Args:
+            margins (str): Default value for all sides.
+            top, bottom, left, right (str, any valid LaTeX length): Overrides the 'margins' argument with the specified length.
+        """
         self.margins = {'top':margins,
                          'bottom':margins,
                          'left':margins,
@@ -145,6 +184,8 @@ class Document(TexEnvironment):
 
     def new_section(self, name, label=''):
         """
+        Create a new LaTeX section.
+
         Args:
             name (str): Name of the section.
             label (str): Label of the section to refer to.
