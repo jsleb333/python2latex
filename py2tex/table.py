@@ -13,7 +13,7 @@ class Table(TexEnvironment):
     TODO:
         - Maybe: Add a 'insert_row' and 'insert_column' methods.
     """
-    def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, **kwargs):
+    def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, top_rule=True, bottom_rule=True, **kwargs):
         """
         Args:
             shape (tuple of 2 ints): Shape of the table.
@@ -21,9 +21,12 @@ class Table(TexEnvironment):
             float_format (str): Standard Python float formating available.
             as_float_env (bool): If True (default), will wrap a 'tabular' environment with a floating 'table' environment. If False, only the 'tabular' is constructed.
             position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
+            top_rule, bottom_rule (bool): Whether or not the table should have outside rules.
             kwargs: See TexEnvironment keyword arguments.
         """
         self.as_float_env = as_float_env
+        self.top_rule = top_rule
+        self.bottom_rule = bottom_rule
         super().__init__('table', options=position, label_pos='bottom', **kwargs)
         if self.as_float_env:
             self.body.append(r'\centering')
@@ -89,8 +92,11 @@ class Table(TexEnvironment):
 
     def build(self):
         row, col = self.data.shape
-        self.tabular.head += f"{{{''.join(self.alignment)}}}\n\\toprule"
-        self.tabular.tail = '\\bottomrule\n' + self.tabular.tail
+        self.tabular.head += f"{{{''.join(self.alignment)}}}"
+        if self.top_rule:
+            self.tabular.head += "\n\\toprule"
+        if self.bottom_rule:
+            self.tabular.tail = '\\bottomrule\n' + self.tabular.tail
 
         # Format floats
         for i, row in enumerate(self.data):
