@@ -162,6 +162,8 @@ class SelectedArea:
             position (str, either 'below' or 'above'): Position of the rule below or above the selected area.
             trim_left (bool or str): Whether to trim the left end of the rule or not. If True, default trim length is used ('.5em'). If a string, can be any valid LaTeX distance.
             trim_right (bool or str): Same a trim_left, but for the right end.
+
+        Returns self.
         """
         r = 'r' if trim_right else ''
         if isinstance(trim_right, str):
@@ -180,6 +182,8 @@ class SelectedArea:
             self.table.rules[i] = []
         self.table.rules[i].append((j_start, j_stop, r+l))
 
+        return self
+
     def multicell(self, value, v_align='*', h_align='c', v_shift=None):
         """
         Merges the selected area into a single cell.
@@ -189,6 +193,8 @@ class SelectedArea:
             v_align (str, ex. '*'): '*' means the same alignment of the other cells in the row. See LaTeX 'multirow' documentation.
             h_align (str, ex. 'c', 'l' or 'r'): See LaTeX 'multicolumn' documentation.
             v_shift (str, any valid length of LaTeX): Vertical shift of the text position of multirow merging.
+
+        Returns self.
         """
         self.table.add_package('multicol')
         self.table.add_package('multirow')
@@ -199,17 +205,23 @@ class SelectedArea:
 
         self.table.data[self.idx[0]] = value
 
+        return self
+
     def highlight(self, highlight='bold'):
         """
         Highlights the values inside the selected area.
 
         Args:
             highlight (str, either 'bold' or 'italic'): The value will be highlighted following this parameter.
+
+        Returns self.
         """
         (i_start, j_start), (i_stop, j_stop) = self.idx
         for i in range(i_start, i_stop):
             for j in range(j_start, j_stop):
                 self.table.highlights.append((i, j, highlight))
+
+        return self
 
     def highlight_best(self, mode='high', highlight='bold', atol=5e-3, rtol=0):
         """
@@ -220,6 +232,8 @@ class SelectedArea:
             highlight (str, either 'bold' or 'italic'): The best value will be highlighted following this parameter.
             atol (float): Absolute tolerance when comparing best.
             atol (float): Relative tolerance when comparing best.
+
+        Returns self.
         """
         best_idx = [(None, None)]
         if mode == 'high':
@@ -242,6 +256,8 @@ class SelectedArea:
         for i, j in best_idx:
             self.table.highlights.append((i+start_i, j+start_j, highlight))
 
+        return self
+
 
 if __name__ == "__main__":
     from py2tex import Document
@@ -256,13 +272,12 @@ if __name__ == "__main__":
     table = sec.new(Table(shape=(row+1, col+1), alignment='c', float_format='.2f'))
     table.caption = 'test' # Set a caption if desired
     table[1:,1:] = data # Set entries with a slice
-    table[1,1] = .6
-    table[1,1:].highlight()
-    # table[1,2] = 0.995
+    table[1,1] = 1.0
+    table[1,2] = 0.995
 
     table[2:4,2:4] = 'test' # Set multicell areas with a slice too
     table[0,1:].multicell('Title', h_align='c') # Set a multicell with custom parameters
-    table[1:,0].multicell('Types', v_align='*', v_shift='-2pt')
+    table[1:,0].multicell('Types', v_align='*', v_shift='-2pt').highlight()
 
     table[0,1:3].add_rule(trim_left=True, trim_right='.3em') # Add rules with parameters where you want
     table[0,3:].add_rule(trim_left='.3em', trim_right=True)
