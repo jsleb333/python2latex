@@ -225,6 +225,26 @@ class Table(TexEnvironment):
         return super().build()
 
 
+class SelectedArea:
+    """
+    Represents a selected area in a table. Contains a reference to the actual table and methods to apply on an area of the table.
+    """
+    def __init__(self, table, idx):
+        self.table = table
+        self.idx = self._convert_idx_to_slice(idx)
+
+    def _convert_idx_to_slice(self, idx):
+        if isinstance(idx, tuple):
+            i, j = idx
+        else:
+            i, j = idx, slice(None)
+        if isinstance(i, int):
+            i = slice(i, i+1)
+        if isinstance(j, int):
+            j = slice(j, j+1)
+        return i, j
+
+
 if __name__ == "__main__":
     from py2tex import Document
     doc = Document(filename='Test', doc_type='article', options=('12pt',))
