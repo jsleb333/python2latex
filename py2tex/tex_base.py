@@ -1,7 +1,15 @@
 import os
 from subprocess import DEVNULL, STDOUT, check_call
 
-import numpy as np
+
+def build(env):
+    """
+    Safely builds the environment by calling its method 'build' only if 'env' is not a string.
+    """
+    if isinstance(env, str):
+        return env
+    else:
+        return env.build()
 
 
 class TexFile:
