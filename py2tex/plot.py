@@ -72,30 +72,10 @@ class Plot(TexEnvironment):
                                        'mark size':mark_size,
                                        }
 
-    @property
-    def x_max(self):
-        return self.axis.kwoptions['xmax'] if 'xmax' in self.kwoptions else None
-    @x_max.setter
-    def x_max(self, value):
-        self.axis.kwoptions['xmax'] = value
-    @property
-    def x_min(self):
-        return self.axis.kwoptions['xmin'] if 'xmin' in self.kwoptions else None
-    @x_min.setter
-    def x_min(self, value):
-        self.axis.kwoptions['xmin'] = value
-    @property
-    def y_max(self):
-        return self.axis.kwoptions['ymax'] if 'ymax' in self.kwoptions else None
-    @y_max.setter
-    def y_max(self, value):
-        self.axis.kwoptions['ymax'] = value
-    @property
-    def y_min(self):
-        return self.axis.kwoptions['ymin'] if 'ymin' in self.kwoptions else None
-    @y_min.setter
-    def y_min(self, value):
-        self.axis.kwoptions['ymin'] = value
+        x_max = AxisProperty(self.axis, 'xmax')
+        x_min = AxisProperty(self.axis, 'xmax')
+        y_max = AxisProperty(self.axis, 'xmax')
+        y_min = AxisProperty(self.axis, 'xmax')
 
     def add_plot(self, X, Y, *options, **kwoptions):
         options = tuple(opt.replace('_', ' ') for opt in options)
@@ -128,6 +108,18 @@ class Plot(TexEnvironment):
         if self.caption and self.as_float_env:
             self.body.append(f"\caption{{{self.caption}}}")
         return super().build()
+
+
+class AxisProperty:
+    def __init__(self, axis, param_name):
+        self.axis = axis
+        self.param_name = param_name
+
+    def __get__(self):
+        return self.axis.kwoptions[self.param_name] if self.param_name in self.kwoptions else None
+
+    def __set__(self, value):
+        self.axis.kwoptions[self.param_name] = value
 
 
 if __name__ == '__main__':
