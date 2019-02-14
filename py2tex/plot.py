@@ -90,7 +90,7 @@ class Plot(TexEnvironment):
         elif isinstance(lines, str):
             line_width = lines
         else:
-            line_width = '1.5pt'
+            line_width = '1.25pt'
 
         self.default_plot_kwoptions = {'line width':line_width,
                                        'mark size':mark_size,
@@ -106,6 +106,8 @@ class Plot(TexEnvironment):
     y_ticks = AxisTicksProperty('ytick')
     x_ticks_labels = AxisTicksLabelsProperty('xticklabels')
     y_ticks_labels = AxisTicksLabelsProperty('yticklabels')
+
+    legend_position = AxisProperty('legend pos')
 
     def add_plot(self, X, Y, *options, legend=None, **kwoptions):
         options = tuple(opt.replace('_', ' ') for opt in options)
@@ -158,6 +160,7 @@ if __name__ == '__main__':
 
     plot.add_plot(X, Y1, 'blue', legend='sine')
     plot.add_plot(X, Y2, 'orange', legend='cosine')
+    plot.legend_position = 'south east'
 
     plot.x_min = 0
     plot.y_min = -1
