@@ -7,6 +7,29 @@ import csv
 from datetime import datetime as dt
 
 
+class AxisProperty:
+    def __init__(self, param_name):
+        self.param_name = param_name
+
+    def __get__(self, obj, cls=None):
+        return obj.axis.kwoptions[self.param_name] if self.param_name in obj.axis.kwoptions else None
+
+    def __set__(self, obj, value):
+        obj.axis.kwoptions[self.param_name] = value
+
+
+class AxisTicksProperty(AxisProperty):
+    def __set__(self, obj, value):
+        value = '{' + ','.join(f"{v:.3f}" for v in value) + '}'
+        obj.axis.kwoptions[self.param_name] = value
+
+
+class AxisTicksLabelsProperty(AxisProperty):
+    def __set__(self, obj, value):
+        value = '{' + ','.join(value) + '}'
+        obj.axis.kwoptions[self.param_name] = value
+
+
 class Plot(TexEnvironment):
     """
 
@@ -72,10 +95,16 @@ class Plot(TexEnvironment):
                                        'mark size':mark_size,
                                        }
 
-        x_max = AxisProperty(self.axis, 'xmax')
-        x_min = AxisProperty(self.axis, 'xmax')
-        y_max = AxisProperty(self.axis, 'xmax')
-        y_min = AxisProperty(self.axis, 'xmax')
+    x_max = AxisProperty('xmax')
+    x_min = AxisProperty('xmin')
+    y_max = AxisProperty('ymax')
+    y_min = AxisProperty('ymin')
+    x_label = AxisProperty('xlabel')
+    y_label = AxisProperty('ylabel')
+    x_ticks = AxisTicksProperty('xtick')
+    y_ticks = AxisTicksProperty('ytick')
+    x_ticks_labels = AxisTicksLabelsProperty('xticklabels')
+    y_ticks_labels = AxisTicksLabelsProperty('yticklabels')
 
     def add_plot(self, X, Y, *options, **kwoptions):
         options = tuple(opt.replace('_', ' ') for opt in options)
@@ -110,18 +139,6 @@ class Plot(TexEnvironment):
         return super().build()
 
 
-class AxisProperty:
-    def __init__(self, axis, param_name):
-        self.axis = axis
-        self.param_name = param_name
-
-    def __get__(self):
-        return self.axis.kwoptions[self.param_name] if self.param_name in self.kwoptions else None
-
-    def __set__(self, value):
-        self.axis.kwoptions[self.param_name] = value
-
-
 if __name__ == '__main__':
     from py2tex import Document
     import numpy as np
@@ -130,7 +147,7 @@ if __name__ == '__main__':
     # sec = doc.new_section('Testing plots')
     # sec.add_text("This section tests plots.")
 
-    X = np.linspace(0,6,100)
+    X = np.linspace(0,2*np.pi,100)
     Y1 = np.sin(X)
     Y2 = np.cos(X)
     plot = doc.new(Plot(plot_name='plot_test', as_float_env=False))
@@ -139,13 +156,21 @@ if __name__ == '__main__':
     plot.add_plot(X, Y1, 'blue')
     plot.add_plot(X, Y2, 'orange')
 
-    plot.y_max = 1
-    plot.y_min = -1
     plot.x_min = 0
-    plot.x_max = 6
+    plot.y_min = -1
+
+    plot.x_ticks = np.linspace(0,2*np.pi,5)
+    plot.y_ticks = np.linspace(-1,1,9)
+    plot.x_ticks_labels = r'0', r'$\frac{\pi}{2}$', r'$\pi$', r'$\frac{3\pi}{2}$', r'$2\pi$'
+
+    plot.axis.kwoptions['y tick label style'] = '{/pgf/number format/fixed zerofill}'
+    # plot.axis.kwoptions['x tick label style'] = '{/pgf/number format/fixed zerofill}'
+
+    plot.x_label = 'Radians'
+    plot.y_label = 'Projection'
 
     tex = doc.build()
-    print(tex)
+    # print(tex)
 
     # import matplotlib.pyplot as plt
     # plt.plot(X, Y1, X, Y2)

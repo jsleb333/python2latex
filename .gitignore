@@ -7,6 +7,7 @@ py2tex.code-workspace
 *.aux
 *.pdf
 *.synctex.gz
+*.synctex(busy)
 *.fdb_latexmk
 *.fls
 
@@ -14,7 +15,4 @@ py2tex.code-workspace
 
 *.cpython*
 
-<<<<<<< HEAD
 *.csv
-=======
->>>>>>> master
