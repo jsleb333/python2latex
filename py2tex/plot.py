@@ -72,13 +72,38 @@ class Plot(TexEnvironment):
                                        'mark size':mark_size,
                                        }
 
+    @property
+    def x_max(self):
+        return self.axis.kwoptions['xmax'] if 'xmax' in self.kwoptions else None
+    @x_max.setter
+    def x_max(self, value):
+        self.axis.kwoptions['xmax'] = value
+    @property
+    def x_min(self):
+        return self.axis.kwoptions['xmin'] if 'xmin' in self.kwoptions else None
+    @x_min.setter
+    def x_min(self, value):
+        self.axis.kwoptions['xmin'] = value
+    @property
+    def y_max(self):
+        return self.axis.kwoptions['ymax'] if 'ymax' in self.kwoptions else None
+    @y_max.setter
+    def y_max(self, value):
+        self.axis.kwoptions['ymax'] = value
+    @property
+    def y_min(self):
+        return self.axis.kwoptions['ymin'] if 'ymin' in self.kwoptions else None
+    @y_min.setter
+    def y_min(self, value):
+        self.axis.kwoptions['ymin'] = value
+
     def add_plot(self, X, Y, *options, **kwoptions):
         options = tuple(opt.replace('_', ' ') for opt in options)
         kwoptions = {key.replace('_', ' '):value for key, value in kwoptions.items()}
         kwoptions.update({k:v for k, v in self.default_plot_kwoptions.items() if k not in kwoptions})
         self.plots.append((X, Y, options, kwoptions))
 
-    def build_plots(self):
+    def _build_plots(self):
         for i, (X, Y, options, kwoptions) in enumerate(self.plots):
             options = ', '.join(options)
             kwoptions = ', '.join('='.join((k, v)) for k, v in kwoptions.items())
@@ -98,7 +123,7 @@ class Plot(TexEnvironment):
 
     def build(self):
         self.save_to_csv()
-        self.build_plots()
+        self._build_plots()
 
         if self.caption and self.as_float_env:
             self.body.append(f"\caption{{{self.caption}}}")
@@ -121,6 +146,11 @@ if __name__ == '__main__':
 
     plot.add_plot(X, Y1, 'blue')
     plot.add_plot(X, Y2, 'orange')
+
+    plot.y_max = 1
+    plot.y_min = -1
+    plot.x_min = 0
+    plot.x_max = 6
 
     tex = doc.build()
     print(tex)
