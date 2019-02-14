@@ -61,7 +61,8 @@ class Plot(TexEnvironment):
         options = ('grid style={dashed,gray!50}',
                     f'axis y line*={axis_y}',
                     f'axis x line*={axis_x}',
-                    'axis line style={-latex}')
+                    # 'axis line style={-latex}',
+                    )
         self.axis = TexEnvironment('axis', options=options, width=width, height=height, grid=grid, **axis_kwoptions)
         self.tikzpicture.add_text(self.axis)
         if not marks:
@@ -106,19 +107,21 @@ class Plot(TexEnvironment):
     x_ticks_labels = AxisTicksLabelsProperty('xticklabels')
     y_ticks_labels = AxisTicksLabelsProperty('yticklabels')
 
-    def add_plot(self, X, Y, *options, **kwoptions):
+    def add_plot(self, X, Y, *options, legend=None, **kwoptions):
         options = tuple(opt.replace('_', ' ') for opt in options)
         kwoptions = {key.replace('_', ' '):value for key, value in kwoptions.items()}
         kwoptions.update({k:v for k, v in self.default_plot_kwoptions.items() if k not in kwoptions})
-        self.plots.append((X, Y, options, kwoptions))
+        self.plots.append((X, Y, legend, options, kwoptions))
 
     def _build_plots(self):
-        for i, (X, Y, options, kwoptions) in enumerate(self.plots):
+        for i, (X, Y, legend, options, kwoptions) in enumerate(self.plots):
             options = ', '.join(options)
             kwoptions = ', '.join('='.join((k, v)) for k, v in kwoptions.items())
             if options and kwoptions:
                 options += ', '
             self.axis.add_text(f"\\addplot+[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{self.plot_name+'.csv'}}};")
+            if legend:
+                self.axis.add_text(fr"\addlegendentry{{{legend}}}")
 
     def save_to_csv(self):
         with open(self.plot_name + '.csv', 'w', newline='') as file:
@@ -153,8 +156,8 @@ if __name__ == '__main__':
     plot = doc.new(Plot(plot_name='plot_test', as_float_env=False))
     plot.caption = 'Plot of the sine and cosine functions.'
 
-    plot.add_plot(X, Y1, 'blue')
-    plot.add_plot(X, Y2, 'orange')
+    plot.add_plot(X, Y1, 'blue', legend='sine')
+    plot.add_plot(X, Y2, 'orange', legend='cosine')
 
     plot.x_min = 0
     plot.y_min = -1
