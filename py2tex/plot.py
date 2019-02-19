@@ -45,10 +45,13 @@ class Plot(TexEnvironment):
 
     If you know the pgfplots library, all 'axis' environment's parameters can be accessed and modified via the 'self.axis.options' and the 'self.axis.kwoptions' attributes.
     """
-    def __init__(self, *X_Y, plot_name=None, width=r'.8\textwidth', height=r'.45\textwidth', grid=True, marks=False, lines=True, axis_y='left', axis_x='bottom', position='h!', as_float_env=True, **axis_kwoptions):
+    def __init__(self, *X_Y, plot_name=None, plot_path=None, width=r'.8\textwidth', height=r'.45\textwidth', grid=True, marks=False, lines=True, axis_y='left', axis_x='bottom', position='h!', as_float_env=True, **axis_kwoptions):
         """
         Args:
             X_Y (tuple of sequences of points to plot): If only one sequence is passed, it will be considered as the Y components of the plot and the X will goes from 0 to len(Y)-1. If more than one sequence is passed, the sequences are treated in pairs (X,Y) of sequences of points. (This behavior copies matplotlib.pyplot.plot).
+
+            plot_name (str): Name of the plot. Used to save data to a csv.
+            plot_path (str): Path of the plot. Used to save data to a csv. Default is current working directory.
 
             width (str): Width of the figure. Can be any LaTeX length.
             height (str): Height of the figure. Can be any LaTeX length.
@@ -83,25 +86,20 @@ class Plot(TexEnvironment):
         elif grid is False:
             grid = 'none'
 
-        options = ['grid style={dashed,gray!50}',
+        options = ('grid style={dashed,gray!50}',
                     f'axis y line*={axis_y}',
                     f'axis x line*={axis_x}',
                     # 'axis line style={-latex}',
-                    ]
+                    )
         self.axis = TexEnvironment('axis', options=options, width=width, height=height, grid=grid, **axis_kwoptions)
         self.tikzpicture.add_text(self.axis)
         if not marks:
             self.axis.options += ('no marks',)
+            self.axis.options = list(self.axis.options)
 
         self.plot_name = plot_name or f"plot-{dt.now().strftime(r'%Y-%m-%d %Hh%Mm%Ss')}"
+        self.plot_path = plot_path
         self.caption = ''
-
-        iter_X_Y = iter(X_Y)
-        self.plots = []
-        for x, y in zip(iter_X_Y, iter_X_Y):
-            self.add_plot(x, y)
-        if len(X_Y) % 2 != 0: # Copies matplotlib.pyplot.plot() behavior
-            self.add_plot(np.arange(len(X_Y[-1])), X_Y[-1])
 
         if not marks:
             mark_size = '0pt'
@@ -120,6 +118,13 @@ class Plot(TexEnvironment):
         self.default_plot_kwoptions = {'line width':line_width,
                                        'mark size':mark_size,
                                        }
+
+        iter_X_Y = iter(X_Y)
+        self.plots = []
+        for x, y in zip(iter_X_Y, iter_X_Y):
+            self.add_plot(x, y)
+        if len(X_Y) % 2 != 0: # Copies matplotlib.pyplot.plot() behavior
+            self.add_plot(np.arange(len(X_Y[-1])), X_Y[-1])
 
     x_max = AxisProperty('xmax')
     x_min = AxisProperty('xmin')
@@ -141,7 +146,7 @@ class Plot(TexEnvironment):
         Args:
             X (sequence of numbers): X coordinates.
             Y (sequence of numbers): Y coordinates.
-            options (tuple of str): Options for the plot. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+            options (tuple of str): Options for the plot. Colors can be specified here as strings of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
             legend (str): Entry of the plot.
             kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
         """
@@ -161,7 +166,8 @@ class Plot(TexEnvironment):
                 self.axis.add_text(fr"\addlegendentry{{{legend}}}")
 
     def save_to_csv(self):
-        with open(self.plot_name + '.csv', 'w', newline='') as file:
+        filepath = os.path.join(self.plot_path, self.plot_name + '.csv')
+        with open(filepath, 'w', newline='') as file:
             writer = csv.writer(file)
 
             titles = [coor for i in range(len(self.plots)) for coor in (f'x{i}', f'y{i}')]
