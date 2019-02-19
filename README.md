@@ -40,7 +40,7 @@ print(tex) # Prints the tex string that generated the pdf
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src="https://github.com/jsleb333/py2tex/blob/master/examples/simple%20document%20example/simple_document_example.jpg" alt="Simple document" height="600">
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/simple%20document%20example/simple_document_example.jpg" alt="Simple document" height="700">
 </p>
 </details>
 
@@ -98,7 +98,14 @@ table[5].highlight_best('high', 'bold') # Whole row 4
 tex = doc.build()
 print(tex)
 ```
-![Table from numpy result](https://github.com/jsleb333/py2tex/blob/master/examples/table%20from%20numpy%20array%20example/table_from_numpy_array_example.jpg)
+<details>
+<summary>
+<i> Click to unfold result </i>
+</summary>
+<p>
+<img src=https://github.com/jsleb333/py2tex/blob/master/examples/table%20from%20numpy%20array%20example/table_from_numpy_array_example.jpg" alt="Table from numpy result" height="700">
+</p>
+</details>
 
 
 
@@ -123,7 +130,14 @@ plot = doc.new(Plot(X, Y1, X, Y2, plot_path=filepath, as_float_env=False))
 
 tex = doc.build()
 ```
-![Simple plot result](https://github.com/jsleb333/py2tex/blob/master/examples/simple%20plot%20example/simple_plot_example.jpg)
+<details>
+<summary>
+<i> Click to unfold result </i>
+</summary>
+<p>
+<img src=https://github.com/jsleb333/py2tex/blob/master/examples/simple%20plot%20example/simple_plot_example.jpg" alt="Simple plot result">
+</p>
+</details>
 
 
 ### Create a more complex plot
@@ -171,8 +185,14 @@ plot.axis.kwoptions['y tick label style'] = '{/pgf/number format/fixed zerofill}
 
 tex = doc.build()
 ```
-![More complex plot result](https://github.com/jsleb333/py2tex/blob/master/examples/more%20complex%20plot%20example/more_complex_plot_example.jpg)
-
+<details>
+<summary>
+<i> Click to unfold result </i>
+</summary>
+<p>
+<img src=https://github.com/jsleb333/py2tex/blob/master/examples/more%20complex%20plot%20example/more_complex_plot_example.jpg" alt="More complex plot result" height="700">
+</p>
+</details>
 
 ### Create an unsupported environment
 ```python
@@ -191,8 +211,14 @@ align.add_text(r"""e^{i\pi} &= \cos \pi + i \sin \pi\\
 tex = doc.build()
 print(tex)
 ```
-![Unsupported env result](https://github.com/jsleb333/py2tex/blob/master/examples/unsupported%20env%20example/unsupported_env_example.jpg)
-
+<details>
+<summary>
+<i> Click to unfold result </i>
+</summary>
+<p>
+<img src=https://github.com/jsleb333/py2tex/blob/master/examples/unsupported%20env%20example/unsupported_env_example.jpg" alt="Unsupported env result" height="700">
+</p>
+</details>
 
 
 ## How it works
