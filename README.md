@@ -40,7 +40,7 @@ print(tex) # Prints the tex string that generated the pdf
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src="https://github.com/jsleb333/py2tex/blob/master/examples/simple%20document%20example/simple_document_example.jpg" alt="Simple document" height="200">
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/simple%20document%20example/simple_document_example.jpg" alt="Simple document" height="400">
 </p>
 </details>
 
