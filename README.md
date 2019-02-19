@@ -103,7 +103,7 @@ print(tex)
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src=https://github.com/jsleb333/py2tex/blob/master/examples/table%20from%20numpy%20array%20example/table_from_numpy_array_example.jpg" alt="Table from numpy result" height="700">
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/table%20from%20numpy%20array%20example/table_from_numpy_array_example.jpg" alt="Table from numpy result" height="700">
 </p>
 </details>
 
@@ -135,7 +135,7 @@ tex = doc.build()
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src=https://github.com/jsleb333/py2tex/blob/master/examples/simple%20plot%20example/simple_plot_example.jpg" alt="Simple plot result">
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/simple%20plot%20example/simple_plot_example.jpg" alt="Simple plot result">
 </p>
 </details>
 
@@ -190,7 +190,7 @@ tex = doc.build()
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src=https://github.com/jsleb333/py2tex/blob/master/examples/more%20complex%20plot%20example/more_complex_plot_example.jpg" alt="More complex plot result" height="700">
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/more%20complex%20plot%20example/more_complex_plot_example.jpg" alt="More complex plot result" height="700">
 </p>
 </details>
 
@@ -216,7 +216,7 @@ print(tex)
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src=https://github.com/jsleb333/py2tex/blob/master/examples/unsupported%20env%20example/unsupported_env_example.jpg" alt="Unsupported env result" height="700">
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/unsupported%20env%20example/unsupported_env_example.jpg" alt="Unsupported env result" height="700">
 </p>
 </details>
 
