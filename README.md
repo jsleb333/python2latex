@@ -35,7 +35,15 @@ tex = doc.build() # Builds to tex and compile to pdf
 print(tex) # Prints the tex string that generated the pdf
 ```
 
+<details>
+<summary>
+<i> Click to unfold result </i>
+</summary>
+<p>
 ![Simple document result](https://github.com/jsleb333/py2tex/blob/master/examples/simple%20document%20example/simple_document_example.jpg)
+</p>
+</details>
+
 
 ### Create a table from a numpy array
 
