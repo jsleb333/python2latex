@@ -32,12 +32,37 @@ class AxisTicksLabelsProperty(AxisProperty):
 
 class Plot(TexEnvironment):
     """
+    Implements an easy wrapper to plot curves directly into LaTex. Creates a floating figure if wanted and uses 'pgfplots' to draw the curves.
 
+    It aims to be as easy as matplotlib to use, but to have more beautiful default parameters and to produce directly in LaTeX for easy integration into papers.
+
+    Supported options as properties:
+    x_min, x_max, y_min, y_max (number): Sets the limits of the axis.
+    x_label, y_label (str): Labels of the axes.
+    x_ticks, y_ticks (sequence of float): Positions of the ticks on each axis.
+    x_ticks_labels, y_ticks_labels (sequence of str): String to print under each ticks. Should be the same length as x_ticks and y_ticks.
+    legend_position (str): Specifies the corner of the legend. Should be a valid combinaisons of two of 'north', 'west', 'south' and 'east'.
+
+    If you know the pgfplots library, all 'axis' environment's parameters can be accessed and modified via the 'self.axis.options' and the 'self.axis.kwoptions' attributes.
     """
     def __init__(self, *X_Y, plot_name=None, width=r'.8\textwidth', height=r'.45\textwidth', grid=True, marks=False, lines=True, axis_y='left', axis_x='bottom', position='h!', as_float_env=True, **axis_kwoptions):
         """
         Args:
+            X_Y (tuple of sequences of points to plot): If only one sequence is passed, it will be considered as the Y components of the plot and the X will goes from 0 to len(Y)-1. If more than one sequence is passed, the sequences are treated in pairs (X,Y) of sequences of points. (This behavior copies matplotlib.pyplot.plot).
 
+            width (str): Width of the figure. Can be any LaTeX length.
+            height (str): Height of the figure. Can be any LaTeX length.
+
+            grid (bool or str): Whether if the grid if shown on not. If a string, should be one of pgfplots valid argument for 'grid'.
+            marks (bool or str): Whether to plot coordinates with or without marks. If a str, should be the radius of the marks with any LaTeX length.
+            lines (bool or str): Whether to link coordinates with lines or not. If a str, should be the width of the lines with any LaTeX length.
+            axis_x (str, either 'bottom' or 'top'): Where the x axis should appear (bottom or top).
+            axis_y (str, either 'left' or 'right'): Where the y axis should appear (left or right).
+
+            position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
+            as_float_env (bool): If True (default), will wrap a 'tabular' environment with a floating 'table' environment. If False, only the 'tabular' is constructed.
+
+            axis_kwoptions (dict): pgfplots keyword options for the axis. All underscore will be replaced by spaces when converted to LaTeX parameters.
         """
         self.as_float_env = as_float_env
         super().__init__('figure', options=position, label_pos='bottom')
@@ -58,11 +83,11 @@ class Plot(TexEnvironment):
         elif grid is False:
             grid = 'none'
 
-        options = ('grid style={dashed,gray!50}',
+        options = ['grid style={dashed,gray!50}',
                     f'axis y line*={axis_y}',
                     f'axis x line*={axis_x}',
                     # 'axis line style={-latex}',
-                    )
+                    ]
         self.axis = TexEnvironment('axis', options=options, width=width, height=height, grid=grid, **axis_kwoptions)
         self.tikzpicture.add_text(self.axis)
         if not marks:
@@ -110,6 +135,16 @@ class Plot(TexEnvironment):
     legend_position = AxisProperty('legend pos')
 
     def add_plot(self, X, Y, *options, legend=None, **kwoptions):
+        """
+        Adds a plot to the axis.
+
+        Args:
+            X (sequence of numbers): X coordinates.
+            Y (sequence of numbers): Y coordinates.
+            options (tuple of str): Options for the plot. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+            legend (str): Entry of the plot.
+            kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+        """
         options = tuple(opt.replace('_', ' ') for opt in options)
         kwoptions = {key.replace('_', ' '):value for key, value in kwoptions.items()}
         kwoptions.update({k:v for k, v in self.default_plot_kwoptions.items() if k not in kwoptions})
