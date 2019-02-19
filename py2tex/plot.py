@@ -45,7 +45,7 @@ class Plot(TexEnvironment):
 
     If you know the pgfplots library, all 'axis' environment's parameters can be accessed and modified via the 'self.axis.options' and the 'self.axis.kwoptions' attributes.
     """
-    def __init__(self, *X_Y, plot_name=None, plot_path=None, width=r'.8\textwidth', height=r'.45\textwidth', grid=True, marks=False, lines=True, axis_y='left', axis_x='bottom', position='h!', as_float_env=True, **axis_kwoptions):
+    def __init__(self, *X_Y, plot_name=None, plot_path='.', width=r'.8\textwidth', height=r'.45\textwidth', grid=True, marks=False, lines=True, axis_y='left', axis_x='bottom', position='h!', as_float_env=True, **axis_kwoptions):
         """
         Args:
             X_Y (tuple of sequences of points to plot): If only one sequence is passed, it will be considered as the Y components of the plot and the X will goes from 0 to len(Y)-1. If more than one sequence is passed, the sequences are treated in pairs (X,Y) of sequences of points. (This behavior copies matplotlib.pyplot.plot).
@@ -196,7 +196,7 @@ if __name__ == '__main__':
     X = np.linspace(0,2*np.pi,100)
     Y1 = np.sin(X)
     Y2 = np.cos(X)
-    plot = doc.new(Plot(plot_name='plot_test', as_float_env=False))
+    plot = doc.new(Plot(as_float_env=False))
     plot.caption = 'Plot of the sine and cosine functions.'
 
     plot.add_plot(X, Y1, 'blue', legend='sine')
