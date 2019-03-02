@@ -104,16 +104,16 @@ class TexObject:
         label = f"\label{{{self.name}:{self.label}}}"
         if self.label:
             if self.label_pos == 'top':
-                self.head += '\n' + label
+                self.head.append(label)
             else:
-                self.tail = label + '\n' + self.tail
+                self.tail.insert(0, label)
 
         for text_or_obj in self.body:
             tex.append(build(text_or_obj))
             if isinstance(text_or_obj, TexObject):
                 self.packages.update(text_or_obj.packages)
 
-        tex = [self.head] + tex + [self.tail]
+        tex = self.head + tex + self.tail
         return '\n'.join(tex)
 
 
@@ -138,7 +138,7 @@ class TexEnvironment(TexObject):
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
         """
         super().__init__(env_name,
-                         head=f'\\begin{{{env_name}}}', tail=f'\\end{{{env_name}}}',
+                         head=[f'\\begin{{{env_name}}}'], tail=[f'\\end{{{env_name}}}'],
                          label=label, label_pos=label_pos)
 
         self.parameters = parameters
@@ -151,13 +151,13 @@ class TexEnvironment(TexObject):
         Returns the .tex string of the file.
         """
         if self.parameters:
-            self.head += f"{{{', '.join(self.parameters)}}}"
+            self.head[0] += f"{{{', '.join(self.parameters)}}}"
         if self.options or self.kwoptions:
             kwoptions = ', '.join('='.join((k, str(v))) for k, v in self.kwoptions.items())
             options = ', '.join(self.options)
             if kwoptions and options:
                 options += ', '
-            self.head += f"[{options + kwoptions}]"
+            self.head[0] += f"[{options + kwoptions}]"
 
         return super().build()
 

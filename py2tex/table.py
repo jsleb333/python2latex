@@ -33,7 +33,7 @@ class Table(TexEnvironment):
             self.body.append(r'\centering')
         else:
             self.options = ()
-            self.head, self.tail = '', ''
+            self.head, self.tail = [], []
         self.tabular = TexEnvironment('tabular')
         self.add_package('booktabs')
         self.body.append(self.tabular)
@@ -97,11 +97,11 @@ class Table(TexEnvironment):
 
     def build(self):
         row, col = self.data.shape
-        self.tabular.head += f"{{{''.join(self.alignment)}}}"
+        self.tabular.head[0] += f"{{{''.join(self.alignment)}}}"
         if self.top_rule:
-            self.tabular.head += "\n\\toprule"
+            self.tabular.head.append(r"\toprule")
         if self.bottom_rule:
-            self.tabular.tail = '\\bottomrule\n' + self.tabular.tail
+            self.tabular.tail.insert(0, r'\bottomrule')
 
         # Format floats
         for i, row in enumerate(self.data):
