@@ -47,7 +47,7 @@ class TexEnvironment:
         Args:
             env_name (str): Name of the environment.
             parameters (tuple of str): Parameters of the environment, appended inside curly braces {}.
-            options (tuple of str): Options to pass to the environment, appended inside brackets [].
+            options (str or tuple of str): Options to pass to the environment, appended inside brackets [].
             label (str): Label of the environment if needed.
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the environment.
         """
