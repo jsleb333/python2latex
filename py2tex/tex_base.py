@@ -2,14 +2,14 @@ import os
 from subprocess import DEVNULL, STDOUT, check_call
 
 
-def build(env):
+def build(obj):
     """
-    Safely builds the environment by calling its method 'build' only if 'env' is not a string.
+    Safely builds the object by calling its method 'build' only if 'obj' is not a string.
     """
-    if isinstance(env, TexEnvironment):
-        return env.build()
+    if isinstance(obj, TexEnvironment):
+        return obj.build()
     else:
-        return env
+        return obj
 
 
 class TexFile:
@@ -31,34 +31,28 @@ class TexFile:
         check_call(['pdflatex', '-halt-on-error', self.filename], stdout=DEVNULL, stderr=STDOUT)
 
 
-class TexEnvironment:
+class TexObject:
     """
-    Implements a basic TexEnvironment as
-    \begin{env}
-        ...
-    \end{env}
+    Implements a basic Tex object.
 
-    Allows recursive use of environment inside others.
-    Add new environments with the method 'new' and add standard text with 'add_text'.
-    Add LaTeX packages needed for this environment with 'add_package'.
+    Allows recursive use of Tex objects inside others.
+    Add new objects with the method 'new' and add standard text with 'add_text'.
+    Add LaTeX packages needed for this object with 'add_package'.
     """
-    def __init__(self, env_name, *parameters, options=(), label='', label_pos='top', **kwoptions):
+    def __init__(self, obj_name, head=None, tail=None, label='', label_pos='top'):
         """
         Args:
-            env_name (str): Name of the environment.
-            parameters (tuple of str): Parameters of the environment, appended inside curly braces {}.
-            options (str or tuple of str): Options to pass to the environment, appended inside brackets [].
-            label (str): Label of the environment if needed.
-            label_pos (str, either 'top' or 'bottom'): Position of the label inside the environment.
+            obj_name (str): Name of the object.
+            head (list of str or None): Tex text that will appear above the body. Each item in the list must be a valid LaTeX line.
+            tail (list of str or None): Tex text that will appear below the body. Each item in the list must be a valid LaTeX line.
+            label (str): Label of the object if needed.
+            label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
         """
-        self.env_name = env_name
-        self.body = [] # List of Environments or texts
-        self.head = '\\begin{{{env_name}}}'.format(env_name=env_name)
-        self.tail = '\\end{{{env_name}}}'.format(env_name=env_name)
+        self.name = obj_name
+        self.body = [] # List of objects or texts
+        self.head = head or []
+        self.tail = tail or []
 
-        self.parameters = parameters
-        self.options = options if isinstance(options, tuple) else (options,)
-        self.kwoptions = kwoptions
         self.packages = {}
         self.label_pos = label_pos
         self.label = label
@@ -87,19 +81,69 @@ class TexEnvironment:
         """
         self.body.append(text)
 
-    def new(self, env):
+    def new(self, obj):
         """
-        Appends a new environment to the environment then returns it.
+        Appends a new object to the current object then returns it.
         Args:
-            env (TexEnvironment or subclasses): Environment to append to the current environment.
+            obj (TexObject or subclasses): object to append to the current object.
 
-        Returns env.
+        Returns obj.
         """
-        self.body.append(env)
-        return env
+        self.body.append(obj)
+        return obj
 
     def __repr__(self):
-        return f'TexEnvironment {self.env_name}'
+        return f'{self.__name__} {self.name}'
+
+    def build(self):
+        """
+        Builds recursively the objects of the body and converts it to .tex.
+        Returns the .tex string of the file.
+        """
+        tex = []
+        label = f"\label{{{self.name}:{self.label}}}"
+        if self.label:
+            if self.label_pos == 'top':
+                self.head += '\n' + label
+            else:
+                self.tail = label + '\n' + self.tail
+
+        for text_or_obj in self.body:
+            tex.append(build(text_or_obj))
+            if isinstance(text_or_obj, TexObject):
+                self.packages.update(text_or_obj.packages)
+
+        tex = [self.head] + tex + [self.tail]
+        return '\n'.join(tex)
+
+
+class TexEnvironment(TexObject):
+    """
+    Implements a basic TexEnvironment as
+    \begin{env}
+        ...
+    \end{env}
+
+    Allows recursive use of environment inside others.
+    Add new environments with the method 'new' and add standard text with 'add_text'.
+    Add LaTeX packages needed for this environment with 'add_package'.
+    """
+    def __init__(self, env_name, *parameters, options=(), label='', label_pos='top', **kwoptions):
+        """
+        Args:
+            env_name (str): Name of the environment.
+            parameters (tuple of str): Parameters of the environment, appended inside curly braces {}.
+            options (str or tuple of str): Options to pass to the environment, appended inside brackets [].
+            label (str): Label of the environment if needed.
+            label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
+        """
+        super().__init__(env_name,
+                         head=f'\\begin{{{env_name}}}', tail=f'\\end{{{env_name}}}',
+                         label=label, label_pos=label_pos)
+
+        self.parameters = parameters
+        self.options = options if isinstance(options, tuple) else (options,)
+        self.kwoptions = kwoptions
 
     def build(self):
         """
@@ -115,19 +159,5 @@ class TexEnvironment:
                 options += ', '
             self.head += f"[{options + kwoptions}]"
 
-        tex = []
-        label = f"\label{{{self.env_name}:{self.label}}}"
-        if self.label:
-            if self.label_pos == 'top':
-                self.head += '\n' + label
-            else:
-                self.tail = label + '\n' + self.tail
-
-        for text_or_env in self.body:
-            tex.append(build(text_or_env))
-            if isinstance(text_or_env, TexEnvironment):
-                self.packages.update(text_or_env.packages)
-
-        tex = [self.head] + tex + [self.tail]
-        return '\n'.join(tex)
+        return super().build()
 
