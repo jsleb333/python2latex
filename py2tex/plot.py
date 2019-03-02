@@ -2,7 +2,7 @@ import os, sys
 sys.path.append(os.getcwd())
 import py2tex
 
-from py2tex import TexEnvironment
+from py2tex import FloatingFigure, TexObject, TexEnvironment
 import csv
 from datetime import datetime as dt
 
@@ -30,7 +30,7 @@ class AxisTicksLabelsProperty(AxisProperty):
         obj.axis.kwoptions[self.param_name] = value
 
 
-class Plot(TexEnvironment):
+class Plot(FloatingFigure):
     """
     Implements an easy wrapper to plot curves directly into LaTex. Creates a floating figure if wanted and uses 'pgfplots' to draw the curves.
 
@@ -45,7 +45,8 @@ class Plot(TexEnvironment):
 
     If you know the pgfplots library, all 'axis' environment's parameters can be accessed and modified via the 'self.axis.options' and the 'self.axis.kwoptions' attributes.
     """
-    def __init__(self, *X_Y, plot_name=None, plot_path='.', width=r'.8\textwidth', height=r'.45\textwidth', grid=True, marks=False, lines=True, axis_y='left', axis_x='bottom', position='h!', as_float_env=True, **axis_kwoptions):
+
+    def __init__(self, *X_Y, plot_name=None, plot_path='.', width=r'.8\textwidth', height=r'.45\textwidth', grid=True, marks=False, lines=True, axis_y='left', axis_x='bottom', position='h!', as_float_env=True, label='', **axis_kwoptions):
         """
         Args:
             X_Y (tuple of sequences of points to plot): If only one sequence is passed, it will be considered as the Y components of the plot and the X will goes from 0 to len(Y)-1. If more than one sequence is passed, the sequences are treated in pairs (X,Y) of sequences of points. (This behavior copies matplotlib.pyplot.plot).
@@ -64,16 +65,18 @@ class Plot(TexEnvironment):
 
             position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
             as_float_env (bool): If True (default), will wrap a 'tabular' environment with a floating 'table' environment. If False, only the 'tabular' is constructed.
+            label (str): Label of the floating environment.
 
             axis_kwoptions (dict): pgfplots keyword options for the axis. All underscore will be replaced by spaces when converted to LaTeX parameters.
         """
         self.as_float_env = as_float_env
-        super().__init__('figure', options=position, label_pos='bottom')
-        if self.as_float_env:
-            self.body.append(r'\centering')
+        if as_float_env:
+            self.super = FloatingFigure
+            super().__init__(position=position, label=label, label_pos='bottom')
         else:
-            self.options = ()
-            self.head, self.tail = '', ''
+            self.super = TexObject
+            TexObject.__init__(self, '')
+
         self.add_package('tikz')
         self.add_package('pgfplots')
         self.add_package('pgfplotstable')
@@ -182,7 +185,7 @@ class Plot(TexEnvironment):
 
         if self.caption and self.as_float_env:
             self.body.append(f"\caption{{{self.caption}}}")
-        return super().build()
+        return self.super.build(self)
 
 
 if __name__ == '__main__':
@@ -196,7 +199,7 @@ if __name__ == '__main__':
     X = np.linspace(0,2*np.pi,100)
     Y1 = np.sin(X)
     Y2 = np.cos(X)
-    plot = doc.new(Plot(as_float_env=False))
+    plot = doc.new(Plot(plot_name='plot_test', as_float_env=False))
     plot.caption = 'Plot of the sine and cosine functions.'
 
     plot.add_plot(X, Y1, 'blue', legend='sine')
