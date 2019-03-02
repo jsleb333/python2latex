@@ -1,20 +1,19 @@
 import numpy as np
-from py2tex import TexEnvironment, build
+from py2tex import TexEnvironment, build, FloatingTable, TexObject
 
 
-class Table(TexEnvironment):
+class Table(FloatingTable):
     """
-    Implements a floating 'table' environment. Wraps many features for easy usage and flexibility, such as:
+    Implements a (floating) 'table' environment. Wraps many features for easy usage and flexibility, such as:
         - Supports slices to set items.
         - Easy and automatic multirow and multicolumn cells.
         - Automatically highlights best value inside a region of the table.
-    To do so, the brackets access ("__getitem__") have been repurposed to select an area and returns the table with the selected area. To access the actual data inside the table, use the 'data' attribute.
+    To do so, the brackets access [] (__getitem__) has been repurposed to select an area and returns a SelectedArea object. Announced features are defined on SelectedArea objects only. To access the actual data inside the table, use the 'data' attribute with brackets.
 
     TODO:
-        - Add 'divide_cell' to insert a new sub tabular.
         - Maybe: Add a 'insert_row' and 'insert_column' methods.
     """
-    def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, top_rule=True, bottom_rule=True, **kwargs):
+    def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, top_rule=True, bottom_rule=True, label=''):
         """
         Args:
             shape (tuple of 2 ints): Shape of the table.
@@ -23,21 +22,23 @@ class Table(TexEnvironment):
             as_float_env (bool): If True (default), will wrap a 'tabular' environment with a floating 'table' environment. If False, only the 'tabular' is constructed.
             position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
             top_rule, bottom_rule (bool): Whether or not the table should have outside rules.
-            kwargs: See TexEnvironment keyword arguments.
+            label (str): Label of the environment.
         """
         self.as_float_env = as_float_env
-        self.top_rule = top_rule
-        self.bottom_rule = bottom_rule
-        super().__init__('table', options=position, label_pos='bottom', **kwargs)
-        if self.as_float_env:
-            self.body.append(r'\centering')
+        if as_float_env:
+            self.super = FloatingTable
+            super().__init__(position=position, label=label, label_pos='top')
         else:
-            self.options = ()
-            self.head, self.tail = [], []
+            self.super = TexObject
+            TexObject.__init__(self, '')
+
         self.tabular = TexEnvironment('tabular')
         self.add_package('booktabs')
         self.body.append(self.tabular)
         self.caption = ''
+
+        self.top_rule = top_rule
+        self.bottom_rule = bottom_rule
 
         self.shape = shape
         self.alignment = [alignment]*shape[1] if len(alignment) == 1 else alignment
@@ -131,7 +132,7 @@ class Table(TexEnvironment):
 
         if self.caption and self.as_float_env:
             self.body.append(f"\caption{{{self.caption}}}")
-        return super().build()
+        return self.super.build(self)
 
 
 class SelectedArea:
