@@ -43,15 +43,15 @@ class TexObject:
         """
         Args:
             obj_name (str): Name of the object.
-            head (list of str or None): Tex text that will appear above the body. Each item in the list must be a valid LaTeX line.
-            tail (list of str or None): Tex text that will appear below the body. Each item in the list must be a valid LaTeX line.
+            head (str or list of str or None): Tex text that will appear above the body. If a list, each item in the list must be a valid LaTeX line.
+            tail (str or list of str or None): Tex text that will appear below the body. If a list, each item in the list must be a valid LaTeX line.
             label (str): Label of the object if needed.
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
         """
         self.name = obj_name
         self.body = [] # List of objects or texts
-        self.head = head or []
-        self.tail = tail or []
+        self.head = [head] if isinstance(head, str) else (head or [])
+        self.tail = [tail] if isinstance(tail, str) else (tail or [])
 
         self.packages = {}
         self.label_pos = label_pos
@@ -66,11 +66,11 @@ class TexObject:
             options (tuple of str): Options to pass to the package in brackets.
             kwoptions (dict of str): Keyword options to pass to the package in brackets.
         """
-        options = f"[{','.join(options)}]" if options else ''
+        options = list(options)
         if kwoptions:
             for key, value in kwoptions.items():
                 options.append(f"{key}={value}")
-        self.packages[package] = options
+        self.packages[package] = f"[{','.join(options)}]" if options else ''
 
     def add_text(self, text):
         """
@@ -93,7 +93,8 @@ class TexObject:
         return obj
 
     def __repr__(self):
-        return f'{self.__name__} {self.name}'
+        class_name = self.__name__ if '__name__' in self.__dict__ else self.__class__.__name__
+        return f'{class_name} {self.name}'
 
     def build(self):
         """
@@ -102,18 +103,20 @@ class TexObject:
         """
         tex = []
         label = f"\label{{{self.name}:{self.label}}}"
+        head = list(self.head)
+        tail = list(self.tail)
         if self.label:
             if self.label_pos == 'top':
-                self.head.append(label)
+                head.append(label)
             else:
-                self.tail.insert(0, label)
+                tail.insert(0, label)
 
         for text_or_obj in self.body:
             tex.append(build(text_or_obj))
             if isinstance(text_or_obj, TexObject):
                 self.packages.update(text_or_obj.packages)
 
-        tex = self.head + tex + self.tail
+        tex = head + tex + tail
         return '\n'.join(tex)
 
 
