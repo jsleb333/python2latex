@@ -64,14 +64,14 @@ class Table(FloatingTable):
         return repr(self.data)
 
     def _build_rule(self, start, end, trim):
-        if start is None and end is None and not trim:
-            rule = "\midrule"
-        else:
-            rule = "\cmidrule"
-            if trim:
-                rule += f"({trim})"
-            # start, end, step = slice(start, end).indices(self.shape[1])
-            rule += f"{{{start+1}-{end}}}"
+        # if start is None and end is None and not trim:
+        #     rule = "\midrule"
+        # else:
+        rule = "\\cmidrule"
+        if trim:
+            rule += f"({trim})"
+        # start, end, step = slice(start, end).indices(self.shape[1])
+        rule += f"{{{start+1}-{end}}}"
         return rule
 
     def _apply_multicells(self, table_format):
@@ -84,15 +84,15 @@ class Table(FloatingTable):
             cell_shape = table_format[idx].shape
 
             if start_i == stop_i - 1:
-                self.data[start_i, start_j] = f"\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
+                self.data[start_i, start_j] = f"\\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
             else:
                 shift = ''
                 if v_shift:
                     shift = f'[{v_shift}]'
-                self.data[start_i, start_j] = f"\multirow{{{cell_shape[0]}}}{{{v_align}}}{shift}{{{self.data[start_i, start_j]}}}"
+                self.data[start_i, start_j] = f"\\multirow{{{cell_shape[0]}}}{{{v_align}}}{shift}{{{self.data[start_i, start_j]}}}"
 
             if start_j < stop_j - 1 and start_i < stop_i - 1:
-                self.data[start_i, start_j] = f"\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
+                self.data[start_i, start_j] = f"\\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
 
         return table_format
 
@@ -131,7 +131,7 @@ class Table(FloatingTable):
         self.tabular.build()
 
         if self.caption and self.as_float_env:
-            self.body.append(f"\caption{{{self.caption}}}")
+            self.head.append(f"\\caption{{{self.caption}}}")
         return self.super.build(self)
 
 
