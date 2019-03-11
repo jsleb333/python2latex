@@ -72,8 +72,7 @@ class Document(TexEnvironment):
 
         header = list(self.header)
         for package, options in self.packages.items():
-            if options:
-                options = '[' + ', '.join(['='.join([k,v]) if v != '' else str(k) for k, v in options.items()]) + ']'
+            options = '[' + ', '.join(['='.join([k,v]) if v != '' else str(k) for k, v in options.items()]) + ']' if options else ''
             header.append(f"\\usepackage{options}{{{package}}}")
         header = '\n'.join(header)
 

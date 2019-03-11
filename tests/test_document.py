@@ -47,14 +47,14 @@ class TestDocument:
 
     def test_build_with_body_and_packages(self):
         doc = Document('With options', doc_type='standalone', options=['12pt', 'Spam'], egg=42)
-        doc.add_package('tikz', compat='1.13')
+        doc.add_package('tikz')
         sec = doc.new_section('Section', label='Section')
         sec.add_text('Hey')
         assert doc.build(False, False) == (
                 r'''\documentclass[12pt, Spam, egg=42]{standalone}
                 \usepackage[utf8]{inputenc}
                 \usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
-                \usepackage[compat=1.13]{tikz}
+                \usepackage{tikz}
                 \begin{document}
                 \begin{section}{Section}
                 \label{section:Section}
