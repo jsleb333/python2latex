@@ -70,7 +70,7 @@ class TexObject:
         if kwoptions:
             for key, value in kwoptions.items():
                 options.append(f"{key}={value}")
-        self.packages[package] = f"[{','.join(options)}]" if options else ''
+        self.packages[package] = f"[{', '.join(options)}]" if options else ''
 
     def add_text(self, text):
         """
@@ -96,15 +96,15 @@ class TexObject:
         class_name = self.__name__ if '__name__' in self.__dict__ else self.__class__.__name__
         return f'{class_name} {self.name}'
 
-    def build(self):
+    def build(self, head=None, tail=None):
         """
         Builds recursively the objects of the body and converts it to .tex.
         Returns the .tex string of the file.
         """
         tex = []
-        label = f"\label{{{self.name}:{self.label}}}"
-        head = list(self.head)
-        tail = list(self.tail)
+        label = f"\\label{{{self.name}:{self.label}}}"
+        head = head or list(self.head)
+        tail = tail or list(self.tail)
         if self.label:
             if self.label_pos == 'top':
                 head.append(label)
@@ -121,7 +121,7 @@ class TexObject:
 
 
 class TexEnvironment(TexObject):
-    """
+    r"""
     Implements a basic TexEnvironment as
     \begin{env}
         ...
@@ -141,9 +141,8 @@ class TexEnvironment(TexObject):
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
         """
         super().__init__(env_name,
-                         head=[f'\\begin{{{env_name}}}'], tail=[f'\\end{{{env_name}}}'],
+                         head=[rf'\begin{{{env_name}}}'], tail=[rf'\end{{{env_name}}}'],
                          label=label, label_pos=label_pos)
-
         self.parameters = parameters
         self.options = options if isinstance(options, tuple) else (options,)
         self.kwoptions = kwoptions
@@ -153,14 +152,15 @@ class TexEnvironment(TexObject):
         Builds recursively the environments of the body and converts it to .tex.
         Returns the .tex string of the file.
         """
-        if self.parameters:
-            self.head[0] += f"{{{', '.join(self.parameters)}}}"
+        head = list(self.head)
         if self.options or self.kwoptions:
             kwoptions = ', '.join('='.join((k, str(v))) for k, v in self.kwoptions.items())
             options = ', '.join(self.options)
             if kwoptions and options:
                 options += ', '
-            self.head[0] += f"[{options + kwoptions}]"
+            head[0] += f"[{options + kwoptions}]"
+        if self.parameters:
+            head[0] += f"{{{', '.join(self.parameters)}}}"
 
-        return super().build()
+        return super().build(head)
 

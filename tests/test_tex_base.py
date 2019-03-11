@@ -1,14 +1,11 @@
 import pytest
 
-from py2tex.tex_base import TexObject
+from py2tex.tex_base import TexObject, TexEnvironment
 
 
 class TestTexObject:
     def setup(self):
         self.tex_obj = TexObject('DefaultTexObject')
-
-    def test_init(self):
-        assert self.tex_obj.name == 'DefaultTexObject'
 
     def test_add_text(self):
         self.tex_obj.add_text(r"This is raw \LaTeX")
@@ -25,7 +22,7 @@ class TestTexObject:
         options = ('spam', 'egg')
         self.tex_obj.add_package(package_name, 'spam', 'egg', answer=42, question="We don't know")
         assert package_name in self.tex_obj.packages
-        assert self.tex_obj.packages[package_name] == "[spam,egg,answer=42,question=We don't know]"
+        assert self.tex_obj.packages[package_name] == "[spam, egg, answer=42, question=We don't know]"
 
     def test_new(self):
         other_tex_obj = TexObject('Other')
@@ -52,3 +49,20 @@ class TestTexObject:
         assert tex_obj_label.build() == 'head\n\\label{obj_with_label:some_label}\nsome text\ntail'
         tex_obj_label.label_pos = 'bottom'
         assert tex_obj_label.build() == 'head\nsome text\n\\label{obj_with_label:some_label}\ntail'
+
+
+class TestTexEnvironment:
+    def test_build_default(self):
+        assert TexEnvironment('test').build() == '\\begin{test}\n\\end{test}'
+
+    def test_build_with_parameters(self):
+        assert TexEnvironment('test', 'param1', 'param2').build() == '\\begin{test}{param1, param2}\n\\end{test}'
+
+    def test_build_with_options(self):
+        assert TexEnvironment('test', options='option1').build() == '\\begin{test}[option1]\n\\end{test}'
+        assert TexEnvironment('test', options=('option1', 'option2')).build() == '\\begin{test}[option1, option2]\n\\end{test}'
+        assert TexEnvironment('test', options=('spam', 'egg'), answer=42).build() == '\\begin{test}[spam, egg, answer=42]\n\\end{test}'
+
+    def test_build_with_parameters_and_options(self):
+        assert TexEnvironment('test', 'param1', 'param2', options=('spam', 'egg'), answer=42).build() == '\\begin{test}[spam, egg, answer=42]{param1, param2}\n\\end{test}'
+
