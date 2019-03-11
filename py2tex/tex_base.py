@@ -66,11 +66,8 @@ class TexObject:
             options (tuple of str): Options to pass to the package in brackets.
             kwoptions (dict of str): Keyword options to pass to the package in brackets.
         """
-        options = list(options)
-        if kwoptions:
-            for key, value in kwoptions.items():
-                options.append(f"{key}={value}")
-        self.packages[package] = f"[{', '.join(options)}]" if options else ''
+        kwoptions.update({o:'' for o in options})
+        self.packages[package] = kwoptions
 
     def add_text(self, text):
         """

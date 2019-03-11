@@ -16,3 +16,5 @@ py2tex.code-workspace
 *.cpython*
 
 *.csv
+
+tests/.pytest_cache/
