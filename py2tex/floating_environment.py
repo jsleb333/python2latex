@@ -13,7 +13,8 @@ class _FloatingEnvironment(TexEnvironment):
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
         """
         super().__init__(env_name=env_name, options=position, label=label, label_pos=label_pos)
-        self.head.append(r'\centering')
+        if centered:
+            self.head.append(r'\centering')
 
 
 class FloatingFigure(_FloatingEnvironment):
