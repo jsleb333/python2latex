@@ -1,5 +1,5 @@
 import numpy as np
-from py2tex import TexEnvironment, build, FloatingTable, FloatingEnvironmentMixin, TexObject
+from py2tex import TexEnvironment, build, FloatingTable, FloatingEnvironmentMixin
 
 
 class Table(FloatingEnvironmentMixin, super_class=FloatingTable):

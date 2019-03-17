@@ -5,7 +5,7 @@ import os, sys
 sys.path.append(os.getcwd())
 
 import py2tex
-from py2tex import FloatingFigure, FloatingEnvironmentMixin, TexObject, TexEnvironment
+from py2tex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment
 
 
 class AxisProperty:
