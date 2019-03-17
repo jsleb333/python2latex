@@ -38,7 +38,7 @@ class TexObject:
     Allows recursive use of Tex objects inside others.
     Add LaTeX packages needed for this object with 'add_package'.
     """
-    def __init__(self, obj_name, label='', label_pos='top'):
+    def __init__(self, obj_name):
         """
         Args:
             obj_name (str): Name of the object.
