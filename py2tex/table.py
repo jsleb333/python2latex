@@ -1,8 +1,8 @@
 import numpy as np
-from py2tex import TexEnvironment, build, FloatingTable, TexObject
+from py2tex import TexEnvironment, build, FloatingTable, FloatingEnvironmentMixin, TexObject
 
 
-class Table(FloatingTable):
+class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     """
     Implements a (floating) 'table' environment. Wraps many features for easy usage and flexibility, such as:
         - Supports slices to set items.
@@ -24,13 +24,7 @@ class Table(FloatingTable):
             top_rule, bottom_rule (bool): Whether or not the table should have outside rules.
             label (str): Label of the environment.
         """
-        self.as_float_env = as_float_env
-        if as_float_env:
-            self.super = FloatingTable
-            super().__init__(position=position, label=label, label_pos='top')
-        else:
-            self.super = TexObject
-            TexObject.__init__(self, '')
+        super().__init__(as_float_env=as_float_env, position=position, label=label, label_pos='top')
 
         self.tabular = TexEnvironment('tabular')
         self.add_package('booktabs')
@@ -132,7 +126,7 @@ class Table(FloatingTable):
 
         if self.caption and self.as_float_env:
             self.head.append(f"\\caption{{{self.caption}}}")
-        return self.super.build(self)
+        return super().build()
 
 
 class SelectedArea:

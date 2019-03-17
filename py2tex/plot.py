@@ -1,10 +1,11 @@
-import os, sys
-sys.path.append(os.getcwd())
-import py2tex
-
-from py2tex import FloatingFigure, TexObject, TexEnvironment
 import csv
 from datetime import datetime as dt
+import numpy as np
+import os, sys
+sys.path.append(os.getcwd())
+
+import py2tex
+from py2tex import FloatingFigure, FloatingEnvironmentMixin, TexObject, TexEnvironment
 
 
 class AxisProperty:
@@ -30,7 +31,7 @@ class AxisTicksLabelsProperty(AxisProperty):
         obj.axis.kwoptions[self.param_name] = value
 
 
-class Plot(FloatingFigure):
+class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
     """
     Implements an easy wrapper to plot curves directly into LaTex. Creates a floating figure if wanted and uses 'pgfplots' to draw the curves.
 
@@ -69,13 +70,7 @@ class Plot(FloatingFigure):
 
             axis_kwoptions (dict): pgfplots keyword options for the axis. All underscore will be replaced by spaces when converted to LaTeX parameters.
         """
-        self.as_float_env = as_float_env
-        if as_float_env:
-            self.super = FloatingFigure
-            super().__init__(position=position, label=label, label_pos='bottom')
-        else:
-            self.super = TexObject
-            TexObject.__init__(self, '')
+        super().__init__(as_float_env=as_float_env, position=position, label=label, label_pos='bottom')
 
         self.add_package('tikz')
         self.add_package('pgfplots')
@@ -185,7 +180,7 @@ class Plot(FloatingFigure):
 
         if self.caption and self.as_float_env:
             self.body.append(f"\caption{{{self.caption}}}")
-        return self.super.build(self)
+        return super().build()
 
 
 if __name__ == '__main__':
