@@ -5,7 +5,7 @@ class _FloatingEnvironment(TexEnvironment):
     """
     LaTeX floating environment.
     """
-    def __init__(self, env_name, position='h!', label='', label_pos='bottom', centered=True, **kwargs):
+    def __init__(self, env_name, position='h!', label='', label_pos='bottom', centered=True):
         """
         Args:
             position (str, combination of 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility.
@@ -39,3 +39,16 @@ class FloatingTable(_FloatingEnvironment):
             See _FloatingEnvironment arguments.
         """
         super().__init__('table', *args, label_pos=label_pos, **kwargs)
+
+
+class FloatingEnvironmentMixin:
+    def __init__(self, *args, as_float_env=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.as_float_env = as_float_env
+        if not as_float_env:
+            self.head = []
+            self.tail = []
+            self.options = ()
+
+    def __init_subclass__(cls, super_class):
+        cls.__bases__ += (super_class,)

@@ -1,7 +1,8 @@
 import pytest
+from pytest import fixture
 from inspect import cleandoc
 
-from py2tex.floating_environment import _FloatingEnvironment, FloatingTable, FloatingFigure
+from py2tex.floating_environment import _FloatingEnvironment, FloatingTable, FloatingFigure, FloatingEnvironmentMixin
 
 
 class Test_FloatingEnvironment:
@@ -46,3 +47,18 @@ def test_floating_table_label_top():
         some text
         \end{table}
         ''')
+
+@fixture
+def mixed_float_fig():
+    class MixedFloatEnv(FloatingEnvironmentMixin, super_class=FloatingFigure):
+        pass
+    return MixedFloatEnv
+
+def test_floating_environment_mixin(mixed_float_fig):
+    assert mixed_float_fig.__bases__ == (FloatingEnvironmentMixin, FloatingFigure)
+
+def test_floating_environment_mixin_as_float(mixed_float_fig):
+    assert mixed_float_fig(as_float_env=True).build() == FloatingFigure().build()
+
+def test_floating_environment_mixin_not_as_float(mixed_float_fig):
+    assert mixed_float_fig(as_float_env=False).build() == ''
