@@ -222,5 +222,11 @@ def test_table_with_highlight():
 def test_table_with_highlight_best():
     pass
 
+def test_table_with_highlight_best_with_equalities():
+    pass
+
 def test_table_with_divide_cell():
+    pass
+
+def test_table_with_other_float_format():
     pass
