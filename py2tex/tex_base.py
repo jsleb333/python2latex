@@ -98,8 +98,7 @@ class TexEnvironment(TexObject):
             label (str): Label of the environment if needed.
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
         """
-        super().__init__(env_name,
-                         label=label, label_pos=label_pos)
+        super().__init__(env_name)
         self.head = [rf'\begin{{{env_name}}}']
         self.tail = [rf'\end{{{env_name}}}']
 
