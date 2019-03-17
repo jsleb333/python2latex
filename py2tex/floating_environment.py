@@ -21,21 +21,21 @@ class FloatingFigure(_FloatingEnvironment):
     """
     LaTeX floating figure environment.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, label_pos='bottom', **kwargs):
         """
         Args:
             See _FloatingEnvironment arguments.
         """
-        super().__init__('figure', *args, **kwargs)
+        super().__init__('figure', *args, label_pos=label_pos, **kwargs)
 
 
 class FloatingTable(_FloatingEnvironment):
     """
     LaTeX floating table environment.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, label_pos='top', **kwargs):
         """
         Args:
             See _FloatingEnvironment arguments.
         """
-        super().__init__('table', *args, **kwargs)
+        super().__init__('table', *args, label_pos=label_pos, **kwargs)
