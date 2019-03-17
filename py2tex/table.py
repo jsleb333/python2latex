@@ -92,12 +92,6 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
 
     def build(self):
         row, col = self.data.shape
-        self.tabular.head[0] += f"{{{''.join(self.alignment)}}}"
-        if self.top_rule:
-            self.tabular.head.append(r"\toprule")
-        if self.bottom_rule:
-            self.tabular.tail.insert(0, r'\bottomrule')
-
         # Format floats
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
@@ -123,6 +117,12 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                     rule = self._build_rule(*rule)
                     self.tabular.body.append(rule)
         self.tabular.build()
+
+        self.tabular.head.parameters += (''.join(self.alignment),)
+        if self.top_rule:
+            self.tabular.head.append(r"\toprule")
+        if self.bottom_rule:
+            self.tabular.append(r'\bottomrule')
 
         if self.caption and self.as_float_env:
             self.head.append(f"\\caption{{{self.caption}}}")
