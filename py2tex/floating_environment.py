@@ -1,4 +1,4 @@
-from py2tex import TexEnvironment
+from py2tex import TexEnvironment, TexObject
 
 
 class _FloatingEnvironment(TexEnvironment):
@@ -46,8 +46,8 @@ class FloatingEnvironmentMixin:
         super().__init__(*args, **kwargs)
         self.as_float_env = as_float_env
         if not as_float_env:
-            self.head = []
-            self.tail = []
+            self.head = TexObject('')
+            self.tail = TexObject('')
             self.options = ()
 
     def __init_subclass__(cls, super_class):
