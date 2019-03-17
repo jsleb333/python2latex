@@ -179,7 +179,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         self._build_plots()
 
         if self.caption and self.as_float_env:
-            self.body.append(f"\caption{{{self.caption}}}")
+            self.body.append(rf"\caption{{{self.caption}}}")
         return super().build()
 
 
