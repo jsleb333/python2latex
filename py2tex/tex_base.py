@@ -33,29 +33,20 @@ class TexFile:
 
 class TexObject:
     """
-    Implements a basic Tex object.
+    Implements an abstract Tex object.
 
     Allows recursive use of Tex objects inside others.
-    Add new objects with the method 'new' and add standard text with 'add_text'.
     Add LaTeX packages needed for this object with 'add_package'.
     """
-    def __init__(self, obj_name, head=None, tail=None, label='', label_pos='top'):
+    def __init__(self, obj_name, label='', label_pos='top'):
         """
         Args:
             obj_name (str): Name of the object.
-            head (str or list of str or None): Tex text that will appear above the body. If a list, each item in the list must be a valid LaTeX line.
-            tail (str or list of str or None): Tex text that will appear below the body. If a list, each item in the list must be a valid LaTeX line.
-            label (str): Label of the object if needed.
-            label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
         """
         self.name = obj_name
-        self.body = [] # List of objects or texts
-        self.head = [head] if isinstance(head, str) else (head or [])
-        self.tail = [tail] if isinstance(tail, str) else (tail or [])
+        self.body = []
 
         self.packages = {}
-        self.label_pos = label_pos
-        self.label = label
 
     def add_package(self, package, *options, **kwoptions):
         """
@@ -69,51 +60,21 @@ class TexObject:
         kwoptions.update({o:'' for o in options})
         self.packages[package] = kwoptions
 
-    def add_text(self, text):
-        """
-        Add texts or really any tex commands as a string.
-
-        Args:
-            text (str): Text to add.
-        """
-        self.body.append(text)
-
-    def new(self, obj):
-        """
-        Appends a new object to the current object then returns it.
-        Args:
-            obj (TexObject or subclasses): object to append to the current object.
-
-        Returns obj.
-        """
-        self.body.append(obj)
-        return obj
-
     def __repr__(self):
         class_name = self.__name__ if '__name__' in self.__dict__ else self.__class__.__name__
         return f'{class_name} {self.name}'
 
-    def build(self, head=None, tail=None):
+    def build(self):
         """
         Builds recursively the objects of the body and converts it to .tex.
         Returns the .tex string of the file.
         """
         tex = []
-        label = f"\\label{{{self.name}:{self.label}}}"
-        head = head or list(self.head)
-        tail = tail or list(self.tail)
-        if self.label:
-            if self.label_pos == 'top':
-                head.append(label)
-            else:
-                tail.insert(0, label)
-
         for text_or_obj in self.body:
             tex.append(build(text_or_obj))
             if isinstance(text_or_obj, TexObject):
                 self.packages.update(text_or_obj.packages)
 
-        tex = head + tex + tail
         return '\n'.join(tex)
 
 
@@ -138,18 +99,45 @@ class TexEnvironment(TexObject):
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
         """
         super().__init__(env_name,
-                         head=[rf'\begin{{{env_name}}}'], tail=[rf'\end{{{env_name}}}'],
                          label=label, label_pos=label_pos)
+        self.head = [rf'\begin{{{env_name}}}']
+        self.tail = [rf'\end{{{env_name}}}']
+
         self.parameters = parameters
         self.options = options if isinstance(options, tuple) else (options,)
         self.kwoptions = kwoptions
 
-    def build(self):
+        self.label_pos = label_pos
+        self.label = label
+
+    def add_text(self, text):
+        """
+        Add texts or really any tex commands as a string.
+
+        Args:
+            text (str): Text to add.
+        """
+        self.body.append(text)
+
+    def new(self, obj):
+        """
+        Appends a new object to the current object then returns it.
+        Args:
+            obj (TexObject or subclasses): object to append to the current object.
+
+        Returns obj.
+        """
+        self.body.append(obj)
+        return obj
+
+    def build(self, head=None, tail=None):
         """
         Builds recursively the environments of the body and converts it to .tex.
         Returns the .tex string of the file.
         """
-        head = list(self.head)
+        head = head or list(self.head)
+        tail = tail or list(self.tail)
+
         if self.options or self.kwoptions:
             kwoptions = ', '.join('='.join((k, str(v))) for k, v in self.kwoptions.items())
             options = ', '.join(self.options)
@@ -159,5 +147,13 @@ class TexEnvironment(TexObject):
         if self.parameters:
             head[0] += f"{{{', '.join(self.parameters)}}}"
 
-        return super().build(head)
+        if self.label:
+            label = f"\\label{{{self.name}:{self.label}}}"
+            if self.label_pos == 'top':
+                head.append(label)
+            else:
+                tail.insert(0, label)
+        body = super().build()
+        tex = head + [body] + tail if body else head + tail
+        return '\n'.join(tex)
 

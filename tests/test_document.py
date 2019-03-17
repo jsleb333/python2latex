@@ -1,5 +1,6 @@
 import pytest
 from pytest import fixture
+from inspect import cleandoc
 
 from py2tex import TexEnvironment, Document, Section, Subsection
 
@@ -27,30 +28,29 @@ class TestDocument:
         assert isinstance(sec, Section)
 
     def test_build_default(self, default_doc):
-        assert default_doc.build(False, False) == (
-                r'''\documentclass{article}
+        assert default_doc.build(False, False) == cleandoc(
+                r'''
+                \documentclass{article}
                 \usepackage[utf8]{inputenc}
                 \usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
                 \begin{document}
-                \end{document}'''.replace('    ', '')
-            )
+                \end{document}''')
 
     def test_build_with_options(self):
         doc = Document('With options', doc_type='standalone', options=['12pt', 'Spam'], egg=42)
-        assert doc.build(False, False) == (
+        assert doc.build(False, False) == cleandoc(
                 r'''\documentclass[12pt, Spam, egg=42]{standalone}
                 \usepackage[utf8]{inputenc}
                 \usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
                 \begin{document}
-                \end{document}'''.replace('    ', '')
-            )
+                \end{document}''')
 
     def test_build_with_body_and_packages(self):
         doc = Document('With options', doc_type='standalone', options=['12pt', 'Spam'], egg=42)
         doc.add_package('tikz')
         sec = doc.new_section('Section', label='Section')
         sec.add_text('Hey')
-        assert doc.build(False, False) == (
+        assert doc.build(False, False) == cleandoc(
                 r'''\documentclass[12pt, Spam, egg=42]{standalone}
                 \usepackage[utf8]{inputenc}
                 \usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
@@ -60,8 +60,7 @@ class TestDocument:
                 \label{section:Section}
                 Hey
                 \end{section}
-                \end{document}'''.replace('    ', '')
-            )
+                \end{document}''')
 
 
 class TestSection:
