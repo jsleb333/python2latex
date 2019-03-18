@@ -54,6 +54,7 @@ class FloatingEnvironmentMixin:
         """
         Args:
             as_float_env (bool): Whether the environment will be floating or not.
+            args and kwargs: Arguments and keyword arguments of super_class.
         """
         super().__init__(*args, **kwargs)
         self.as_float_env = as_float_env

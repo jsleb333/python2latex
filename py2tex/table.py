@@ -58,13 +58,9 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         return repr(self.data)
 
     def _build_rule(self, start, end, trim):
-        # if start is None and end is None and not trim:
-        #     rule = "\midrule"
-        # else:
         rule = "\\cmidrule"
         if trim:
             rule += f"({trim})"
-        # start, end, step = slice(start, end).indices(self.shape[1])
         rule += f"{{{start+1}-{end}}}"
         return rule
 
