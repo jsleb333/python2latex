@@ -102,7 +102,7 @@ class TexObject:
 
 class TexCommand(TexObject):
     def __init__(self, command, *parameters, options=(), options_pos='second', **kwoptions):
-        """
+        r"""
         Args:
             command (str): Name of the command that will be rendered as '\command'.
             parameters: Parameters of the command, appended inside curly braces {}.
@@ -176,12 +176,27 @@ class TexEnvironment(TexObject):
         self.head = TexCommand('begin', env_name, *parameters, options=options, **kwoptions)
         self.tail = TexCommand('end', env_name)
 
-        self.parameters = parameters
-        self.options = options if isinstance(options, tuple) else (options,)
-        self.kwoptions = kwoptions
-
         self.label_pos = label_pos
         self.label = label
+
+    @property
+    def parameters(self):
+        return self.head.parameters
+    @parameters.setter
+    def parameters(self, value):
+        self.head.parameters = value
+    @property
+    def options(self):
+        return self.head.options
+    @options.setter
+    def options(self, value):
+        self.head.options = value
+    @property
+    def kwoptions(self):
+        return self.head.kwoptions
+    @kwoptions.setter
+    def kwoptions(self, value):
+        self.head.kwoptions = value
 
     def new(self, obj):
         """
@@ -209,5 +224,5 @@ class TexEnvironment(TexObject):
             else:
                 body += label
 
-        return '\n'.join([head, body, tail] if body else [head, tail])
+        return '\n'.join([part for part in [head, body, tail] if part])
 
