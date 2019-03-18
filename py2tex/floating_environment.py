@@ -42,7 +42,19 @@ class FloatingTable(_FloatingEnvironment):
 
 
 class FloatingEnvironmentMixin:
+    """
+    Makes an environment optionally floatable.
+    Should be inherited and a 'super_class' parameter should be included. 'super_class' should be a FloatingEnvironment class.
+
+    Example:
+    >>> class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
+    ...     pass
+    """
     def __init__(self, *args, as_float_env=True, **kwargs):
+        """
+        Args:
+            as_float_env (bool): Whether the environment will be floating or not.
+        """
         super().__init__(*args, **kwargs)
         self.as_float_env = as_float_env
         if not as_float_env:
