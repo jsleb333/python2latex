@@ -101,18 +101,18 @@ class TexObject:
 
 
 class TexCommand(TexObject):
-    def __init__(self, command, *parameters, options=(), options_pos='second', **kwoptions):
+    def __init__(self, command, *parameters, options=list(), options_pos='second', **kwoptions):
         r"""
         Args:
             command (str): Name of the command that will be rendered as '\command'.
             parameters: Parameters of the command, appended inside curly braces {}.
-            options (str or tuple of str): Options to pass to the command, appended inside brackets [].
+            options (str or list of str): Options to pass to the command, appended inside brackets [].
             options_pos (str, either 'first', 'second' or 'last'): Position of the options with respect to the parameters.
             kwoptions (dict of str): Keyword options to pass to the command, appended inside the same brackets as options.
         """
         super().__init__(command)
         self.command = command
-        self.options = options if isinstance(options, tuple) else (options,)
+        self.options = list(options) if isinstance(options, (tuple, list)) else [options]
         self.parameters = list(parameters)
         self.kwoptions = kwoptions
         self.options_pos = options_pos
@@ -176,27 +176,12 @@ class TexEnvironment(TexObject):
         self.head = TexCommand('begin', env_name, *parameters, options=options, **kwoptions)
         self.tail = TexCommand('end', env_name)
 
+        self.parameters = self.head.parameters
+        self.options = self.head.options
+        self.kwoptions = self.head.kwoptions
+
         self.label_pos = label_pos
         self.label = label
-
-    @property
-    def parameters(self):
-        return self.head.parameters
-    @parameters.setter
-    def parameters(self, value):
-        self.head.parameters = value
-    @property
-    def options(self):
-        return self.head.options
-    @options.setter
-    def options(self, value):
-        self.head.options = value
-    @property
-    def kwoptions(self):
-        return self.head.kwoptions
-    @kwoptions.setter
-    def kwoptions(self, value):
-        self.head.kwoptions = value
 
     def new(self, obj):
         """
@@ -225,4 +210,3 @@ class TexEnvironment(TexObject):
                 body += label
 
         return '\n'.join([part for part in [head, body, tail] if part])
-

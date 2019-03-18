@@ -92,8 +92,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         self.axis = TexEnvironment('axis', options=options, width=width, height=height, grid=grid, **axis_kwoptions)
         self.tikzpicture.add_text(self.axis)
         if not marks:
-            self.axis.options += ('no marks',)
-            self.axis.options = list(self.axis.options)
+            self.axis.options += ['no marks',]
 
         self.plot_name = plot_name or f"plot-{dt.now().strftime(r'%Y-%m-%d %Hh%Mm%Ss')}"
         self.plot_path = plot_path
