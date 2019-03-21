@@ -2,6 +2,31 @@ from functools import wraps
 from py2tex import TexObject, TexCommand, build
 
 
+class Begin(TexCommand):
+    def __init__(self, environment, *parameters, options=list(), options_pos='second', **kwoptions):
+        return super().__init__('begin', environment, *parameters, options=options, options_pos=options_pos, **kwoptions)
+
+
+class End(TexCommand):
+    def __init__(self, environment):
+        return super().__init__('end', environment)
+
+
+class Label(TexCommand):
+    def __init__(self, label, prefix=None):
+        self.label = label
+        self.prefix = prefix
+        return super().__init__('label')
+
+    def build(self):
+        prefix = f'{self.prefix}:' if self.prefix else ''
+        if self.label:
+            self.parameters = (prefix + self.label,)
+            return super().build()
+        else:
+            return ''
+
+
 class TexEnvironment(TexObject):
     r"""
     Implements a basic TexEnvironment as
@@ -23,15 +48,16 @@ class TexEnvironment(TexObject):
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
         """
         super().__init__(env_name)
-        self.head = TexCommand('begin', env_name, *parameters, options=options, **kwoptions)
-        self.tail = TexCommand('end', env_name)
+        self.head = Begin(env_name, *parameters, options=options, **kwoptions)
+        self.tail = End(env_name)
 
         self.parameters = self.head.parameters
         self.options = self.head.options
         self.kwoptions = self.head.kwoptions
 
         self.label_pos = label_pos
-        self.label = label
+        self._label = Label(label, env_name)
+        self.label = self._label.label
 
     def add_text(self, text):
         """
@@ -110,16 +136,13 @@ class TexEnvironment(TexObject):
         """
         tex = [self.head]
 
-        if self.label:
-            label = f"\\label{{{self.name}:{self.label}}}"
-
-        if self.label and self.label_pos == 'top':
-            tex.append(label)
+        if self.label_pos == 'top':
+            tex.append(self._label)
 
         tex.append(self.build_body())
 
         if self.label and self.label_pos == 'bottom':
-            tex.append(label)
+            tex.append(self._label)
 
         tex.append(self.tail)
 
