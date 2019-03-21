@@ -2,6 +2,11 @@ import numpy as np
 from py2tex import TexEnvironment, TexCommand, build, FloatingTable, FloatingEnvironmentMixin
 
 
+"""
+TODO:
+    - Convert 'multicell' into Multirow and Multicol Tex commands
+"""
+
 class Rule(TexCommand):
     def __init__(self, start, end, trim):
         self.start = start
