@@ -2,7 +2,11 @@ import pytest
 from pytest import fixture
 from inspect import cleandoc
 
-from py2tex.floating_environment import _FloatingEnvironment, FloatingTable, FloatingFigure, FloatingEnvironmentMixin
+from py2tex.floating_environment import *
+from py2tex.floating_environment import _FloatingEnvironment
+
+def test_Caption():
+    assert Caption('some caption').build() == r'\caption{some caption}'
 
 
 class Test_FloatingEnvironment:
@@ -21,6 +25,18 @@ class Test_FloatingEnvironment:
             r'''
             \begin{with_options}[t]
             \end{with_options}
+            ''')
+
+    def test_floating_environment_with_caption(self):
+        env = _FloatingEnvironment('with_caption', label='float_env')
+        env.caption = 'float caption'
+        assert env.build() == cleandoc(
+            r'''
+            \begin{with_caption}[h!]
+            \centering
+            \caption{float caption}
+            \label{with_caption:float_env}
+            \end{with_caption}
             ''')
 
 
