@@ -116,12 +116,12 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
 
         self.tabular.head.parameters += (''.join(self.alignment),)
         if self.top_rule:
-            self.tabular.head.append(r"\toprule")
+            self.tabular.body.insert(0, r"\toprule")
         if self.bottom_rule:
             self.tabular.append(r'\bottomrule')
 
         if self.caption and self.as_float_env:
-            self.head.append(f"\\caption{{{self.caption}}}")
+            self.body.insert(1, f"\\caption{{{self.caption}}}")
         return super().build()
 
 

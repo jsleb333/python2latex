@@ -35,9 +35,8 @@ class TexFile:
 class TexObject:
     """
     Implements an abstract Tex object.
-
-    Allows recursive use of Tex objects inside others.
-    Add LaTeX packages needed for this object with 'add_package'.
+    Provides a 'add_package' method to add packages needed for this object.
+    Inherited classes should redefine the 'build' method.
     """
     def __init__(self, obj_name):
         """
@@ -65,40 +64,11 @@ class TexObject:
         class_name = self.__name__ if '__name__' in self.__dict__ else self.__class__.__name__
         return f'{class_name} {self.name}'
 
-    def add_text(self, text):
-        """
-        Adds text (or a tex command) as a string or another TexObject to be appended.
-
-        Args:
-            text (str): Text to add.
-        """
-        self.append(text)
-
-    def append(self, text):
-        """
-        Adds text (or a tex command) as a string or another TexObject to be appended.
-
-        Args:
-            text (str): Text to add.
-        """
-        self.body.append(text)
-
-    def __iadd__(self, other):
-        self.append(other)
-        return self
-
     def build(self):
         """
-        Builds recursively the objects of the body and converts it to .tex.
-        Returns the .tex string of the file.
+        Builds the object. Should return a valid LaTeX string.
         """
-        tex = []
-        for text_or_obj in self.body:
-            tex.append(build(text_or_obj))
-            if isinstance(text_or_obj, TexObject):
-                self.packages.update(text_or_obj.packages)
-
-        return '\n'.join(tex)
+        return ''
 
 
 class TexCommand(TexObject):
@@ -184,6 +154,28 @@ class TexEnvironment(TexObject):
         self.label_pos = label_pos
         self.label = label
 
+    def add_text(self, text):
+        """
+        Adds text (or a tex command) as a string or another TexObject to be appended.
+
+        Args:
+            text (str): Text to add.
+        """
+        self.append(text)
+
+    def append(self, text):
+        """
+        Adds text (or a tex command) as a string or another TexObject to be appended.
+
+        Args:
+            text (str): Text to add.
+        """
+        self.body.append(text)
+
+    def __iadd__(self, other):
+        self.append(other)
+        return self
+
     def new(self, obj):
         """
         Appends a new object to the current object then returns it.
@@ -237,14 +229,28 @@ class TexEnvironment(TexObject):
         Builds recursively the environments of the body and converts it to .tex.
         Returns the .tex string of the file.
         """
-        body = super().build()
-        head = self.head.build()
-        tail = self.tail.build()
-        if self.label:
-            label = f"\n\\label{{{self.name}:{self.label}}}"
-            if self.label_pos == 'top':
-                head += label
-            else:
-                body += label
+        tex = [self.head]
 
-        return '\n'.join([part for part in [head, body, tail] if part])
+        if self.label:
+            label = f"\\label{{{self.name}:{self.label}}}"
+
+        if self.label and self.label_pos == 'top':
+            tex.append(label)
+
+        tex.append(self.build_body())
+
+        if self.label and self.label_pos == 'bottom':
+            tex.append(label)
+
+        tex.append(self.tail)
+
+        tex = [build(part) for part in tex]
+        return '\n'.join([part for part in tex if part])
+
+    def build_body(self):
+        body = []
+        for text_or_obj in self.body:
+            body.append(build(text_or_obj))
+            if isinstance(text_or_obj, TexObject):
+                self.packages.update(text_or_obj.packages)
+        return '\n'.join(body)

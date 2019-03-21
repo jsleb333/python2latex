@@ -8,21 +8,6 @@ class TestTexObject:
     def setup(self):
         self.tex_obj = TexObject('DefaultTexObject')
 
-    def test_add_text(self):
-        tex_obj = TexObject('test')
-        tex_obj.add_text(r"This is raw \LaTeX")
-        assert tex_obj.body == [r"This is raw \LaTeX"]
-
-    def test_append(self):
-        tex_obj = TexObject('test')
-        tex_obj.append(r"This is raw \LaTeX")
-        assert tex_obj.body == [r"This is raw \LaTeX"]
-
-    def test_iadd(self):
-        tex_obj = TexObject('test')
-        tex_obj += r"This is raw \LaTeX"
-        assert tex_obj.body == [r"This is raw \LaTeX"]
-
     def test_add_package_without_options(self):
         package_name = 'package'
         self.tex_obj.add_package(package_name)
@@ -65,6 +50,21 @@ class TestTexCommand:
 
 
 class TestTexEnvironment:
+    def test_add_text(self):
+        env = TexEnvironment('test')
+        env.add_text(r"This is raw \LaTeX")
+        assert env.body == [r"This is raw \LaTeX"]
+
+    def test_append(self):
+        env = TexEnvironment('test')
+        env.append(r"This is raw \LaTeX")
+        assert env.body == [r"This is raw \LaTeX"]
+
+    def test_iadd(self):
+        env = TexEnvironment('test')
+        env += r"This is raw \LaTeX"
+        assert env.body == [r"This is raw \LaTeX"]
+
     def test_new(self):
         env = TexEnvironment('test')
         other_env = TexEnvironment('other')
