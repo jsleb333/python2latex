@@ -101,21 +101,21 @@ class TexCommand(TexObject):
                 options += ', '
             options = f'[{options}{kwoptions}]'
         if self.parameters:
-            parameters = f"{{{'}{'.join(self.parameters)}}}"
+            parameters = f"{{{'}{'.join([build(param) for param in self.parameters])}}}"
 
         if self.options_pos == 'first':
             command += options
             if self.parameters:
-                command += f"{{{'}{'.join(self.parameters)}}}"
+                command += f"{{{'}{'.join([build(param) for param in self.parameters])}}}"
         if self.options_pos == 'second':
             if self.parameters:
-                command += f'{{{self.parameters[0]}}}'
+                command += f'{{{build(self.parameters[0])}}}'
             command += options
             if len(self.parameters) > 1:
-                command += f"{{{'}{'.join(self.parameters[1:])}}}"
+                command += f"{{{'}{'.join([build(param) for param in self.parameters[1:]])}}}"
         elif self.options_pos == 'last':
             if self.parameters:
-                command += f"{{{'}{'.join(self.parameters)}}}"
+                command += f"{{{'}{'.join([build(param) for param in self.parameters])}}}"
             command += options
 
         return command
