@@ -12,7 +12,7 @@ class end(TexCommand):
         return super().__init__('end', environment)
 
 
-class label(TexCommand):
+class Label(TexCommand):
     def __init__(self, label, prefix=None):
         self.label = label
         self.prefix = prefix
@@ -56,7 +56,7 @@ class TexEnvironment(TexObject):
         self.kwoptions = self.head.kwoptions
 
         self.label_pos = label_pos
-        self._label = label(label, env_name)
+        self._label = Label(label, env_name)
         self.label = self._label.label
 
     def add_text(self, text):
