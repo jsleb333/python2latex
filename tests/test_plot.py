@@ -1,13 +1,14 @@
 import pytest
 from pytest import fixture
 from inspect import cleandoc
+import os
 
 from py2tex.plot import Plot
 
 
 class TestPlot:
     def test_default_plot(self):
-        assert Plot().build() == cleandoc(
+        assert Plot(plot_name='plot_test').build() == cleandoc(
             r'''
             \begin{figure}[h!]
             \centering
@@ -17,4 +18,4 @@ class TestPlot:
             \end{tikzpicture}
             \end{figure}
             ''')
-
+        os.remove('plot_test.csv')
