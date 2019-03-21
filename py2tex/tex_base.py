@@ -7,7 +7,7 @@ def build(obj):
     """
     Safely builds the object by calling its method 'build' only if 'obj' is not a string.
     """
-    if isinstance(obj, TexEnvironment):
+    if isinstance(obj, TexObject):
         return obj.build()
     else:
         return obj
