@@ -65,13 +65,42 @@ class TestTexCommand:
 
 
 class TestTexEnvironment:
-
     def test_new(self):
         env = TexEnvironment('test')
         other_env = TexEnvironment('other')
         returned_object = env.new(other_env)
         assert returned_object is other_env
         assert env.body[0] is other_env
+
+    def test_contains(self):
+        env = TexEnvironment('test')
+        assert 'spam' not in env
+        new_obj = TexObject('New Object')
+        env.append(new_obj)
+        assert new_obj in env
+
+    def test__bind(self):
+        env = TexEnvironment('test')
+        BindedObject = env.bind(TexObject)
+        assert BindedObject.__name__ == 'BindedTexObject'
+        assert BindedObject.__qualname__ == 'BindedTexObject'
+        assert BindedObject.__doc__ != TexObject.__doc__
+        assert issubclass(BindedObject, TexObject)
+
+    def test_bind_one_object(self):
+        env = TexEnvironment('test')
+        BindedObject = env.bind(TexObject)
+        other = BindedObject('OtherObject')
+        assert other in env
+
+    def test_bind_two_objects(self):
+        env = TexEnvironment('test')
+        class SubTexObj(TexObject): pass
+        BindedObject, BindedSubObject = env.bind(TexObject, SubTexObj)
+        other = BindedObject('OtherObject')
+        subother = BindedSubObject('OtherSubObject')
+        assert other in env
+        assert subother in env
 
     def test_build_default(self):
         assert TexEnvironment('test').build() == '\\begin{test}\n\\end{test}'
@@ -126,4 +155,3 @@ class TestTexEnvironment:
             \begin{test}[spam, egg, answer=42]{param1}{param2}
             \end{test}
             ''')
-
