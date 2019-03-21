@@ -118,5 +118,28 @@ class TexCommand(TexObject):
                 command += f"{{{'}{'.join(self.parameters)}}}"
             command += options
 
-        body = super().build()
-        return '\n'.join([command, body] if body else [command])
+        return command
+
+
+class bold(TexCommand):
+    r"""
+    Applies \textbf{...} command on text.
+    """
+    def __init__(self, text):
+        """
+        Args:
+            text (str): Text to print in bold.
+        """
+        super().__init__('textbf', text)
+
+
+class italic(TexCommand):
+    r"""
+    Applies \textit{...} command on text.
+    """
+    def __init__(self, text):
+        """
+        Args:
+            text (str): Text to print in italic.
+        """
+        super().__init__('textit', text)

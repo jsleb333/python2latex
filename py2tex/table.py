@@ -1,5 +1,6 @@
 import numpy as np
-from py2tex import TexEnvironment, TexCommand, build, FloatingTable, FloatingEnvironmentMixin
+from py2tex import TexEnvironment, TexCommand, build, bold, italic
+from py2tex import FloatingTable, FloatingEnvironmentMixin
 
 
 """
@@ -113,10 +114,10 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         # Apply highlights
         for i, j, highlight in self.highlights:
             if highlight == 'bold':
-                command = "\\textbf{{{0}}}"
+                command = bold
             elif highlight == 'italic':
-                command = "\\textit{{{0}}}"
-            self.data[i,j] = command.format(self.data[i,j])
+                command = italic
+            self.data[i,j] = command(self.data[i,j])
 
         # Build the tabular
         table_format = np.array([[' & ']*(self.shape[1]-1) + [r'\\']]*self.shape[0], dtype=object)
