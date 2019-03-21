@@ -47,3 +47,9 @@ class TestTexCommand:
 
     def test_str(self):
         assert f"{TexCommand('test')}" == r'\test'
+
+def test_bold():
+    assert bold('test').build() == r'\textbf{test}'
+
+def test_italic():
+    assert italic('test').build() == r'\textit{test}'
