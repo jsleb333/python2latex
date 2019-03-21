@@ -1,6 +1,7 @@
 import pytest
 from inspect import cleandoc
 
+from py2tex.tex_environment import *
 from py2tex.tex_base import *
 
 

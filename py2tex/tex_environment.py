@@ -1,5 +1,5 @@
 from functools import wraps
-from py2tex import TexObject, build
+from py2tex import TexObject, TexCommand, build
 
 
 class TexEnvironment(TexObject):
