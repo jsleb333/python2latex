@@ -141,7 +141,7 @@ class TexEnvironment(TexObject):
 
         tex.append(self.build_body())
 
-        if self.label and self.label_pos == 'bottom':
+        if self.label_pos == 'bottom':
             tex.append(self._label)
 
         tex.append(self.tail)
