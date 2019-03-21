@@ -1,20 +1,53 @@
-from py2tex import TexEnvironment, TexObject
+from py2tex import TexEnvironment, TexObject, TexCommand, build
+
+class Caption(TexCommand):
+    def __init__(self, caption):
+        super().__init__('caption', caption)
 
 
 class _FloatingEnvironment(TexEnvironment):
     """
     LaTeX floating environment.
     """
-    def __init__(self, env_name, position='h!', label='', label_pos='bottom', centered=True):
+    def __init__(self, env_name, position='h!', label='', label_pos='bottom', caption='', centered=True):
         """
         Args:
             position (str, combination of 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility.
             label (str): Label of the environment if needed.
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
+            caption (str): Caption of the floating environment.
+            centered (bool): Wheter to center or not the environment.
         """
         super().__init__(env_name=env_name, options=position, label=label, label_pos=label_pos)
-        if centered:
-            self.head.append(r'\centering')
+        self.caption = caption
+        self.centered = centered
+
+    def build(self):
+        """
+        Builds recursively the environments of the body and converts it to .tex.
+        Returns the .tex string of the file.
+        """
+        tex = [self.head]
+
+        if self.centered:
+            tex.append(r'\centering')
+
+        if self.label_pos == 'top':
+            if self.caption:
+                tex.append(Caption(self.caption))
+            tex.append(self._label)
+
+        tex.append(self.build_body())
+
+        if self.label_pos == 'bottom':
+            if self.caption:
+                tex.append(Caption(self.caption))
+            tex.append(self._label)
+
+        tex.append(self.tail)
+
+        tex = [build(part) for part in tex]
+        return '\n'.join([part for part in tex if part])
 
 
 class FloatingFigure(_FloatingEnvironment):
@@ -50,13 +83,14 @@ class FloatingEnvironmentMixin:
     >>> class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     ...     pass
     """
-    def __init__(self, *args, as_float_env=True, **kwargs):
+    def __init__(self, *args, as_float_env=True, centered=True, **kwargs):
         """
         Args:
             as_float_env (bool): Whether the environment will be floating or not.
             args and kwargs: Arguments and keyword arguments of super_class.
         """
-        super().__init__(*args, **kwargs)
+        centered = False if not as_float_env else centered
+        super().__init__(*args, centered=centered, **kwargs)
         self.as_float_env = as_float_env
         if not as_float_env:
             self.head = TexObject('')

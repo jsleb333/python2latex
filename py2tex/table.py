@@ -29,7 +29,6 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         self.tabular = TexEnvironment('tabular')
         self.add_package('booktabs')
         self.body.append(self.tabular)
-        self.caption = ''
 
         self.top_rule = top_rule
         self.bottom_rule = bottom_rule
@@ -120,8 +119,6 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         if self.bottom_rule:
             self.tabular.append(r'\bottomrule')
 
-        if self.caption and self.as_float_env:
-            self.body.insert(1, f"\\caption{{{self.caption}}}")
         return super().build()
 
 
