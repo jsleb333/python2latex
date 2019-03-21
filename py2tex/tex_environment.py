@@ -2,17 +2,17 @@ from functools import wraps
 from py2tex import TexObject, TexCommand, build
 
 
-class Begin(TexCommand):
+class begin(TexCommand):
     def __init__(self, environment, *parameters, options=list(), options_pos='second', **kwoptions):
         return super().__init__('begin', environment, *parameters, options=options, options_pos=options_pos, **kwoptions)
 
 
-class End(TexCommand):
+class end(TexCommand):
     def __init__(self, environment):
         return super().__init__('end', environment)
 
 
-class Label(TexCommand):
+class label(TexCommand):
     def __init__(self, label, prefix=None):
         self.label = label
         self.prefix = prefix
@@ -48,15 +48,15 @@ class TexEnvironment(TexObject):
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
         """
         super().__init__(env_name)
-        self.head = Begin(env_name, *parameters, options=options, **kwoptions)
-        self.tail = End(env_name)
+        self.head = begin(env_name, *parameters, options=options, **kwoptions)
+        self.tail = end(env_name)
 
         self.parameters = self.head.parameters
         self.options = self.head.options
         self.kwoptions = self.head.kwoptions
 
         self.label_pos = label_pos
-        self._label = Label(label, env_name)
+        self._label = label(label, env_name)
         self.label = self._label.label
 
     def add_text(self, text):
