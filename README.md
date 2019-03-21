@@ -195,6 +195,7 @@ tex = doc.build()
 </details>
 
 ### Create an unsupported environment
+If some environment is not currently supported, you can create one from the TexEnvironment base class.
 ```python
 from py2tex import Document, TexEnvironment
 
@@ -216,7 +217,44 @@ print(tex)
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src="https://github.com/jsleb333/py2tex/blob/master/examples/unsupported%20env%20example/unsupported_env_example.jpg" alt="Unsupported env result">
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/unsupported%20env%20example/unsupported_env_example.jpg" alt="Unsupported environment result">
+</p>
+</details>
+
+
+### Binding objects to environments
+To alleviate syntax, it is possible to bind TexObject classes to an instance of a TexEnvironment. This creates an alternative class that automatically append any new instance of the class to the environment.
+```python
+from py2tex import Document, Section, Subsection, TexEnvironment
+
+doc = Document(filename='binding_objects_to_environments_example', filepath='./examples/binding objects to environments example', doc_type='article', options=('12pt',))
+section = doc.bind(Section) # section is now a new class that creates Section instances that are automatically appended to 'doc'
+
+sec1 = section('Section 1', label='sec1') # Equivalent to: sec1 = doc.new(Section('Section 1', label='sec1'))
+sec1.add_text("All sections created with ``section'' will be automatically appended to the document body!")
+
+subsection, texEnv = sec1.bind(Subsection, TexEnvironment) # 'bind' supports multiple classes in the same call
+eq1 = texEnv('equation')
+eq1.add_text(r'e^{i\pi} = -1')
+
+eq2 = texEnv('equation')
+eq2 += r'\sum_{n=1}^{\infty} n = -\frac{1}{12}' # The += operator calls is the same as 'add_text'
+
+sub1 = subsection('Subsection 1 of section 1')
+sub1 += 'Text of subsection 1 of section 1.'
+
+sec2 = section('Section 2', label='sec2')
+sec2 += "sec2 is also appended to the document after sec1."
+
+tex = doc.build() # Builds to tex and compile to pdf
+print(tex) # Prints the tex string that generated the pdf
+```
+<details>
+<summary>
+<i> Click to unfold result </i>
+</summary>
+<p>
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/binding%20objects%20to%20environments%20example/binding_objects_to_environments_example.jpg" alt="Binding objects to environments result">
 </p>
 </details>
 
