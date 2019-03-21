@@ -1,5 +1,23 @@
 import numpy as np
-from py2tex import TexEnvironment, build, FloatingTable, FloatingEnvironmentMixin
+from py2tex import TexEnvironment, TexCommand, build, FloatingTable, FloatingEnvironmentMixin
+
+
+class Rule(TexCommand):
+    def __init__(self, start, end, trim):
+        self.start = start
+        self.end = end
+        self.trim = trim
+        super().__init__('cmidrule')
+
+    def __eq__(self, other):
+        return self.start == other.start and self.end == other.end and self.trim == other.trim
+
+    def build(self):
+        rule = super().build()
+        if self.trim:
+            rule += f"({self.trim})"
+        rule += f"{{{self.start+1}-{self.end}}}"
+        return rule
 
 
 class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
@@ -56,13 +74,6 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     def __repr__(self):
         return repr(self.data)
 
-    def _build_rule(self, start, end, trim):
-        rule = "\\cmidrule"
-        if trim:
-            rule += f"({trim})"
-        rule += f"{{{start+1}-{end}}}"
-        return rule
-
     def _apply_multicells(self, table_format):
         for idx, v_align, h_align, v_shift in self.multicells:
 
@@ -109,8 +120,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
             self.tabular.body.append(''.join(str(build(item)) for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
                 for rule in self.rules[i]:
-                    rule = self._build_rule(*rule)
-                    self.tabular.body.append(rule)
+                    self.tabular.body.append(rule.build())
         self.tabular.build()
 
         self.tabular.head.parameters += (''.join(self.alignment),)
@@ -190,7 +200,7 @@ class SelectedArea:
 
         if i not in self.table.rules:
             self.table.rules[i] = []
-        self.table.rules[i].append((j_start, j_stop, r+l))
+        self.table.rules[i].append(Rule(j_start, j_stop, r+l))
 
         return self
 

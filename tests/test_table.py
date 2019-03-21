@@ -2,7 +2,7 @@ import pytest
 from pytest import fixture
 from inspect import cleandoc
 
-from py2tex.table import Table, SelectedArea
+from py2tex.table import *
 
 
 @fixture
@@ -11,6 +11,20 @@ def three_by_three_table():
     table = Table((n_rows, n_cols))
     table[:,:] = [[j*n_cols + i+1 for i in range(n_cols)] for j in range(n_rows)]
     return table
+
+
+class TestRule:
+    def test_build_rule(self):
+        rules = [(0, 10, ''),
+                 (1, 2, 'r'),
+                 (3, 4, 'l'),
+                 (5, 6, 'l{3pt}r{4pt}')]
+        expected_values = [r'\cmidrule{1-10}',
+                    r'\cmidrule(r){2-2}',
+                    r'\cmidrule(l){4-4}',
+                    r'\cmidrule(l{3pt}r{4pt}){6-6}']
+        for rule, expected_value in zip(rules, expected_values):
+            assert expected_value == Rule(*rule).build()
 
 
 class TestTable:
@@ -24,18 +38,6 @@ class TestTable:
         assert three_by_three_table.data[0,0] == 10
         assert three_by_three_table.data[1,0] == 'Spam'
         assert three_by_three_table.data[2,1] == 'Egg'
-
-    def test_build_rule(self):
-        rules = [(0, 10, ''),
-                    (1, 2, 'r'),
-                    (3, 4, 'l'),
-                    (5, 6, 'l{3pt}r{4pt}')]
-        expected_values = [r'\cmidrule{1-10}',
-                    r'\cmidrule(r){2-2}',
-                    r'\cmidrule(l){4-4}',
-                    r'\cmidrule(l{3pt}r{4pt}){6-6}']
-        for rule, expected_value in zip(rules, expected_values):
-            assert expected_value == Table()._build_rule(*rule)
 
 
 class TestSelectedArea:
@@ -75,17 +77,17 @@ class TestSelectedArea:
     def test_add_rule_default(self):
         self.row_area.add_rule()
         self.small_area.add_rule()
-        assert self.table.rules == {1:[(0,3,''), (1,3,'')]}
+        assert self.table.rules == {1:[Rule(0,3,''), Rule(1,3,'')]}
 
     def test_add_rule_above(self):
         self.row_area.add_rule('above')
-        assert self.table.rules == {0:[(0,3,'')]}
+        assert self.table.rules == {0:[Rule(0,3,'')]}
 
     def test_add_rule_trimmed(self):
         self.row_area.add_rule(trim_left=True)
         self.small_area.add_rule(trim_right=True)
         self.one_cell_area.add_rule(trim_left='1pt', trim_right='2pt')
-        assert self.table.rules == {1:[(0,3,'l'), (1,3,'r')], 0:[(0,1,'r{2pt}l{1pt}')]}
+        assert self.table.rules == {1:[Rule(0,3,'l'), Rule(1,3,'r')], 0:[Rule(0,1,'r{2pt}l{1pt}')]}
 
     def test_multicell_default(self):
         self.whole_table_area.multicell('whole table')
