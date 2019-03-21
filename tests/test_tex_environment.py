@@ -111,3 +111,18 @@ class TestTexEnvironment:
             \begin{test}[spam, egg, answer=42]{param1}{param2}
             \end{test}
             ''')
+
+    def test_build_with_recursive_env(self):
+        level1 = TexEnvironment('level1')
+        level1.add_text('level1')
+        level2 = level1.new(TexEnvironment('level2'))
+        level2.add_text('level2')
+        assert level1.build() == cleandoc(
+            r'''
+            \begin{level1}
+            level1
+            \begin{level2}
+            level2
+            \end{level2}
+            \end{level1}
+            ''')
