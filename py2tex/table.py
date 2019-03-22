@@ -49,7 +49,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
             label (str): Label of the environment.
             caption (str): Caption of the floating environment.
         """
-        super().__init__(as_float_env=as_float_env, position=position, label=label, label_pos='top', caption=caption)
+        super().__init__(as_float_env=as_float_env, position=position, label=label, caption=caption)
 
         self.tabular = TexEnvironment('tabular')
         self.add_package('booktabs')
