@@ -37,7 +37,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     TODO:
         - Maybe: Add a 'insert_row' and 'insert_column' methods.
     """
-    def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, top_rule=True, bottom_rule=True, label=''):
+    def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, top_rule=True, bottom_rule=True, label='', caption=''):
         """
         Args:
             shape (tuple of 2 ints): Shape of the table.
@@ -47,8 +47,9 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
             position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
             top_rule, bottom_rule (bool): Whether or not the table should have outside rules.
             label (str): Label of the environment.
+            caption (str): Caption of the floating environment.
         """
-        super().__init__(as_float_env=as_float_env, position=position, label=label, label_pos='top')
+        super().__init__(as_float_env=as_float_env, position=position, label=label, label_pos='top', caption=caption)
 
         self.tabular = TexEnvironment('tabular')
         self.add_package('booktabs')
