@@ -34,3 +34,18 @@ class Node(TexCommand):
         command += f'{{{self.label}}};'
 
         return command
+
+
+class Position:
+    """
+    Encapsulates a position
+    """
+    def __init__(self, *pos):
+        """
+        Args:
+            pos (tuple of float): Position
+        """
+        self.pos = pos
+
+    def build(self):
+        return str(self.pos)

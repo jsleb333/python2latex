@@ -37,3 +37,9 @@ class TestNode:
     def test_build_with_options(self):
         n = Node('label', 'node name', 'draw', align='center')
         assert n.build() == r'\node[draw, align=center](node name) at (0, 0) {label};'
+
+
+class TestPosition:
+    def test_position_from_tuple(self):
+        pos = Position(3.3,4.4)
+        assert pos.build() == '(3.3, 4.4)'
