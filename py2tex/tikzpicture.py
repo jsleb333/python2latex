@@ -41,6 +41,33 @@ class Node(TexCommand):
         return command
 
 
+class Coordinate(TexCommand):
+    """
+    This is a TikZ coordinate.
+    """
+    n_instances = 0
+    def __init__(self, coor_name=None, *options, position=(0,0), **kwoptions):
+        """
+        Args:
+            coor_name (str): Name of the coordinate to be refered inside the Tex document.
+            options: Options of the coordinate.
+            position (tuple of numbers or Position object or other Node or Coordinate): Position of the coordinate inside the picture.
+            kwoptions: Keyword options of the coordinate. Underscores will be replaced by spaces.
+        """
+        super().__init__('coordinate', options=options, **kwoptions)
+        type(self).n_instances += 1
+        self.name = coor_name or f'coor{self.n_instances}'
+        self.position = Position(*position)
+
+    def build(self):
+        command = super().build()
+
+        command += f'({self.name})'
+        command += f' at {self.position};'
+
+        return command
+
+
 class Position:
     """
     Encapsulates a position.

@@ -39,6 +39,35 @@ class TestNode:
         assert n.build() == r'\node[draw, align=center](node name) at (0, 0) {label};'
 
 
+class TestCoordinate:
+    def setup(self):
+        Coordinate.n_instances = 0
+
+    def test_n_instances_incremented_on_instanciation(self):
+        n1 = Coordinate('n1')
+        assert Coordinate.n_instances == 1
+        n2 = Coordinate('n2')
+        assert Coordinate.n_instances == 2
+
+    def test_default_coor_name(self):
+        n = Coordinate('')
+        assert n.name == 'coor1'
+        n = Coordinate('')
+        assert n.name == 'coor2'
+
+    def test_non_default_coor_name(self):
+        n = Coordinate('name')
+        assert n.name == 'name'
+
+    def test_build_default(self):
+        n = Coordinate(position=(1,2))
+        assert n.build() == r'\coordinate(coor1) at (1, 2);'
+
+    def test_build_with_options(self):
+        n = Coordinate('coor name', 'draw', align='center')
+        assert n.build() == r'\coordinate[draw, align=center](coor name) at (0, 0);'
+
+
 class TestPosition:
     def test_position_from_tuple(self):
         pos = Position(3.3,4.4)
