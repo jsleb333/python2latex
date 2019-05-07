@@ -19,6 +19,11 @@ class Node(TexCommand):
     def __init__(self, label, node_name=None, *options, position=(0,0), **kwoptions):
         """
         Args:
+            label (str): Tex string that appears in the node.
+            node_name (str): Name of the node to be refered inside the Tex document.
+            options: Options of the node.
+            position (tuple of numbers or Position object or other Node or Coordinate): Position of the node inside the picture.
+            kwoptions: Keyword options of the node. Underscores will be replaced by spaces.
         """
         super().__init__('node', options=options, **kwoptions)
         type(self).n_instances += 1
