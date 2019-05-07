@@ -29,7 +29,7 @@ class Node(TexCommand):
         type(self).n_instances += 1
         self.name = node_name or f'node{self.n_instances}'
         self.label = label
-        self.position = position
+        self.position = Position(*position)
 
     def build(self):
         command = super().build()
@@ -43,14 +43,17 @@ class Node(TexCommand):
 
 class Position:
     """
-    Encapsulates a position
+    Encapsulates a position.
     """
     def __init__(self, *pos):
         """
         Args:
-            pos (tuple of float): Position
+            pos (tuple of float): Position of a TikZ object.
         """
         self.pos = pos
+
+    def __str__(self):
+        return self.build()
 
     @staticmethod
     def _add_pos(pos1, pos2):
@@ -89,10 +92,12 @@ class Position:
             return self
         else:
             return NotImplemented
+    def __rmul__(self, num):
+        return self * num
 
-    def __div__(self, num):
+    def __truediv__(self, num):
         return self * (1/num)
-    def __idiv__(self, num):
+    def __itruediv__(self, num):
         self *= 1/num
         return self
 
