@@ -61,13 +61,40 @@ class Position:
             return Position(*self._add_pos(self.pos, other.pos))
         else:
             return NotImplemented
-
     def __iadd__(self, other):
         if isinstance(other, Position):
             self.pos = self._add_pos(self.pos, other.pos)
             return self
         else:
             return NotImplemented
+
+    def __sub__(self, other):
+        return self + -1*other
+    def __isub__(self, other):
+        self += -1*other
+        return self
+
+    @staticmethod
+    def _mul_pos(pos, num):
+        return (pos[0]*num, pos[1]*num)
+
+    def __mul__(self, num):
+        if isinstance(num, (int, float)):
+            return Position(*self._mul_pos(self.pos, num))
+        else:
+            return NotImplemented
+    def __imul__(self, num):
+        if isinstance(num, (int, float)):
+            self.pos = self._mul_pos(self.pos, num)
+            return self
+        else:
+            return NotImplemented
+
+    def __div__(self, num):
+        return self * (1/num)
+    def __idiv__(self, num):
+        self *= 1/num
+        return self
 
     def build(self):
         return str(self.pos)

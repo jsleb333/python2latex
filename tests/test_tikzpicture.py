@@ -52,3 +52,32 @@ class TestPosition:
         pos = Position(1,2)
         pos += Position(3,4)
         assert pos.pos == (4,6)
+
+    def test_sub_other_position(self):
+        pos = Position(1,2) - Position(3,4)
+        assert pos.pos == (-2,-2)
+
+    def test_isub_other_position(self):
+        pos = Position(1,2)
+        pos -= Position(3,4)
+        assert pos.pos == (-2,-2)
+
+    def test_mul_by_number(self):
+        pos = Position(1,2) * 3
+        assert pos.pos == (3,6)
+        pos = 3 * Position(1,2)
+        assert pos.pos == (3,6)
+
+    def test_imul_by_number(self):
+        pos = Position(1,2)
+        pos *= 3
+        assert pos.pos == (3,6)
+
+    def test_div_by_number(self):
+        pos = Position(3,6) / 3
+        assert pos.pos == (1,2)
+
+    def test_idiv_by_number(self):
+        pos = Position(3,6)
+        pos /= 3
+        assert pos.pos == (1,2)
