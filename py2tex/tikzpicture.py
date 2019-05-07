@@ -52,9 +52,20 @@ class Position:
         """
         self.pos = pos
 
+    @staticmethod
+    def _add_pos(pos1, pos2):
+        return (pos1[0] + pos2[0], pos1[1] + pos2[1])
+
     def __add__(self, other):
         if isinstance(other, Position):
-            return Position(self.pos[0] + other.pos[0], self.pos[1] + other.pos[1])
+            return Position(*self._add_pos(self.pos, other.pos))
+        else:
+            return NotImplemented
+
+    def __iadd__(self, other):
+        if isinstance(other, Position):
+            self.pos = self._add_pos(self.pos, other.pos)
+            return self
         else:
             return NotImplemented
 

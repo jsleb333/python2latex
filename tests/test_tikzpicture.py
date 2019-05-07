@@ -47,3 +47,8 @@ class TestPosition:
     def test_add_other_position(self):
         pos = Position(1,2) + Position(3,4)
         assert pos.pos == (4,6)
+
+    def test_iadd_other_position(self):
+        pos = Position(1,2)
+        pos += Position(3,4)
+        assert pos.pos == (4,6)
