@@ -52,5 +52,11 @@ class Position:
         """
         self.pos = pos
 
+    def __add__(self, other):
+        if isinstance(other, Position):
+            return Position(self.pos[0] + other.pos[0], self.pos[1] + other.pos[1])
+        else:
+            return NotImplemented
+
     def build(self):
         return str(self.pos)

@@ -43,3 +43,7 @@ class TestPosition:
     def test_position_from_tuple(self):
         pos = Position(3.3,4.4)
         assert pos.build() == '(3.3, 4.4)'
+
+    def test_add_other_position(self):
+        pos = Position(1,2) + Position(3,4)
+        assert pos.pos == (4,6)
