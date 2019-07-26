@@ -3,9 +3,12 @@ from py2tex import TexCommand, TexEnvironment, build
 from py2tex import FloatingFigure, FloatingEnvironmentMixin
 
 
-class TikzPicture(TexEnvironment):
-    def __init__(self):
+class TikzPicture(FloatingEnvironmentMixin, super_class=FloatingFigure):
+    def __init__(self, position='h!', as_float_env=True, label='', caption=''):
         super().__init__(as_float_env=as_float_env, position=position, label=label, caption=caption)
+        self.add_package('tikz')
+        self.tikzpicture = TexEnvironment('tikzpicture')
+        self.add_text(self.tikzpicture)
 
     def build(self):
         return super().build()
@@ -16,7 +19,7 @@ class Node(TexCommand):
     This is a tikz node.
     """
     n_instances = 0
-    def __init__(self, label, node_name=None, *options, position=(0,0), **kwoptions):
+    def __init__(self, label, *options, node_name=None, position=(0,0), **kwoptions):
         """
         Args:
             label (str): Tex string that appears in the node.
