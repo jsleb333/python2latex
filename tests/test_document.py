@@ -28,7 +28,7 @@ class TestDocument:
         assert isinstance(sec, Section)
 
     def test_build_default(self, default_doc):
-        assert default_doc.build(False, False) == cleandoc(
+        assert default_doc.build(False, False, False) == cleandoc(
                 r'''
                 \documentclass{article}
                 \usepackage[utf8]{inputenc}
@@ -38,7 +38,7 @@ class TestDocument:
 
     def test_build_with_options(self):
         doc = Document('With options', doc_type='standalone', options=['12pt', 'Spam'], egg=42)
-        assert doc.build(False, False) == cleandoc(
+        assert doc.build(False, False, False) == cleandoc(
                 r'''\documentclass[12pt, Spam, egg=42]{standalone}
                 \usepackage[utf8]{inputenc}
                 \usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
@@ -50,7 +50,7 @@ class TestDocument:
         doc.add_package('tikz')
         sec = doc.new_section('Section', label='Section')
         sec.add_text('Hey')
-        assert doc.build(False, False) == cleandoc(
+        assert doc.build(False, False, False) == cleandoc(
                 r'''\documentclass[12pt, Spam, egg=42]{standalone}
                 \usepackage[utf8]{inputenc}
                 \usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}

@@ -1,4 +1,5 @@
 from py2tex import TexFile, TexEnvironment
+import subprocess, os
 
 
 class Document(TexEnvironment):
@@ -21,6 +22,7 @@ class Document(TexEnvironment):
         """
         super().__init__('document')
         self.filename = filename
+        self.filepath = filepath
         self.file = TexFile(filename, filepath)
 
         options = list(options)
@@ -67,7 +69,7 @@ class Document(TexEnvironment):
         """
         return self.new(Section(name, label=label))
 
-    def build(self, save_to_disk=True, compile_to_pdf=True):
+    def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True):
         tex = super().build()
 
         header = list(self.header)
@@ -83,6 +85,11 @@ class Document(TexEnvironment):
         if compile_to_pdf:
             self.file.save(tex)
             self.file._compile_to_pdf()
+
+        if show_pdf:
+            os.chdir(self.filepath)
+            subprocess.Popen(['evince ' + os.path.join(self.filepath, self.filename + '.pdf')], shell=True)
+
         return tex
 
 
