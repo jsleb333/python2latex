@@ -88,7 +88,7 @@ class Document(TexEnvironment):
 
         if show_pdf:
             os.chdir(self.filepath)
-            subprocess.Popen(['evince ' + os.path.join(self.filepath, self.filename + '.pdf')], shell=True)
+            subprocess.Popen(['evince ' + os.path.join(self.filepath, self.filename + '.pdf')], shell=True, close_fds=True)
 
         return tex
 
