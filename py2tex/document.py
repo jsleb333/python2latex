@@ -18,7 +18,7 @@ class Document(TexEnvironment):
             kwoptions (keyword options of the document type): Options should be strings. The dict is converted to string when building to tex. See template below.
 
         The doc_type, options and kwoptions arguments will be compiled in the following way:
-            \documentclass[*options*, *kwoptions*]{doc_type}
+            \documentclass[*options*, **kwoptions]{doc_type}
         """
         super().__init__('document')
         self.filename = filename
