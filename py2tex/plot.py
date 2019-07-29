@@ -150,7 +150,6 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         """
         options = tuple(opt.replace('_', ' ') for opt in options)
         kwoptions = {key.replace('_', ' '):value for key, value in kwoptions.items()}
-        kwoptions.update({k:v for k, v in self.default_plot_kwoptions.items() if k not in kwoptions})
         if isinstance(X, (int, float)) or not X.shape:
             X = np.array([X])
             Y = np.array([Y])
@@ -182,5 +181,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
     def build(self):
         self.save_to_csv()
         self._build_plots()
+
+        self.axis.options += (f"every axis plot/.append style={{{', '.join('='.join([k,v]) for k,v in self.default_plot_kwoptions.items())}}}",)
 
         return super().build()
