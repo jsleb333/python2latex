@@ -1,3 +1,4 @@
+import warnings
 from py2tex import TexEnvironment, TexObject, TexCommand, build
 
 class Caption(TexCommand):
@@ -99,3 +100,9 @@ class FloatingEnvironmentMixin:
 
     def __init_subclass__(cls, super_class):
         cls.__bases__ += (super_class,)
+
+    def build(self):
+        if not self.as_float_env and self.caption:
+            self.caption = '' # No caption outside of float env
+            warnings.warn('Cannot produce caption outside floating environment!')
+        return super().build()
