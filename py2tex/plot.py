@@ -1,3 +1,7 @@
+import csv
+from datetime import datetime as dt
+import numpy as np
+import itertools
 import os, sys
 sys.path.append(os.getcwd())
 import py2tex
@@ -65,8 +69,8 @@ class Plot(TexEnvironment):
                     )
         self.axis = TexEnvironment('axis', options=options, width=width, height=height, grid=grid, **axis_kwoptions)
         self.tikzpicture.add_text(self.axis)
-        if not marks:
-            self.axis.options += ('no marks',)
+        # if not marks:
+        #     self.axis.options += ['no marks',]
 
         self.plot_name = plot_name or f"plot-{dt.now().strftime(r'%Y-%m-%d %Hh%Mm%Ss')}"
         self.caption = ''
@@ -113,17 +117,22 @@ class Plot(TexEnvironment):
         options = tuple(opt.replace('_', ' ') for opt in options)
         kwoptions = {key.replace('_', ' '):value for key, value in kwoptions.items()}
         kwoptions.update({k:v for k, v in self.default_plot_kwoptions.items() if k not in kwoptions})
+        if isinstance(X, (int, float)) or not X.shape:
+            X = np.array([X])
+            Y = np.array([Y])
         self.plots.append((X, Y, legend, options, kwoptions))
 
     def _build_plots(self):
         for i, (X, Y, legend, options, kwoptions) in enumerate(self.plots):
             options = ', '.join(options)
             kwoptions = ', '.join('='.join((k, v)) for k, v in kwoptions.items())
-            if options and kwoptions:
-                options += ', '
-            self.axis.add_text(f"\\addplot+[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{self.plot_name+'.csv'}}};")
             if legend:
                 self.axis.add_text(fr"\addlegendentry{{{legend}}}")
+            else:
+                options += ', forget plot'
+            if options and kwoptions:
+                options += ', '
+            self.axis.add_text(f"\\addplot[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{self.plot_name+'.csv'}}};")
 
     def save_to_csv(self):
         with open(self.plot_name + '.csv', 'w', newline='') as file:
@@ -132,15 +141,13 @@ class Plot(TexEnvironment):
             titles = [coor for i in range(len(self.plots)) for coor in (f'x{i}', f'y{i}')]
             writer.writerow(titles)
             X_Y = [x_y for x, y, *_ in self.plots for x_y in (x, y)]
-            for row in zip(*X_Y):
+            for row in itertools.zip_longest(*X_Y, fillvalue=''):
                 writer.writerow(row)
 
     def build(self):
         self.save_to_csv()
         self._build_plots()
 
-        if self.caption and self.as_float_env:
-            self.body.append(f"\caption{{{self.caption}}}")
         return super().build()
 
 
