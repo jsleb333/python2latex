@@ -10,7 +10,6 @@ py2tex.code-workspace
 *.synctex(busy)
 *.fdb_latexmk
 *.fls
-*.pytest_cache
 *.egg-info
 
 *.csv
@@ -18,3 +17,5 @@ py2tex.code-workspace
 *.cpython*
 
 *.csv
+
+.pytest_cache/

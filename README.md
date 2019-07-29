@@ -35,7 +35,15 @@ tex = doc.build() # Builds to tex and compile to pdf
 print(tex) # Prints the tex string that generated the pdf
 ```
 
-![Simple document result](https://github.com/jsleb333/py2tex/blob/master/examples/simple%20document%20example/simple_document_example.jpg)
+<details>
+<summary>
+<i> Click to unfold result </i>
+</summary>
+<p>
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/simple%20document%20example/simple_document_example.jpg" alt="Simple document">
+</p>
+</details>
+
 
 ### Create a table from a numpy array
 
@@ -90,11 +98,104 @@ table[5].highlight_best('high', 'bold') # Whole row 4
 tex = doc.build()
 print(tex)
 ```
-![Table from numpy result](https://github.com/jsleb333/py2tex/blob/master/examples/table%20from%20numpy%20array%20example/table_from_numpy_array_example.jpg)
+<details>
+<summary>
+<i> Click to unfold result </i>
+</summary>
+<p>
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/table%20from%20numpy%20array%20example/table_from_numpy_array_example.jpg" alt="Table from numpy result">
+</p>
+</details>
 
 
+
+### Create a simple plot
+You can plot curves as easily as with `matplotlib.pyplot.plot` with the `Plot` environement that compiles it directly into pdf! This is a wrapper around the `pgfplots` and `pgfplotstable` LaTeX packages.
+```python
+from py2tex import Document, Plot
+import numpy as np
+
+# Document type 'standalone' will only show the plot, but does not support all tex environments.
+filepath = './examples/simple plot example/'
+filename = 'simple_plot_example'
+doc = Document(filename, doc_type='standalone', filepath=filepath)
+
+# Create the data
+X = np.linspace(0,2*np.pi,100)
+Y1 = np.sin(X)
+Y2 = np.cos(X)
+
+# Create a plot
+plot = doc.new(Plot(X, Y1, X, Y2, plot_path=filepath, as_float_env=False))
+
+tex = doc.build()
+```
+<details>
+<summary>
+<i> Click to unfold result </i>
+</summary>
+<p>
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/simple%20plot%20example/simple_plot_example.jpg" alt="Simple plot result">
+</p>
+</details>
+
+
+### Create a more complex plot
+You can make more complex plots with the options shown in this example.
+```python
+from py2tex import Document, Plot
+import numpy as np
+
+# Create the document
+filepath = './examples/more complex plot example/'
+filename = 'more_complex_plot_example'
+doc = Document(filename, doc_type='article', filepath=filepath)
+sec = doc.new_section('More complex plot')
+sec.add_text('This section shows how to make a more complex plot integrated directly into a tex file.')
+
+# Create the data
+X = np.linspace(0,2*np.pi,100)
+Y1 = np.sin(X)
+Y2 = np.cos(X)
+
+# Create a plot
+plot = sec.new(Plot(plot_name=filename, plot_path=filepath))
+plot.caption = 'More complex plot'
+
+plot.add_plot(X, Y1, 'blue', 'dashed', legend='sine') # Add colors and legend to the plot
+plot.add_plot(X, Y2, 'orange', line_width='3pt', legend='cosine')
+plot.legend_position = 'south east' # Place the legend where you want
+
+# Add a label to each axis
+plot.x_label = 'Radians'
+plot.y_label = 'Projection'
+
+# Choose the limits of the axis
+plot.x_min = 0
+plot.y_min = -1
+
+# Choose the positions of the ticks on the axes
+plot.x_ticks = np.linspace(0,2*np.pi,5)
+plot.y_ticks = np.linspace(-1,1,9)
+# Choose the displayed text for the ticks
+plot.x_ticks_labels = r'0', r'$\frac{\pi}{2}$', r'$\pi$', r'$\frac{3\pi}{2}$', r'$2\pi$'
+
+# Use the tex environment 'axis' keyword options to use unimplemented features if needed.
+plot.axis.kwoptions['y tick label style'] = '{/pgf/number format/fixed zerofill}' # This makes all numbers with the same number of 0 (fills if necessary).
+
+tex = doc.build()
+```
+<details>
+<summary>
+<i> Click to unfold result </i>
+</summary>
+<p>
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/more%20complex%20plot%20example/more_complex_plot_example.jpg" alt="More complex plot result">
+</p>
+</details>
 
 ### Create an unsupported environment
+If some environment is not currently supported, you can create one from the TexEnvironment base class.
 ```python
 from py2tex import Document, TexEnvironment
 
@@ -111,8 +212,51 @@ align.add_text(r"""e^{i\pi} &= \cos \pi + i \sin \pi\\
 tex = doc.build()
 print(tex)
 ```
-![Unsupported env result](https://github.com/jsleb333/py2tex/blob/master/examples/unsupported%20env%20example/unsupported_env_example.jpg)
+<details>
+<summary>
+<i> Click to unfold result </i>
+</summary>
+<p>
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/unsupported%20env%20example/unsupported_env_example.jpg" alt="Unsupported environment result">
+</p>
+</details>
 
+
+### Binding objects to environments
+To alleviate syntax, it is possible to bind TexObject classes to an instance of a TexEnvironment. This creates an alternative class that automatically append any new instance of the class to the environment.
+```python
+from py2tex import Document, Section, Subsection, TexEnvironment
+
+doc = Document(filename='binding_objects_to_environments_example', filepath='./examples/binding objects to environments example', doc_type='article', options=('12pt',))
+section = doc.bind(Section) # section is now a new class that creates Section instances that are automatically appended to 'doc'
+
+sec1 = section('Section 1', label='sec1') # Equivalent to: sec1 = doc.new(Section('Section 1', label='sec1'))
+sec1.add_text("All sections created with ``section'' will be automatically appended to the document body!")
+
+subsection, texEnv = sec1.bind(Subsection, TexEnvironment) # 'bind' supports multiple classes in the same call
+eq1 = texEnv('equation')
+eq1.add_text(r'e^{i\pi} = -1')
+
+eq2 = texEnv('equation')
+eq2 += r'\sum_{n=1}^{\infty} n = -\frac{1}{12}' # The += operator calls is the same as 'add_text'
+
+sub1 = subsection('Subsection 1 of section 1')
+sub1 += 'Text of subsection 1 of section 1.'
+
+sec2 = section('Section 2', label='sec2')
+sec2 += "sec2 is also appended to the document after sec1."
+
+tex = doc.build() # Builds to tex and compile to pdf
+print(tex) # Prints the tex string that generated the pdf
+```
+<details>
+<summary>
+<i> Click to unfold result </i>
+</summary>
+<p>
+<img src="https://github.com/jsleb333/py2tex/blob/master/examples/binding%20objects%20to%20environments%20example/binding_objects_to_environments_example.jpg" alt="Binding objects to environments result">
+</p>
+</details>
 
 
 ## How it works

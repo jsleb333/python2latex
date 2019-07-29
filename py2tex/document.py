@@ -1,4 +1,5 @@
 from py2tex import TexFile, TexEnvironment
+import subprocess, os
 
 
 class Document(TexEnvironment):
@@ -8,7 +9,7 @@ class Document(TexEnvironment):
     The 'build' method writes all text to a .tex file and compiles it to pdf.
     """
     def __init__(self, filename, filepath='.', doc_type='article', options=(), **kwoptions):
-        """
+        r"""
         Args:
             filename (str): Name of the file without extension.
             filepath (str): Path where the files will be saved and compiled to pdf.
@@ -21,17 +22,19 @@ class Document(TexEnvironment):
         """
         super().__init__('document')
         self.filename = filename
+        self.filepath = filepath
         self.file = TexFile(filename, filepath)
 
         options = list(options)
         for key, value in kwoptions.items():
             options.append(f"{key}={value}")
-        options = '[' + ', '.join(options) + ']'
+        options = ', '.join(options)
+        if options:
+            options = '[' + options + ']'
 
-        self.header = [f"\documentclass{options}{{{doc_type}}}"]
+        self.header = [f"\\documentclass{options}{{{doc_type}}}"]
 
-        self.packages = {'inputenc':'utf8',
-                         'geometry':''}
+        self.add_package('inputenc', 'utf8')
         self.set_margins('2.5cm')
 
     def __repr__(self):
@@ -54,7 +57,7 @@ class Document(TexEnvironment):
         if left: self.margins['left'] = left
         if right: self.margins['right'] = right
 
-        self.packages['geometry'] = ','.join(key+'='+value for key, value in self.margins.items())
+        self.add_package('geometry', **self.margins)
 
     def new_section(self, name, label=''):
         """
@@ -66,22 +69,27 @@ class Document(TexEnvironment):
         """
         return self.new(Section(name, label=label))
 
-    def build(self, save_to_disk=True, compile_to_pdf=True):
+    def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True):
         tex = super().build()
 
+        header = list(self.header)
         for package, options in self.packages.items():
-            if options:
-                options = '[' + options + ']'
-            self.header.append(f"\\usepackage{options}{{{package}}}")
-        self.header = '\n'.join(self.header)
+            options = '[' + ', '.join(['='.join([k,v]) if v != '' else str(k) for k, v in options.items()]) + ']' if options else ''
+            header.append(f"\\usepackage{options}{{{package}}}")
+        header = '\n'.join(header)
 
-        tex = self.header + '\n' + tex
+        tex = header + '\n' + tex
         if save_to_disk:
             self.file.save(tex)
 
         if compile_to_pdf:
             self.file.save(tex)
             self.file._compile_to_pdf()
+
+        if show_pdf:
+            os.chdir(self.filepath)
+            subprocess.Popen(['evince ' + os.path.join(self.filepath, self.filename + '.pdf')], shell=True, close_fds=True)
+
         return tex
 
 

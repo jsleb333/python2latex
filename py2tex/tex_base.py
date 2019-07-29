@@ -2,14 +2,14 @@ import os
 from subprocess import DEVNULL, STDOUT, check_call
 
 
-def build(env):
+def build(obj):
     """
-    Safely builds the environment by calling its method 'build' only if 'env' is not a string.
+    Safely builds the object by calling its method 'build' only if 'obj' is not a string.
     """
-    if isinstance(env, TexEnvironment):
-        return env.build()
+    if isinstance(obj, TexObject):
+        return obj.build()
     else:
-        return env
+        return obj
 
 
 class TexFile:
@@ -28,40 +28,24 @@ class TexFile:
 
     def _compile_to_pdf(self):
         os.chdir(self.filepath)
-        check_call(['pdflatex', self.filename], stdout=DEVNULL, stderr=STDOUT)
+        check_call(['pdflatex', '-halt-on-error', self.filename], stdout=DEVNULL, stderr=STDOUT)
 
 
-class TexEnvironment:
+class TexObject:
     """
-    Implements a basic TexEnvironment as
-    \begin{env}
-        ...
-    \end{env}
-
-    Allows recursive use of environment inside others.
-    Add new environments with the method 'new' and add standard text with 'add_text'.
-    Add LaTeX packages needed for this environment with 'add_package'.
+    Implements an abstract Tex object.
+    Provides a 'add_package' method to add packages needed for this object.
+    Inherited classes should redefine the 'build' method.
     """
-    def __init__(self, env_name, *parameters, options=(), label='', label_pos='top', **kwoptions):
+    def __init__(self, obj_name):
         """
         Args:
-            env_name (str): Name of the environment.
-            parameters (tuple of str): Parameters of the environment, appended inside curly braces {}.
-            options (tuple of str): Options to pass to the environment, appended inside brackets [].
-            label (str): Label of the environment if needed.
-            label_pos (str, either 'top' or 'bottom'): Position of the label inside the environment.
+            obj_name (str): Name of the object.
         """
-        self.env_name = env_name
-        self.body = [] # List of Environments or texts
-        self.head = '\\begin{{{env_name}}}'.format(env_name=env_name)
-        self.tail = '\\end{{{env_name}}}'.format(env_name=env_name)
+        self.name = obj_name
+        self.body = []
 
-        self.parameters = parameters
-        self.options = options if isinstance(options, tuple) else (options,)
-        self.kwoptions = kwoptions
         self.packages = {}
-        self.label_pos = label_pos
-        self.label = label
 
     def add_package(self, package, *options, **kwoptions):
         """
@@ -72,62 +56,90 @@ class TexEnvironment:
             options (tuple of str): Options to pass to the package in brackets.
             kwoptions (dict of str): Keyword options to pass to the package in brackets.
         """
-        options = f"[{','.join(options)}]" if options else ''
-        if kwoptions:
-            for key, value in kwoptions.items():
-                options.append(f"{key}={value}")
-        self.packages[package] = options
-
-    def add_text(self, text):
-        """
-        Add texts or really any tex commands as a string.
-
-        Args:
-            text (str): Text to add.
-        """
-        self.body.append(text)
-
-    def new(self, env):
-        """
-        Appends a new environment to the environment then returns it.
-        Args:
-            env (TexEnvironment or subclasses): Environment to append to the current environment.
-
-        Returns env.
-        """
-        self.body.append(env)
-        return env
+        kwoptions.update({o:'' for o in options})
+        self.packages[package] = kwoptions
 
     def __repr__(self):
-        return f'TexEnvironment {self.env_name}'
+        class_name = self.__name__ if '__name__' in self.__dict__ else self.__class__.__name__
+        return f'{class_name} {self.name}'
 
     def build(self):
         """
-        Builds recursively the environments of the body and converts it to .tex.
-        Returns the .tex string of the file.
+        Builds the object. Should return a valid LaTeX string.
         """
-        if self.parameters:
-            self.head += f"{{{', '.join(self.parameters)}}}"
+        return ''
+
+
+class TexCommand(TexObject):
+    def __init__(self, command, *parameters, options=list(), options_pos='second', **kwoptions):
+        r"""
+        Args:
+            command (str): Name of the command that will be rendered as '\command'.
+            parameters: Parameters of the command, appended inside curly braces {}.
+            options (str or list of str): Options to pass to the command, appended inside brackets [].
+            options_pos (str, either 'first', 'second' or 'last'): Position of the options with respect to the parameters.
+            kwoptions (dict of str): Keyword options to pass to the command, appended inside the same brackets as options.
+        """
+        super().__init__(command)
+        self.command = command
+        self.options = list(options) if isinstance(options, (tuple, list)) else [options]
+        self.parameters = list(parameters)
+        self.kwoptions = kwoptions
+        self.options_pos = options_pos
+
+    def __str__(self):
+        return self.build()
+
+    def build(self):
+        command = f'\\{self.command}'
+        options = ''
+
         if self.options or self.kwoptions:
             kwoptions = ', '.join('='.join((k, str(v))) for k, v in self.kwoptions.items())
             options = ', '.join(self.options)
             if kwoptions and options:
                 options += ', '
-            self.head += f"[{options + kwoptions}]"
+            options = f'[{options}{kwoptions}]'
+        if self.parameters:
+            parameters = f"{{{'}{'.join([build(param) for param in self.parameters])}}}"
 
-        tex = []
-        label = f"\label{{{self.env_name}:{self.label}}}"
-        if self.label:
-            if self.label_pos == 'top':
-                self.head += '\n' + label
-            else:
-                self.tail = label + '\n' + self.tail
+        if self.options_pos == 'first':
+            command += options
+            if self.parameters:
+                command += f"{{{'}{'.join([build(param) for param in self.parameters])}}}"
+        if self.options_pos == 'second':
+            if self.parameters:
+                command += f'{{{build(self.parameters[0])}}}'
+            command += options
+            if len(self.parameters) > 1:
+                command += f"{{{'}{'.join([build(param) for param in self.parameters[1:]])}}}"
+        elif self.options_pos == 'last':
+            if self.parameters:
+                command += f"{{{'}{'.join([build(param) for param in self.parameters])}}}"
+            command += options
 
-        for text_or_env in self.body:
-            tex.append(build(text_or_env))
-            if isinstance(text_or_env, TexEnvironment):
-                self.packages.update(text_or_env.packages)
+        return command
 
-        tex = [self.head] + tex + [self.tail]
-        return '\n'.join(tex)
 
+class bold(TexCommand):
+    r"""
+    Applies \textbf{...} command on text.
+    """
+    def __init__(self, text):
+        """
+        Args:
+            text (str): Text to print in bold.
+        """
+        super().__init__('textbf', text)
+
+
+class italic(TexCommand):
+    r"""
+    Applies \textit{...} command on text.
+    """
+    def __init__(self, text):
+        """
+        Args:
+            text (str): Text to print in italic.
+        """
+        super().__init__('textit', text)

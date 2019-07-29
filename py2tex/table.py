@@ -1,20 +1,43 @@
 import numpy as np
-from py2tex import TexEnvironment, build
+from py2tex import TexEnvironment, TexCommand, build, bold, italic
+from py2tex import FloatingTable, FloatingEnvironmentMixin
 
 
-class Table(TexEnvironment):
+"""
+TODO:
+    - Convert 'multicell' into Multirow and Multicol Tex commands
+"""
+
+class Rule(TexCommand):
+    def __init__(self, start, end, trim):
+        self.start = start
+        self.end = end
+        self.trim = trim
+        super().__init__('cmidrule')
+
+    def __eq__(self, other):
+        return self.start == other.start and self.end == other.end and self.trim == other.trim
+
+    def build(self):
+        rule = super().build()
+        if self.trim:
+            rule += f"({self.trim})"
+        rule += f"{{{self.start+1}-{self.end}}}"
+        return rule
+
+
+class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     """
-    Implements a floating 'table' environment. Wraps many features for easy usage and flexibility, such as:
+    Implements a (floating) 'table' environment. Wraps many features for easy usage and flexibility, such as:
         - Supports slices to set items.
         - Easy and automatic multirow and multicolumn cells.
         - Automatically highlights best value inside a region of the table.
-    To do so, the brackets access ("__getitem__") have been repurposed to select an area and returns the table with the selected area. To access the actual data inside the table, use the 'data' attribute.
+    To do so, the brackets access [] (__getitem__) has been repurposed to select an area and returns a SelectedArea object. Announced features are defined on SelectedArea objects only. To access the actual data inside the table, use the 'data' attribute with brackets.
 
     TODO:
-        - Add 'divide_cell' to insert a new sub tabular.
         - Maybe: Add a 'insert_row' and 'insert_column' methods.
     """
-    def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, top_rule=True, bottom_rule=True, **kwargs):
+    def __init__(self, shape=(1,1), alignment='c', float_format='.2f', position='h!', as_float_env=True, top_rule=True, bottom_rule=True, label=''):
         """
         Args:
             shape (tuple of 2 ints): Shape of the table.
@@ -23,21 +46,16 @@ class Table(TexEnvironment):
             as_float_env (bool): If True (default), will wrap a 'tabular' environment with a floating 'table' environment. If False, only the 'tabular' is constructed.
             position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
             top_rule, bottom_rule (bool): Whether or not the table should have outside rules.
-            kwargs: See TexEnvironment keyword arguments.
+            label (str): Label of the environment.
         """
-        self.as_float_env = as_float_env
-        self.top_rule = top_rule
-        self.bottom_rule = bottom_rule
-        super().__init__('table', options=position, label_pos='bottom', **kwargs)
-        if self.as_float_env:
-            self.body.append(r'\centering')
-        else:
-            self.options = ()
-            self.head, self.tail = '', ''
+        super().__init__(as_float_env=as_float_env, position=position, label=label, label_pos='top')
+
         self.tabular = TexEnvironment('tabular')
         self.add_package('booktabs')
         self.body.append(self.tabular)
-        self.caption = ''
+
+        self.top_rule = top_rule
+        self.bottom_rule = bottom_rule
 
         self.shape = shape
         self.alignment = [alignment]*shape[1] if len(alignment) == 1 else alignment
@@ -62,17 +80,6 @@ class Table(TexEnvironment):
     def __repr__(self):
         return repr(self.data)
 
-    def _build_rule(self, start, end, trim):
-        if start is None and end is None and not trim:
-            rule = "\midrule"
-        else:
-            rule = "\cmidrule"
-            if trim:
-                rule += f"({trim})"
-            # start, end, step = slice(start, end).indices(self.shape[1])
-            rule += f"{{{start+1}-{end}}}"
-        return rule
-
     def _apply_multicells(self, table_format):
         for idx, v_align, h_align, v_shift in self.multicells:
 
@@ -83,26 +90,20 @@ class Table(TexEnvironment):
             cell_shape = table_format[idx].shape
 
             if start_i == stop_i - 1:
-                self.data[start_i, start_j] = f"\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
+                self.data[start_i, start_j] = f"\\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
             else:
                 shift = ''
                 if v_shift:
                     shift = f'[{v_shift}]'
-                self.data[start_i, start_j] = f"\multirow{{{cell_shape[0]}}}{{{v_align}}}{shift}{{{self.data[start_i, start_j]}}}"
+                self.data[start_i, start_j] = f"\\multirow{{{cell_shape[0]}}}{{{v_align}}}{shift}{{{self.data[start_i, start_j]}}}"
 
             if start_j < stop_j - 1 and start_i < stop_i - 1:
-                self.data[start_i, start_j] = f"\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
+                self.data[start_i, start_j] = f"\\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
 
         return table_format
 
     def build(self):
         row, col = self.data.shape
-        self.tabular.head += f"{{{''.join(self.alignment)}}}"
-        if self.top_rule:
-            self.tabular.head += "\n\\toprule"
-        if self.bottom_rule:
-            self.tabular.tail = '\\bottomrule\n' + self.tabular.tail
-
         # Format floats
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
@@ -113,10 +114,10 @@ class Table(TexEnvironment):
         # Apply highlights
         for i, j, highlight in self.highlights:
             if highlight == 'bold':
-                command = "\\textbf{{{0}}}"
+                command = bold
             elif highlight == 'italic':
-                command = "\\textit{{{0}}}"
-            self.data[i,j] = command.format(self.data[i,j])
+                command = italic
+            self.data[i,j] = command(self.data[i,j])
 
         # Build the tabular
         table_format = np.array([[' & ']*(self.shape[1]-1) + [r'\\']]*self.shape[0], dtype=object)
@@ -125,12 +126,15 @@ class Table(TexEnvironment):
             self.tabular.body.append(''.join(str(build(item)) for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
                 for rule in self.rules[i]:
-                    rule = self._build_rule(*rule)
-                    self.tabular.body.append(rule)
+                    self.tabular.body.append(rule.build())
         self.tabular.build()
 
-        if self.caption and self.as_float_env:
-            self.body.append(f"\caption{{{self.caption}}}")
+        self.tabular.head.parameters += (''.join(self.alignment),)
+        if self.top_rule:
+            self.tabular.body.insert(0, r"\toprule")
+        if self.bottom_rule:
+            self.tabular.append(r'\bottomrule')
+
         return super().build()
 
 
@@ -202,7 +206,7 @@ class SelectedArea:
 
         if i not in self.table.rules:
             self.table.rules[i] = []
-        self.table.rules[i].append((j_start, j_stop, r+l))
+        self.table.rules[i].append(Rule(j_start, j_stop, r+l))
 
         return self
 
