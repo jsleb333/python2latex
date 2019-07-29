@@ -166,7 +166,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
                 options += ', forget plot'
             if options and kwoptions:
                 options += ', '
-            self.axis.add_text(f"\\addplot[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{self.plot_name+'.csv'}}};")
+            self.axis.add_text(f"\\addplot[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{os.path.join(self.plot_path, self.plot_name + '.csv')}}};")
 
     def save_to_csv(self):
         filepath = os.path.join(self.plot_path, self.plot_name + '.csv')
