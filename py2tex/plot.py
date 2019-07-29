@@ -181,6 +181,4 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         self.save_to_csv()
         self._build_plots()
 
-        if self.caption and self.as_float_env:
-            self.body.append(rf"\caption{{{self.caption}}}")
         return super().build()
