@@ -162,7 +162,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             kwoptions = ', '.join('='.join((k, v)) for k, v in kwoptions.items())
             if options and kwoptions:
                 options += ', '
-            self.axis.add_text(f"\\addplot+[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{self.plot_name+'.csv'}}};")
+            self.axis.add_text(f"\\addplot[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{self.plot_name+'.csv'}}};")
             if legend:
                 self.axis.add_text(fr"\addlegendentry{{{legend}}}")
 
