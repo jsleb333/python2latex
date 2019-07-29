@@ -1,6 +1,7 @@
 import csv
 from datetime import datetime as dt
 import numpy as np
+import itertools
 import os, sys
 sys.path.append(os.getcwd())
 
@@ -91,8 +92,8 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
                     )
         self.axis = TexEnvironment('axis', options=options, width=width, height=height, grid=grid, **axis_kwoptions)
         self.tikzpicture.add_text(self.axis)
-        if not marks:
-            self.axis.options += ['no marks',]
+        # if not marks:
+        #     self.axis.options += ['no marks',]
 
         self.plot_name = plot_name or f"plot-{dt.now().strftime(r'%Y-%m-%d %Hh%Mm%Ss')}"
         self.plot_path = plot_path
@@ -150,6 +151,9 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         options = tuple(opt.replace('_', ' ') for opt in options)
         kwoptions = {key.replace('_', ' '):value for key, value in kwoptions.items()}
         kwoptions.update({k:v for k, v in self.default_plot_kwoptions.items() if k not in kwoptions})
+        if isinstance(X, (int, float)) or not X.shape:
+            X = np.array([X])
+            Y = np.array([Y])
         self.plots.append((X, Y, legend, options, kwoptions))
 
     def _build_plots(self):
@@ -170,7 +174,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             titles = [coor for i in range(len(self.plots)) for coor in (f'x{i}', f'y{i}')]
             writer.writerow(titles)
             X_Y = [x_y for x, y, *_ in self.plots for x_y in (x, y)]
-            for row in zip(*X_Y):
+            for row in itertools.zip_longest(*X_Y, fillvalue=''):
                 writer.writerow(row)
 
     def build(self):
