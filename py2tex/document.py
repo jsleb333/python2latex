@@ -86,10 +86,14 @@ class Document(TexEnvironment):
             self.file.save(tex)
             self.file._compile_to_pdf()
 
+
         if show_pdf:
             os.chdir(self.filepath)
-            subprocess.Popen(['evince ' + os.path.join(self.filepath, self.filename + '.pdf')], shell=True, close_fds=True)
-
+            if sys.platform.startswith('linux'):
+                open_command = 'xdg-open'
+            else:
+                open_command = 'open'
+            subprocess.run([open_command, os.path.join(self.filepath, self.filename + ".pdf")])
         return tex
 
 
