@@ -1,5 +1,5 @@
 from py2tex import TexFile, TexEnvironment
-import subprocess, os
+import subprocess, os, sys
 
 
 class Document(TexEnvironment):
@@ -88,7 +88,11 @@ class Document(TexEnvironment):
 
         if show_pdf:
             os.chdir(self.filepath)
-            subprocess.Popen(['evince ' + os.path.join(self.filepath, self.filename + '.pdf')], shell=True, close_fds=True)
+            if sys.platform.startswith('linux'):
+                open_command = 'xdg-open'
+            else:
+                open_command = 'open'
+            subprocess.run([open_command, os.path.join(self.filepath, self.filename + ".pdf")])
 
         return tex
 
