@@ -86,6 +86,7 @@ class Document(TexEnvironment):
             self.file.save(tex)
             self.file._compile_to_pdf()
 
+
         if show_pdf:
             os.chdir(self.filepath)
             if sys.platform.startswith('linux'):
