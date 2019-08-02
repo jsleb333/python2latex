@@ -160,13 +160,11 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         for i, (X, Y, legend, options, kwoptions) in enumerate(self.plots):
             options = ', '.join(options)
             kwoptions = ', '.join('='.join((k, v)) for k, v in kwoptions.items())
-            if legend:
-                self.axis.add_text(fr"\addlegendentry{{{legend}}}")
-            else:
-                options += ', forget plot'
             if options and kwoptions:
                 options += ', '
             self.axis.add_text(f"\\addplot[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{self.plot_name+'.csv'}}};")
+            if legend:
+                self.axis.add_text(fr"\addlegendentry{{{legend}}}")
 
     def save_to_csv(self):
         filepath = os.path.join(self.plot_path, self.plot_name + '.csv')
