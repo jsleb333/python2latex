@@ -13,7 +13,7 @@ class TestPlot:
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, no marks, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
             \end{axis}
             \end{tikzpicture}
             \end{figure}

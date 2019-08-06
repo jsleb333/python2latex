@@ -150,7 +150,6 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         """
         options = tuple(opt.replace('_', ' ') for opt in options)
         kwoptions = {key.replace('_', ' '):value for key, value in kwoptions.items()}
-        kwoptions.update({k:v for k, v in self.default_plot_kwoptions.items() if k not in kwoptions})
         if isinstance(X, (int, float)) or not X.shape:
             X = np.array([X])
             Y = np.array([Y])
@@ -160,11 +159,13 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         for i, (X, Y, legend, options, kwoptions) in enumerate(self.plots):
             options = ', '.join(options)
             kwoptions = ', '.join('='.join((k, v)) for k, v in kwoptions.items())
-            if options and kwoptions:
-                options += ', '
-            self.axis.add_text(f"\\addplot[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{self.plot_name+'.csv'}}};")
             if legend:
                 self.axis.add_text(fr"\addlegendentry{{{legend}}}")
+            else:
+                options += ', forget plot'
+            if options and kwoptions:
+                options += ', '
+            self.axis.add_text(f"\\addplot[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{os.path.join(self.plot_path, self.plot_name + '.csv')}}};")
 
     def save_to_csv(self):
         filepath = os.path.join(self.plot_path, self.plot_name + '.csv')
@@ -180,5 +181,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
     def build(self):
         self.save_to_csv()
         self._build_plots()
+
+        self.axis.options += (f"every axis plot/.append style={{{', '.join('='.join([k,v]) for k,v in self.default_plot_kwoptions.items())}}}",)
 
         return super().build()
