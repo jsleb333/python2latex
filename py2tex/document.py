@@ -42,16 +42,16 @@ class Document(TexEnvironment):
             margins (str): Default value for all sides.
             top, bottom, left, right (str, any valid LaTeX length): Overrides the 'margins' argument with the specified length.
         """
-        self.margins = {'top':margins,
+        margins = {'top':margins,
                          'bottom':margins,
                          'left':margins,
                          'right':margins}
-        if top: self.margins['top'] = top
-        if bottom: self.margins['bottom'] = bottom
-        if left: self.margins['left'] = left
-        if right: self.margins['right'] = right
+        if top: margins['top'] = top
+        if bottom: margins['bottom'] = bottom
+        if left: margins['left'] = left
+        if right: margins['right'] = right
 
-        self.add_package('geometry', **self.margins)
+        self.add_package('geometry', **margins)
 
     def new_section(self, name, label=''):
         """
@@ -63,16 +63,18 @@ class Document(TexEnvironment):
         """
         return self.new(Section(name, label=label))
 
+    def _build_preamble(self):
+        preamble = [build(line) for line in self.preamble]
+        for package in self.packages.values():
+            preamble.append(build(package))
+        preamble = '\n'.join(preamble)
+
+        return preamble
+
     def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True):
         tex = super().build()
 
-        preamble = [build(line) for line in self.preamble]
-        for package, options in self.packages.items():
-            options = '[' + ', '.join(['='.join([k,v]) if v != '' else str(k) for k, v in options.items()]) + ']' if options else ''
-            preamble.append(f"\\usepackage{options}{{{package}}}")
-        preamble = '\n'.join(preamble)
-
-        tex = preamble + '\n' + tex
+        tex = self._build_preamble() + '\n' + tex
         if save_to_disk:
             self.file.save(tex)
 

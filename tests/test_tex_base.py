@@ -12,14 +12,16 @@ class TestTexObject:
         package_name = 'package'
         self.tex_obj.add_package(package_name)
         assert package_name in self.tex_obj.packages
-        assert self.tex_obj.packages[package_name] == {}
+        assert self.tex_obj.packages[package_name].options == []
+        assert self.tex_obj.packages[package_name].kwoptions == {}
 
     def test_add_package_with_options(self):
         package_name = 'package'
         options = ('spam', 'egg')
         self.tex_obj.add_package(package_name, 'spam', 'egg', answer=42, question="We don't know")
         assert package_name in self.tex_obj.packages
-        assert self.tex_obj.packages[package_name] == {'spam':'', 'egg':'', 'answer':42, 'question':"We don't know"}
+        assert self.tex_obj.packages[package_name].options == ['spam', 'egg']
+        assert self.tex_obj.packages[package_name].kwoptions == {'answer':42, 'question':"We don't know"}
 
     def test_repr(self):
         assert repr(self.tex_obj) == 'TexObject DefaultTexObject'

@@ -56,8 +56,15 @@ class TexObject:
             options (tuple of str): Options to pass to the package in brackets.
             kwoptions (dict of str): Keyword options to pass to the package in brackets.
         """
-        kwoptions.update({o:'' for o in options})
-        self.packages[package] = kwoptions
+        # kwoptions.update({o:'' for o in options})
+        # self.packages[package] = kwoptions
+        if not package in self.packages:
+            self.packages[package] = Package(package, *options, **kwoptions)
+        else:
+            options = set(options) | set(self.packages[package].options)
+            self.packages[package].options = tuple(options)
+            self.packages[package].kwoptions.update(kwoptions)
+
 
     def __repr__(self):
         class_name = self.__name__ if '__name__' in self.__dict__ else self.__class__.__name__
@@ -119,6 +126,11 @@ class TexCommand(TexObject):
             command += options
 
         return command
+
+
+class Package(TexCommand):
+    def __init__(self, package_name, *options, **kwoptions):
+        super().__init__('usepackage', package_name, options=options, options_pos='first', **kwoptions)
 
 
 class bold(TexCommand):
