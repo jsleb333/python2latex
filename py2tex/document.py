@@ -26,8 +26,7 @@ class Document(TexEnvironment):
         self.filepath = filepath
         self.file = TexFile(filename, filepath)
 
-        self.preamble = []
-        self.preamble.append(TexCommand('documentclass', doc_type, options=options, options_pos='first', **kwoptions))
+        self.add_to_preamble(TexCommand('documentclass', doc_type, options=options, options_pos='first', **kwoptions))
 
         self.add_package('inputenc', 'utf8')
         self.set_margins('2.5cm')
@@ -60,24 +59,16 @@ class Document(TexEnvironment):
         """
         return self.new(Section(name, label=label))
 
-    def _build_preamble(self):
-        packages = [build(package) for package in self.packages.values()]
-        preamble = [build(line) for line in self.preamble]
-        preamble = '\n'.join(preamble + packages)
-
-        return preamble
-
     def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True):
         tex = super().build()
 
-        tex = self._build_preamble() + '\n' + tex
+        tex = self.build_preamble() + '\n' + tex
         if save_to_disk:
             self.file.save(tex)
 
         if compile_to_pdf:
             self.file.save(tex)
             self.file._compile_to_pdf()
-
 
         if show_pdf:
             os.chdir(self.filepath)
