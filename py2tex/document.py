@@ -1,5 +1,5 @@
 from py2tex import TexFile, TexEnvironment
-import subprocess, os
+import subprocess, os, sys
 
 
 class Document(TexEnvironment):
