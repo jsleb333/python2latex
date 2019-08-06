@@ -2,11 +2,16 @@ import os
 from subprocess import DEVNULL, STDOUT, check_call
 
 
-def build(obj):
+def build(obj, parent=None):
     """
-    Safely builds the object by calling its method 'build' only if 'obj' is not a string.
+    Safely builds the object by calling its method 'build' only if 'obj' is not a string. If a parent is passed, all packages and preamble lines needed to the object will be added to the packages and preamble of the parent.
     """
     if isinstance(obj, TexObject):
+        if parent:
+            for package_name, package in obj.packages.items():
+                parent.add_package(package_name, *package.options, **package.kwoptions)
+            for line in obj.preamble:
+                parent.add_to_preamble(line)
         return obj.build()
     else:
         return obj
