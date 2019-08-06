@@ -1,4 +1,4 @@
-from py2tex import TexFile, TexEnvironment
+from py2tex import TexFile, TexEnvironment, TexCommand, build
 import subprocess, os, sys
 
 
@@ -25,14 +25,8 @@ class Document(TexEnvironment):
         self.filepath = filepath
         self.file = TexFile(filename, filepath)
 
-        options = list(options)
-        for key, value in kwoptions.items():
-            options.append(f"{key}={value}")
-        options = ', '.join(options)
-        if options:
-            options = '[' + options + ']'
-
-        self.header = [f"\\documentclass{options}{{{doc_type}}}"]
+        self.header = []
+        self.header.append(TexCommand('documentclass', doc_type, options=options, options_pos='first', **kwoptions))
 
         self.add_package('inputenc', 'utf8')
         self.set_margins('2.5cm')
@@ -72,7 +66,7 @@ class Document(TexEnvironment):
     def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True):
         tex = super().build()
 
-        header = list(self.header)
+        header = [build(line) for line in self.header]
         for package, options in self.packages.items():
             options = '[' + ', '.join(['='.join([k,v]) if v != '' else str(k) for k, v in options.items()]) + ']' if options else ''
             header.append(f"\\usepackage{options}{{{package}}}")
