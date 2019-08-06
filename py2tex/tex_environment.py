@@ -50,6 +50,7 @@ class TexEnvironment(TexObject):
         super().__init__(env_name)
         self.head = begin(env_name, *parameters, options=options, **kwoptions)
         self.tail = end(env_name)
+        self.body = []
 
         self.parameters = self.head.parameters
         self.options = self.head.options

@@ -48,7 +48,6 @@ class TexObject:
             obj_name (str): Name of the object.
         """
         self.name = obj_name
-        self.body = []
 
         self.packages = {}
         self.preamble = []
