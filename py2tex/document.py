@@ -1,11 +1,12 @@
-from py2tex import TexFile, TexEnvironment
-import subprocess, os
+import subprocess, os, sys
+
+from py2tex import TexFile, TexEnvironment, TexCommand, build
 
 
 class Document(TexEnvironment):
     """
     Tex document class.
-    Has a body, a header and a dict of packages updated recursively with other TexEnvironment nested inside the body.
+    Has a body, a preamble and a dict of packages updated recursively with other TexEnvironment nested inside the body.
     The 'build' method writes all text to a .tex file and compiles it to pdf.
     """
     def __init__(self, filename, filepath='.', doc_type='article', options=(), **kwoptions):
@@ -25,14 +26,7 @@ class Document(TexEnvironment):
         self.filepath = filepath
         self.file = TexFile(filename, filepath)
 
-        options = list(options)
-        for key, value in kwoptions.items():
-            options.append(f"{key}={value}")
-        options = ', '.join(options)
-        if options:
-            options = '[' + options + ']'
-
-        self.header = [f"\\documentclass{options}{{{doc_type}}}"]
+        self.add_to_preamble(TexCommand('documentclass', doc_type, options=options, options_pos='first', **kwoptions))
 
         self.add_package('inputenc', 'utf8')
         self.set_margins('2.5cm')
@@ -48,16 +42,12 @@ class Document(TexEnvironment):
             margins (str): Default value for all sides.
             top, bottom, left, right (str, any valid LaTeX length): Overrides the 'margins' argument with the specified length.
         """
-        self.margins = {'top':margins,
-                         'bottom':margins,
-                         'left':margins,
-                         'right':margins}
-        if top: self.margins['top'] = top
-        if bottom: self.margins['bottom'] = bottom
-        if left: self.margins['left'] = left
-        if right: self.margins['right'] = right
+        top = top or margins
+        bottom = bottom or margins
+        left = left or margins
+        right = right or margins
 
-        self.add_package('geometry', **self.margins)
+        self.add_package('geometry', top=top, bottom=bottom, left=left, right=right)
 
     def new_section(self, name, label=''):
         """
@@ -72,13 +62,7 @@ class Document(TexEnvironment):
     def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True):
         tex = super().build()
 
-        header = list(self.header)
-        for package, options in self.packages.items():
-            options = '[' + ', '.join(['='.join([k,v]) if v != '' else str(k) for k, v in options.items()]) + ']' if options else ''
-            header.append(f"\\usepackage{options}{{{package}}}")
-        header = '\n'.join(header)
-
-        tex = header + '\n' + tex
+        tex = self.build_preamble() + '\n' + tex
         if save_to_disk:
             self.file.save(tex)
 
@@ -88,8 +72,11 @@ class Document(TexEnvironment):
 
         if show_pdf:
             os.chdir(self.filepath)
-            subprocess.Popen(['evince ' + os.path.join(self.filepath, self.filename + '.pdf')], shell=True, close_fds=True)
-
+            if sys.platform.startswith('linux'):
+                open_command = 'xdg-open'
+            else:
+                open_command = 'open'
+            subprocess.run([open_command, os.path.join(self.filepath, self.filename + ".pdf")])
         return tex
 
 

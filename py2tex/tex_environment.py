@@ -50,6 +50,7 @@ class TexEnvironment(TexObject):
         super().__init__(env_name)
         self.head = begin(env_name, *parameters, options=options, **kwoptions)
         self.tail = end(env_name)
+        self.body = []
 
         self.parameters = self.head.parameters
         self.options = self.head.options
@@ -146,13 +147,8 @@ class TexEnvironment(TexObject):
 
         tex.append(self.tail)
 
-        tex = [build(part) for part in tex]
+        tex = [build(part, self) for part in tex]
         return '\n'.join([part for part in tex if part])
 
     def build_body(self):
-        body = []
-        for text_or_obj in self.body:
-            body.append(build(text_or_obj))
-            if isinstance(text_or_obj, TexObject):
-                self.packages.update(text_or_obj.packages)
-        return '\n'.join(body)
+        return '\n'.join([build(line, self) for line in self.body])

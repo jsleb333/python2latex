@@ -2,11 +2,16 @@ import os
 from subprocess import DEVNULL, STDOUT, check_call
 
 
-def build(obj):
+def build(obj, parent=None):
     """
-    Safely builds the object by calling its method 'build' only if 'obj' is not a string.
+    Safely builds the object by calling its method 'build' only if 'obj' is not a string. If a parent is passed, all packages and preamble lines needed to the object will be added to the packages and preamble of the parent.
     """
     if isinstance(obj, TexObject):
+        if parent:
+            for package_name, package in obj.packages.items():
+                parent.add_package(package_name, *package.options, **package.kwoptions)
+            for line in obj.preamble:
+                parent.add_to_preamble(line)
         return obj.build()
     else:
         return obj
@@ -43,21 +48,38 @@ class TexObject:
             obj_name (str): Name of the object.
         """
         self.name = obj_name
-        self.body = []
 
         self.packages = {}
+        self.preamble = []
 
     def add_package(self, package, *options, **kwoptions):
         """
-        Add a package to the preamble. If the package had already been added, the old is removed.
+        Add a package to the preamble. If the package had already been added, the options are updated.
 
         Args:
             package (str): The package name.
             options (tuple of str): Options to pass to the package in brackets.
             kwoptions (dict of str): Keyword options to pass to the package in brackets.
         """
-        kwoptions.update({o:'' for o in options})
-        self.packages[package] = kwoptions
+        if not package in self.packages:
+            self.packages[package] = Package(package, *options, **kwoptions)
+        else:
+            options = set(options) | set(self.packages[package].options)
+            self.packages[package].options = tuple(options)
+            self.packages[package].kwoptions.update(kwoptions)
+
+    def add_to_preamble(self, tex_object_or_string):
+        self.preamble.append(tex_object_or_string)
+
+    def build_preamble(self):
+        packages = self.build_packages()
+        preamble = [build(line, self) for line in self.preamble]
+        preamble = '\n'.join(preamble + [packages])
+
+        return preamble
+
+    def build_packages(self):
+        return '\n'.join([build(package, self) for package in self.packages.values()])
 
     def __repr__(self):
         class_name = self.__name__ if '__name__' in self.__dict__ else self.__class__.__name__
@@ -119,6 +141,11 @@ class TexCommand(TexObject):
             command += options
 
         return command
+
+
+class Package(TexCommand):
+    def __init__(self, package_name, *options, **kwoptions):
+        super().__init__('usepackage', package_name, options=options, options_pos='first', **kwoptions)
 
 
 class bold(TexCommand):
