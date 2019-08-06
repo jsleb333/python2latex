@@ -1,5 +1,6 @@
-from py2tex import TexFile, TexEnvironment, TexCommand, build
 import subprocess, os, sys
+
+from py2tex import TexFile, TexEnvironment, TexCommand, build
 
 
 class Document(TexEnvironment):
@@ -60,10 +61,9 @@ class Document(TexEnvironment):
         return self.new(Section(name, label=label))
 
     def _build_preamble(self):
+        packages = [build(package) for package in self.packages.values()]
         preamble = [build(line) for line in self.preamble]
-        for package in self.packages.values():
-            preamble.append(build(package))
-        preamble = '\n'.join(preamble)
+        preamble = '\n'.join(preamble + packages)
 
         return preamble
 
