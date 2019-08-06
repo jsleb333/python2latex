@@ -42,16 +42,12 @@ class Document(TexEnvironment):
             margins (str): Default value for all sides.
             top, bottom, left, right (str, any valid LaTeX length): Overrides the 'margins' argument with the specified length.
         """
-        margins = {'top':margins,
-                         'bottom':margins,
-                         'left':margins,
-                         'right':margins}
-        if top: margins['top'] = top
-        if bottom: margins['bottom'] = bottom
-        if left: margins['left'] = left
-        if right: margins['right'] = right
+        top = top or margins
+        bottom = bottom or margins
+        left = left or margins
+        right = right or margins
 
-        self.add_package('geometry', **margins)
+        self.add_package('geometry', top=top, bottom=bottom, left=left, right=right)
 
     def new_section(self, name, label=''):
         """
