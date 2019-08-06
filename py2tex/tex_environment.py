@@ -147,7 +147,7 @@ class TexEnvironment(TexObject):
 
         tex.append(self.tail)
 
-        tex = [build(part) for part in tex]
+        tex = [build(part, self) for part in tex]
         return '\n'.join([part for part in tex if part])
 
     def build_body(self):
