@@ -15,9 +15,21 @@ class TestDocument:
 
     def test_set_margins(self, default_doc):
         default_doc.set_margins(margins='3cm')
-        assert default_doc.packages['geometry'] == {'top':'3cm', 'bottom':'3cm', 'left':'3cm', 'right':'3cm'}
+        assert default_doc.build(False, False, False) == cleandoc(
+                r'''
+                \documentclass{article}
+                \usepackage[utf8]{inputenc}
+                \usepackage[top=3cm, bottom=3cm, left=3cm, right=3cm]{geometry}
+                \begin{document}
+                \end{document}''')
         default_doc.set_margins(top='1cm', bottom='2cm', left='4cm', right='5cm')
-        assert default_doc.packages['geometry'] == {'top':'1cm', 'bottom':'2cm', 'left':'4cm', 'right':'5cm'}
+        assert default_doc.build(False, False, False) == cleandoc(
+                r'''
+                \documentclass{article}
+                \usepackage[utf8]{inputenc}
+                \usepackage[top=1cm, bottom=2cm, left=4cm, right=5cm]{geometry}
+                \begin{document}
+                \end{document}''')
 
     def test_repr(self, default_doc):
         assert repr(default_doc) == 'Document Default'
