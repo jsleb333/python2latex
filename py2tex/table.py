@@ -110,7 +110,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
             for j, value in enumerate(row):
                 if isinstance(value, float):
                     value = f'{{value:{self.float_format}}}'.format(value=value)
-                self.data[i,j] = build(value)
+                self.data[i,j] = build(value, self)
 
         # Apply highlights
         for i, j, highlight in self.highlights:
@@ -124,11 +124,11 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         table_format = np.array([[' & ']*(self.shape[1]-1) + [r'\\']]*self.shape[0], dtype=object)
         table_format = self._apply_multicells(table_format)
         for i, (row, row_format) in enumerate(zip(self.data, table_format)):
-            self.tabular.body.append(''.join(str(build(item)) for pair in zip(row, row_format) for item in pair))
+            self.tabular.body.append(''.join(str(build(item, self)) for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
                 for rule in self.rules[i]:
-                    self.tabular.body.append(rule.build())
-        self.tabular.build()
+                    self.tabular.body.append(build(rule))
+        build(self.tabular)
 
         self.tabular.head.parameters += (''.join(self.alignment),)
         if self.top_rule:
