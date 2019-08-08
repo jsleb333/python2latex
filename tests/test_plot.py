@@ -73,8 +73,6 @@ class TestPlot:
         os.remove('plot_test.csv')
 
 
-
-
 class TestAddPlot:
     def test_addplot_command(self):
         addplot = AddPlot(1, './some/path/to/plot.csv', 'red', 'dashed', line_width='2pt')
