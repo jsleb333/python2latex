@@ -3,7 +3,7 @@ from pytest import fixture
 from inspect import cleandoc
 import os
 
-from py2tex.plot import Plot
+from py2tex.plot import Plot, AddPlot
 
 
 class TestPlot:
@@ -19,3 +19,9 @@ class TestPlot:
             \end{figure}
             ''')
         os.remove('plot_test.csv')
+
+
+class TestAddPlot:
+    def test_addplot_command(self):
+        addplot = AddPlot(1, './some/path/to/plot.csv', 'red', 'dashed', line_width='2pt')
+        assert addplot.build() == r"\addplot[red, dashed, line width=2pt] table[x=x1, y=y1, col sep=comma]{./some/path/to/plot.csv};"

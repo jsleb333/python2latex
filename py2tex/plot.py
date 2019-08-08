@@ -189,5 +189,10 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
 
 
 class AddPlot(TexCommand):
-    def __init__(self, command, *parameters, options=list(), options_pos='second', **kwoptions):
-        super().__init__(command, *parameters, options=options, options_pos=options_pos, **kwoptions)
+    def __init__(self, col_number, plot_path, *options, **kwoptions):
+        self.col_number = col_number
+        self.plot_path = plot_path
+        super().__init__('addplot', options=options, options_pos='first', **kwoptions)
+
+    def build(self):
+        return super().build() + f" table[x=x{self.col_number}, y=y{self.col_number}, col sep=comma]{{{self.plot_path}}};"
