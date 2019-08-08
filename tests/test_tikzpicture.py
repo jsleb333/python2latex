@@ -27,7 +27,7 @@ class TestNode:
         assert n.name == 'node2'
 
     def test_non_default_node_name(self):
-        n = Node('', 'name')
+        n = Node('', node_name='name')
         assert n.name == 'name'
 
     def test_build_default(self):
@@ -35,7 +35,7 @@ class TestNode:
         assert n.build() == r'\node(node1) at (0, 0) {label};'
 
     def test_build_with_options(self):
-        n = Node('label', 'node name', 'draw', align='center')
+        n = Node('label', 'draw', node_name='node name', align='center')
         assert n.build() == r'\node[draw, align=center](node name) at (0, 0) {label};'
 
 
