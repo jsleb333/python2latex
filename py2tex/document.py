@@ -26,7 +26,7 @@ class Document(TexEnvironment):
         self.filepath = filepath
         self.file = TexFile(filename, filepath)
 
-        self.add_to_preamble(TexCommand('documentclass', doc_type, options=options, options_pos='first', **kwoptions))
+        self.doc_class = TexCommand('documentclass', doc_type, options=options, options_pos='first', **kwoptions)
 
         self.add_package('inputenc', 'utf8')
         self.set_margins('2.5cm')
@@ -62,7 +62,7 @@ class Document(TexEnvironment):
     def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True):
         tex = super().build()
 
-        tex = self.build_preamble() + '\n' + tex
+        tex = build(self.doc_class) + '\n' + self.build_preamble() + '\n' + tex
         if save_to_disk:
             self.file.save(tex)
 
@@ -75,9 +75,14 @@ class Document(TexEnvironment):
             if sys.platform.startswith('linux'):
                 open_command = 'xdg-open'
             else:
+<<<<<<< HEAD
                 open_command = 'open'
             subprocess.run([open_command, os.path.join(self.filepath, self.filename + ".pdf")])
 
+=======
+                open_command = 'start'
+            subprocess.run([open_command, self.filename + ".pdf"], shell=True)
+>>>>>>> dev
         return tex
 
 
