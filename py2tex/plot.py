@@ -6,7 +6,7 @@ import os, sys
 sys.path.append(os.getcwd())
 
 import py2tex
-from py2tex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment
+from py2tex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand
 
 
 class AxisProperty:
@@ -148,7 +148,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             legend (str): Entry of the plot.
             kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
         """
-        options = tuple(opt.replace('_', ' ') for opt in options)
+        options = tuple(opt.replace('_', ' ') for opt in options if isinstance(opt, str))
         kwoptions = {key.replace('_', ' '):value for key, value in kwoptions.items()}
         if isinstance(X, (int, float)) or not X.shape:
             X = np.array([X])
@@ -159,13 +159,14 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         for i, (X, Y, legend, options, kwoptions) in enumerate(self.plots):
             options = ', '.join(options)
             kwoptions = ', '.join('='.join((k, v)) for k, v in kwoptions.items())
-            if legend:
-                self.axis.add_text(fr"\addlegendentry{{{legend}}}")
-            else:
+            if not legend:
                 options += ', forget plot'
             if options and kwoptions:
                 options += ', '
             self.axis.add_text(f"\\addplot[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{os.path.join(self.plot_path, self.plot_name + '.csv')}}};")
+
+            if legend:
+                self.axis.add_text(fr"\addlegendentry{{{legend}}}")
 
     def save_to_csv(self):
         filepath = os.path.join(self.plot_path, self.plot_name + '.csv')
@@ -185,3 +186,8 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         self.axis.options += (f"every axis plot/.append style={{{', '.join('='.join([k,v]) for k,v in self.default_plot_kwoptions.items())}}}",)
 
         return super().build()
+
+
+class AddPlot(TexCommand):
+    def __init__(self, command, *parameters, options=list(), options_pos='second', **kwoptions):
+        super().__init__(command, *parameters, options=options, options_pos=options_pos, **kwoptions)
