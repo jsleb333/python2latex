@@ -148,25 +148,17 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             legend (str): Entry of the plot.
             kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
         """
-        options = tuple(opt.replace('_', ' ') for opt in options if isinstance(opt, str))
-        kwoptions = {key.replace('_', ' '):value for key, value in kwoptions.items()}
-        if isinstance(X, (int, float)) or not X.shape:
-            X = np.array([X])
-            Y = np.array([Y])
+        X = np.array([x for x in X])
+        Y = np.array([y for y in Y])
         self.plots.append((X, Y, legend, options, kwoptions))
 
     def _build_plots(self):
         for i, (X, Y, legend, options, kwoptions) in enumerate(self.plots):
-            options = ', '.join(options)
-            kwoptions = ', '.join('='.join((k, v)) for k, v in kwoptions.items())
-            if not legend:
-                options += ', forget plot'
-            if options and kwoptions:
-                options += ', '
-            self.axis.add_text(f"\\addplot[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{os.path.join(self.plot_path, self.plot_name + '.csv')}}};")
+            plot_path = os.path.join(self.plot_path, self.plot_name + '.csv')
+            self.axis += AddPlot(i, plot_path, *options, **kwoptions)
 
             if legend:
-                self.axis.add_text(fr"\addlegendentry{{{legend}}}")
+                self.axis += fr"\addlegendentry{{{legend}}}"
 
     def save_to_csv(self):
         filepath = os.path.join(self.plot_path, self.plot_name + '.csv')
