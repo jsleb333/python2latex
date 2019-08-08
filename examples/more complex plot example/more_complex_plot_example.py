@@ -1,4 +1,4 @@
-from py2tex import Document, Plot
+from py2tex import Document, Plot, Color
 import numpy as np
 
 # Create the document
@@ -17,8 +17,11 @@ Y2 = np.cos(X)
 plot = sec.new(Plot(plot_name=filename, plot_path=filepath))
 plot.caption = 'More complex plot'
 
-plot.add_plot(X, Y1, 'blue', 'dashed', legend='sine') # Add colors and legend to the plot
-plot.add_plot(X, Y2, 'orange', line_width='3pt', legend='cosine')
+nice_blue = Color(.07, .22, .29, color_name='nice_blue')
+nice_orange = Color(.85, .33, .28, color_name='nice_orange')
+
+plot.add_plot(X, Y1, nice_blue, 'dashed', legend='sine') # Add colors and legend to the plot
+plot.add_plot(X, Y2, nice_orange, line_width='3pt', legend='cosine')
 plot.legend_position = 'south east' # Place the legend where you want
 
 # Add a label to each axis
