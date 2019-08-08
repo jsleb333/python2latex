@@ -85,6 +85,9 @@ class TexObject:
         class_name = self.__name__ if '__name__' in self.__dict__ else self.__class__.__name__
         return f'{class_name} {self.name}'
 
+    def __str__(self):
+        return self.build()
+
     def build(self):
         """
         Builds the object. Should return a valid LaTeX string.
@@ -117,27 +120,27 @@ class TexCommand(TexObject):
         options = ''
 
         if self.options or self.kwoptions:
-            kwoptions = ', '.join('='.join((k.replace('_', ' '), str(v))) for k, v in self.kwoptions.items())
+            kwoptions = ', '.join('='.join((str(k).replace('_', ' '), str(v))) for k, v in self.kwoptions.items())
             options = ', '.join(self.options)
             if kwoptions and options:
                 options += ', '
             options = f'[{options}{kwoptions}]'
         if self.parameters:
-            parameters = f"{{{'}{'.join([build(param) for param in self.parameters])}}}"
+            parameters = f"{{{'}{'.join([str(param) for param in self.parameters])}}}"
 
         if self.options_pos == 'first':
             command += options
             if self.parameters:
-                command += f"{{{'}{'.join([build(param) for param in self.parameters])}}}"
+                command += f"{{{'}{'.join([str(param) for param in self.parameters])}}}"
         if self.options_pos == 'second':
             if self.parameters:
-                command += f'{{{build(self.parameters[0])}}}'
+                command += f'{{{str(self.parameters[0])}}}'
             command += options
             if len(self.parameters) > 1:
-                command += f"{{{'}{'.join([build(param) for param in self.parameters[1:]])}}}"
+                command += f"{{{'}{'.join([str(param) for param in self.parameters[1:]])}}}"
         elif self.options_pos == 'last':
             if self.parameters:
-                command += f"{{{'}{'.join([build(param) for param in self.parameters])}}}"
+                command += f"{{{'}{'.join([str(param) for param in self.parameters])}}}"
             command += options
 
         return command
