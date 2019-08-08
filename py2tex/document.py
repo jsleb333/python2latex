@@ -75,14 +75,8 @@ class Document(TexEnvironment):
             if sys.platform.startswith('linux'):
                 open_command = 'xdg-open'
             else:
-<<<<<<< HEAD
-                open_command = 'open'
-            subprocess.run([open_command, os.path.join(self.filepath, self.filename + ".pdf")])
-
-=======
                 open_command = 'start'
             subprocess.run([open_command, self.filename + ".pdf"], shell=True)
->>>>>>> dev
         return tex
 
 
