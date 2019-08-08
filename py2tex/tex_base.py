@@ -117,7 +117,7 @@ class TexCommand(TexObject):
         options = ''
 
         if self.options or self.kwoptions:
-            kwoptions = ', '.join('='.join((k, str(v))) for k, v in self.kwoptions.items())
+            kwoptions = ', '.join('='.join((k.replace('_', ' '), str(v))) for k, v in self.kwoptions.items())
             options = ', '.join(self.options)
             if kwoptions and options:
                 options += ', '
