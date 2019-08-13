@@ -6,7 +6,7 @@ import os, sys
 sys.path.append(os.getcwd())
 
 import py2tex
-from py2tex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment
+from py2tex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand
 
 
 class AxisProperty:
@@ -148,24 +148,19 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             legend (str): Entry of the plot.
             kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
         """
-        options = tuple(opt.replace('_', ' ') for opt in options)
-        kwoptions = {key.replace('_', ' '):value for key, value in kwoptions.items()}
-        if isinstance(X, (int, float)) or not X.shape:
-            X = np.array([X])
-            Y = np.array([Y])
+        X = np.array([x for x in X])
+        Y = np.array([y for y in Y])
         self.plots.append((X, Y, legend, options, kwoptions))
 
     def _build_plots(self):
         for i, (X, Y, legend, options, kwoptions) in enumerate(self.plots):
-            options = ', '.join(options)
-            kwoptions = ', '.join('='.join((k, v)) for k, v in kwoptions.items())
+            plot_path = os.path.join(self.plot_path, self.plot_name + '.csv')
+            plot = self.axis.new(AddPlot(i, plot_path, *options, **kwoptions))
+
             if legend:
-                self.axis.add_text(fr"\addlegendentry{{{legend}}}")
+                self.axis += fr"\addlegendentry{{{legend}}}"
             else:
-                options += ', forget plot'
-            if options and kwoptions:
-                options += ', '
-            self.axis.add_text(f"\\addplot[{options+kwoptions}] table[x=x{i}, y=y{i}, col sep=comma]{{{os.path.join(self.plot_path, self.plot_name + '.csv')}}};")
+                plot.options += ('forget plot',)
 
     def save_to_csv(self):
         filepath = os.path.join(self.plot_path, self.plot_name + '.csv')
@@ -185,3 +180,13 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         self.axis.options += (f"every axis plot/.append style={{{', '.join('='.join([k,v]) for k,v in self.default_plot_kwoptions.items())}}}",)
 
         return super().build()
+
+
+class AddPlot(TexCommand):
+    def __init__(self, col_number, plot_path, *options, **kwoptions):
+        self.col_number = col_number
+        self.plot_path = plot_path
+        super().__init__('addplot', options=options, options_pos='first', **kwoptions)
+
+    def build(self):
+        return super().build() + f" table[x=x{self.col_number}, y=y{self.col_number}, col sep=comma]{{{self.plot_path}}};"
