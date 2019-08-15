@@ -76,7 +76,7 @@ class Document(TexEnvironment):
                 open_command = 'xdg-open'
             else:
                 open_command = 'start'
-            subprocess.run([open_command, self.filename + ".pdf"], shell=True)
+            subprocess.run([open_command, self.filename + ".pdf"])
         return tex
 
 
