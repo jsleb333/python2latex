@@ -30,7 +30,7 @@ class TestPlot:
             \centering
             \begin{tikzpicture}
             \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
-            \addplot[red, line width=2pt] table[x=x0, y=y0, col sep=comma]{.\plot_test.csv};
+            \addplot[red, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
             \addlegendentry{Legend}
             \end{axis}
             \end{tikzpicture}
@@ -47,7 +47,7 @@ class TestPlot:
             \centering
             \begin{tikzpicture}
             \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
-            \addplot[red, forget plot, line width=2pt] table[x=x0, y=y0, col sep=comma]{.\plot_test.csv};
+            \addplot[red, forget plot, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
             \end{axis}
             \end{tikzpicture}
             \end{figure}
@@ -64,7 +64,7 @@ class TestPlot:
             \centering
             \begin{tikzpicture}
             \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
-            \addplot[spam, line width=2pt] table[x=x0, y=y0, col sep=comma]{.\plot_test.csv};
+            \addplot[spam, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
             \addlegendentry{Legend}
             \end{axis}
             \end{tikzpicture}
