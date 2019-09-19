@@ -3,7 +3,6 @@ from datetime import datetime as dt
 import numpy as np
 import itertools
 import os, sys
-sys.path.append(os.getcwd())
 
 import py2tex
 from py2tex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand
@@ -154,7 +153,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
 
     def _build_plots(self):
         for i, (X, Y, legend, options, kwoptions) in enumerate(self.plots):
-            plot_path = os.path.join(self.plot_path, self.plot_name + '.csv')
+            plot_path = self.plot_path + '/' + self.plot_name + '.csv'
             plot = self.axis.new(AddPlot(i, plot_path, *options, **kwoptions))
 
             if legend:
@@ -185,6 +184,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
 class AddPlot(TexCommand):
     def __init__(self, col_number, plot_path, *options, **kwoptions):
         self.col_number = col_number
+        # self.plot_path = os.path.abspath(plot_path).replace('\\', '/')
         self.plot_path = plot_path
         super().__init__('addplot', options=options, options_pos='first', **kwoptions)
 

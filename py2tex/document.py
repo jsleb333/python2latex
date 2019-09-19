@@ -74,9 +74,10 @@ class Document(TexEnvironment):
             os.chdir(self.filepath)
             if sys.platform.startswith('linux'):
                 open_command = 'xdg-open'
+                subprocess.run([open_command, self.filename + ".pdf"])
             else:
                 open_command = 'start'
-            subprocess.run([open_command, self.filename + ".pdf"])
+                subprocess.run([open_command, self.filename + ".pdf"], shell=True)
         return tex
 
 
