@@ -1,6 +1,6 @@
-# Py2TeX: The Python to LaTeX converter
+# Python2LaTeX: The Python to LaTeX converter
 
-Did you ever feel overwhelmed by the cumbersomeness of LaTeX to produce quality tables and figures? Fear no more, Py2TeX is here! Produce perfect tables automatically and easily, create figures and plots that integrates seamlessly into your tex file, or even write your complete article directly from Python! All that effortlessly (or almost) with Py2TeX.
+Did you ever feel overwhelmed by the cumbersomeness of LaTeX to produce quality tables and figures? Fear no more, Python2LaTeX is here! Produce perfect tables automatically and easily, create figures and plots that integrates seamlessly into your tex file, or even write your complete article directly from Python! All that effortlessly (or almost) with Python2LaTeX.
 
 ## Prerequisites
 
@@ -10,7 +10,7 @@ The package makes use of numpy and assumes a distribution of LaTeX that uses ``p
 
 To install the package on your session, simply clone the repository with
 
-    git clone https://github.com/jsleb333/py2tex.git
+    git clone https://github.com/jsleb333/python2latex.git
 
 then run the command
 
@@ -24,7 +24,7 @@ to make the module known to Python and to be able to import it in any Python she
 
 The following example shows how to create a document with a single section and some text.
 ```python
-from py2tex import Document
+from python2latex import Document
 
 doc = Document(filename='simple_document_example', filepath='./examples/simple document example', doc_type='article', options=('12pt',))
 doc.set_margins(top='3cm', bottom='3cm', margins='2cm')
@@ -40,7 +40,7 @@ print(tex) # Prints the tex string that generated the pdf
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src="https://github.com/jsleb333/py2tex/blob/master/examples/simple%20document%20example/simple_document_example.jpg" alt="Simple document">
+<img src="https://github.com/jsleb333/python2latex/blob/master/examples/simple%20document%20example/simple_document_example.jpg" alt="Simple document">
 </p>
 </details>
 
@@ -49,7 +49,7 @@ print(tex) # Prints the tex string that generated the pdf
 
 This example shows how to generate automatically a table from data taken directly from a numpy array. The module allows to add merged cells easily, to add rules where you want and even to highlight the best value automatically inside a specified area! To ease these operations, the the square brackets ('getitem') operator have been repurposed to select an area of the table instead of returning the actual values contained in the table. Once an area is selected, use the 'multicell', 'add_rule' or 'highlight_best' methods. To get the actual values inside the table, one can use the 'data' attribute of the table.
 ```python
-from py2tex import Document, Table, build
+from python2latex import Document, Table, build
 import numpy as np
 
 doc = Document(filename='table_from_numpy_array_example', filepath='examples/table from numpy array example', doc_type='article', options=('12pt',))
@@ -103,7 +103,7 @@ print(tex)
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src="https://github.com/jsleb333/py2tex/blob/master/examples/table%20from%20numpy%20array%20example/table_from_numpy_array_example.jpg" alt="Table from numpy result">
+<img src="https://github.com/jsleb333/python2latex/blob/master/examples/table%20from%20numpy%20array%20example/table_from_numpy_array_example.jpg" alt="Table from numpy result">
 </p>
 </details>
 
@@ -112,7 +112,7 @@ print(tex)
 ### Create a simple plot
 You can plot curves as easily as with `matplotlib.pyplot.plot` with the `Plot` environement that compiles it directly into pdf! This is a wrapper around the `pgfplots` and `pgfplotstable` LaTeX packages.
 ```python
-from py2tex import Document, Plot
+from python2latex import Document, Plot
 import numpy as np
 
 # Document type 'standalone' will only show the plot, but does not support all tex environments.
@@ -135,7 +135,7 @@ tex = doc.build()
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src="https://github.com/jsleb333/py2tex/blob/master/examples/simple%20plot%20example/simple_plot_example.jpg" alt="Simple plot result">
+<img src="https://github.com/jsleb333/python2latex/blob/master/examples/simple%20plot%20example/simple_plot_example.jpg" alt="Simple plot result">
 </p>
 </details>
 
@@ -143,7 +143,7 @@ tex = doc.build()
 ### Create a more complex plot
 You can make more complex plots with the options shown in this example.
 ```python
-from py2tex import Document, Plot
+from python2latex import Document, Plot
 import numpy as np
 
 # Create the document
@@ -190,14 +190,14 @@ tex = doc.build()
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src="https://github.com/jsleb333/py2tex/blob/master/examples/more%20complex%20plot%20example/more_complex_plot_example.jpg" alt="More complex plot result">
+<img src="https://github.com/jsleb333/python2latex/blob/master/examples/more%20complex%20plot%20example/more_complex_plot_example.jpg" alt="More complex plot result">
 </p>
 </details>
 
 ### Create an unsupported environment
 If some environment is not currently supported, you can create one from the TexEnvironment base class.
 ```python
-from py2tex import Document, TexEnvironment
+from python2latex import Document, TexEnvironment
 
 doc = Document(filename='unsupported_env_example', doc_type='article', filepath='examples/unsupported env example', options=('12pt',))
 
@@ -217,7 +217,7 @@ print(tex)
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src="https://github.com/jsleb333/py2tex/blob/master/examples/unsupported%20env%20example/unsupported_env_example.jpg" alt="Unsupported environment result">
+<img src="https://github.com/jsleb333/python2latex/blob/master/examples/unsupported%20env%20example/unsupported_env_example.jpg" alt="Unsupported environment result">
 </p>
 </details>
 
@@ -225,7 +225,7 @@ print(tex)
 ### Binding objects to environments
 To alleviate syntax, it is possible to bind TexObject classes to an instance of a TexEnvironment. This creates an alternative class that automatically append any new instance of the class to the environment.
 ```python
-from py2tex import Document, Section, Subsection, TexEnvironment
+from python2latex import Document, Section, Subsection, TexEnvironment
 
 doc = Document(filename='binding_objects_to_environments_example', filepath='./examples/binding objects to environments example', doc_type='article', options=('12pt',))
 section = doc.bind(Section) # section is now a new class that creates Section instances that are automatically appended to 'doc'
@@ -254,7 +254,7 @@ print(tex) # Prints the tex string that generated the pdf
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src="https://github.com/jsleb333/py2tex/blob/master/examples/binding%20objects%20to%20environments%20example/binding_objects_to_environments_example.jpg" alt="Binding objects to environments result">
+<img src="https://github.com/jsleb333/python2latex/blob/master/examples/binding%20objects%20to%20environments%20example/binding_objects_to_environments_example.jpg" alt="Binding objects to environments result">
 </p>
 </details>
 

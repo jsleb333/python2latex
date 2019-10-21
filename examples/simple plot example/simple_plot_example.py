@@ -1,4 +1,4 @@
-from py2tex import Document, Plot
+from python2latex import Document, Plot
 import numpy as np
 
 # Document type 'standalone' will only show the plot, but does not support all tex environments.

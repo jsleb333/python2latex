@@ -1,4 +1,4 @@
-from py2tex import Document, Section, Subsection, TexEnvironment
+from python2latex import Document, Section, Subsection, TexEnvironment
 
 doc = Document(filename='binding_objects_to_environments_example', filepath='./examples/binding objects to environments example', doc_type='article', options=('12pt',))
 section = doc.bind(Section) # section is now a new class that creates Section instances that are automatically appended to 'doc'

@@ -1,4 +1,4 @@
-from py2tex import Document, TexEnvironment
+from python2latex import Document, TexEnvironment
 
 doc = Document(filename='unsupported_env_example', doc_type='article', filepath='examples/unsupported env example', options=('12pt',))
 

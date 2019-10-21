@@ -1,4 +1,4 @@
-from py2tex import TexObject, TexCommand
+from python2latex import TexObject, TexCommand
 
 
 class DefineColor(TexCommand):

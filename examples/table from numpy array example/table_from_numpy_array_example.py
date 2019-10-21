@@ -1,4 +1,4 @@
-from py2tex import Document, Table, build
+from python2latex import Document, Table, build
 import numpy as np
 
 doc = Document(filename='table_from_numpy_array_example', filepath='examples/table from numpy array example', doc_type='article', options=('12pt',))

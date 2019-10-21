@@ -4,8 +4,8 @@ import numpy as np
 import itertools
 import os, sys
 
-import py2tex
-from py2tex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand
+import python2latex
+from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand
 
 
 class _AxisProperty:

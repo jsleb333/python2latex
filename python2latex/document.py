@@ -1,6 +1,6 @@
 import subprocess, os, sys
 
-from py2tex import TexFile, TexEnvironment, TexCommand, build
+from python2latex import TexFile, TexEnvironment, TexCommand, build
 
 
 class Document(TexEnvironment):

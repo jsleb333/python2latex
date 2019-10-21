@@ -2,7 +2,7 @@ import pytest
 from pytest import fixture
 from inspect import cleandoc
 
-from py2tex.table import *
+from python2latex.table import *
 
 
 @fixture

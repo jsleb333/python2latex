@@ -2,7 +2,7 @@ import pytest
 from pytest import fixture
 from inspect import cleandoc
 
-from py2tex import TexEnvironment, Document, Section, Subsection
+from python2latex import TexEnvironment, Document, Section, Subsection
 
 
 @fixture

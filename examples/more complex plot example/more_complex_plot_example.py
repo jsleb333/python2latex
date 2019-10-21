@@ -1,4 +1,4 @@
-from py2tex import Document, Plot, Color
+from python2latex import Document, Plot, Color
 import numpy as np
 
 # Create the document

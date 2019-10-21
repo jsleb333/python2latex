@@ -1,5 +1,5 @@
 import warnings
-from py2tex import TexEnvironment, TexObject, TexCommand, build
+from python2latex import TexEnvironment, TexObject, TexCommand, build
 
 class Caption(TexCommand):
     """

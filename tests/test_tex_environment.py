@@ -1,8 +1,8 @@
 import pytest
 from inspect import cleandoc
 
-from py2tex.tex_environment import *
-from py2tex.tex_base import *
+from python2latex.tex_environment import *
+from python2latex.tex_base import *
 
 
 class TestTexEnvironment:

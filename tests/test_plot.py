@@ -3,8 +3,8 @@ from pytest import fixture
 from inspect import cleandoc
 import os
 
-from py2tex.plot import Plot, AddPlot
-from py2tex.color import Color
+from python2latex.plot import Plot, AddPlot
+from python2latex.color import Color
 
 
 class TestPlot:

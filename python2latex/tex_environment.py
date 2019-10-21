@@ -1,5 +1,5 @@
 from functools import wraps
-from py2tex import TexObject, TexCommand, build
+from python2latex import TexObject, TexCommand, build
 
 
 class begin(TexCommand):
@@ -110,7 +110,7 @@ class TexEnvironment(TexObject):
         Binds the classes so that any new instances will automatically be appended to the body of the current environment. Note that the binded classes are new classes and the original classes are left unchanged.
 
         Usage example:
-        >>> from py2tex import Document, Section
+        >>> from python2latex import Document, Section
         >>> doc = Document('Title')
         >>> section = doc.bind(Section)
         >>> sec1 = section('Section 1')

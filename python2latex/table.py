@@ -1,6 +1,6 @@
 import numpy as np
-from py2tex import TexEnvironment, TexCommand, build, bold, italic
-from py2tex import FloatingTable, FloatingEnvironmentMixin
+from python2latex import TexEnvironment, TexCommand, build, bold, italic
+from python2latex import FloatingTable, FloatingEnvironmentMixin
 
 
 """

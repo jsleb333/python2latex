@@ -1,6 +1,6 @@
 .vscode/
 .vs/
-py2tex.code-workspace
+python2latex.code-workspace
 
 *.tex
 *.log

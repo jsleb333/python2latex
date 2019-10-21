@@ -2,8 +2,8 @@ import pytest
 from inspect import cleandoc
 import os
 
-from py2tex.color import *
-from py2tex import build, Document, TexCommand
+from python2latex.color import *
+from python2latex import build, Document, TexCommand
 
 
 class TestColor:
