@@ -2,7 +2,14 @@ import warnings
 from py2tex import TexEnvironment, TexObject, TexCommand, build
 
 class Caption(TexCommand):
+    """
+    Simple caption command.
+    """
     def __init__(self, caption):
+        """
+        Args:
+            caption (str): Caption of the environment.
+        """
         super().__init__('caption', caption)
 
 
