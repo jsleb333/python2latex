@@ -19,3 +19,4 @@ python2latex.code-workspace
 *.csv
 
 .pytest_cache/
+*/__pycache__/
