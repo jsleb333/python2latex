@@ -3,16 +3,25 @@ from py2tex import TexObject, TexCommand, build
 
 
 class begin(TexCommand):
+    """
+    'begin' tex command wrapper.
+    """
     def __init__(self, environment, *parameters, options=list(), options_pos='second', **kwoptions):
         return super().__init__('begin', environment, *parameters, options=options, options_pos=options_pos, **kwoptions)
 
 
 class end(TexCommand):
+    """
+    'end' tex command wrapper.
+    """
     def __init__(self, environment):
         return super().__init__('end', environment)
 
 
 class Label(TexCommand):
+    """
+    'label' tex command wrapper.
+    """
     def __init__(self, label, prefix=None):
         self.label = label
         self.prefix = prefix
