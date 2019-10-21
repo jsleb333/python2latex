@@ -19,7 +19,7 @@ class Document(TexEnvironment):
             kwoptions (keyword options of the document type): Options should be strings. The dict is converted to string when building to tex. See template below.
 
         The doc_type, options and kwoptions arguments will be compiled in the following way:
-            \documentclass[*options*, **kwoptions]{doc_type}
+            \documentclass[*options, **kwoptions]{doc_type}
         """
         super().__init__('document')
         self.filename = filename
@@ -60,6 +60,17 @@ class Document(TexEnvironment):
         return self.new(Section(name, label=label))
 
     def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True):
+        """
+        Builds the document to a tex file and optionally compiles it into tex and show the output pdf in the default pdf reader of the system.
+
+        Args:
+            save_to_disk (bool): If True, the built tex will be save to disk automatically. Else, one can recover the tex string from the return of the current methond.
+            compile_to_pdf (bool): If True, automatically call pdflatex to compile the generated tex file to pdf.
+            show_pdf (bool): If True, the default pdf reader will be called to show the compiled pdf. This may not work well with non-read-only pdf viewer such as Acrobat Reader or Foxit Reader.
+
+        Returns:
+            The tex string of the file.
+        """
         tex = super().build()
 
         tex = build(self.doc_class) + '\n' + self.build_preamble() + '\n' + tex
