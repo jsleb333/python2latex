@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="python2latex-jsleb333",
+    name="python2latex",
     version=version,
     author="Jean-Samuel Leboeuf",
     author_email="jean-samuel.leboeuf.1@ulaval.ca",
