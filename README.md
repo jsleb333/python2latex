@@ -8,15 +8,9 @@ The package makes use of numpy and assumes a distribution of LaTeX that uses ``p
 
 ## Installation
 
-To install the package on your session, simply clone the repository with
+To install the package, simply run in your terminal the command
 
-    git clone https://github.com/jsleb333/python2latex.git
-
-then run the command
-
-    pip install .
-
-to make the module known to Python and to be able to import it in any Python shell.
+    pip install python2latex
 
 ## Examples
 
