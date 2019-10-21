@@ -182,6 +182,9 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
 
 
 class AddPlot(TexCommand):
+    """
+    Simple addplot tex command wrapper.
+    """
     def __init__(self, col_number, plot_path, *options, **kwoptions):
         self.col_number = col_number
         # self.plot_path = os.path.abspath(plot_path).replace('\\', '/')
