@@ -1,18 +1,27 @@
 from functools import wraps
-from py2tex import TexObject, TexCommand, build
+from python2latex import TexObject, TexCommand, build
 
 
 class begin(TexCommand):
+    """
+    'begin' tex command wrapper.
+    """
     def __init__(self, environment, *parameters, options=list(), options_pos='second', **kwoptions):
         return super().__init__('begin', environment, *parameters, options=options, options_pos=options_pos, **kwoptions)
 
 
 class end(TexCommand):
+    """
+    'end' tex command wrapper.
+    """
     def __init__(self, environment):
         return super().__init__('end', environment)
 
 
 class Label(TexCommand):
+    """
+    'label' tex command wrapper.
+    """
     def __init__(self, label, prefix=None):
         self.label = label
         self.prefix = prefix
@@ -101,7 +110,7 @@ class TexEnvironment(TexObject):
         Binds the classes so that any new instances will automatically be appended to the body of the current environment. Note that the binded classes are new classes and the original classes are left unchanged.
 
         Usage example:
-        >>> from py2tex import Document, Section
+        >>> from python2latex import Document, Section
         >>> doc = Document('Title')
         >>> section = doc.bind(Section)
         >>> sec1 = section('Section 1')

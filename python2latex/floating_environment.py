@@ -1,14 +1,21 @@
 import warnings
-from py2tex import TexEnvironment, TexObject, TexCommand, build
+from python2latex import TexEnvironment, TexObject, TexCommand, build
 
 class Caption(TexCommand):
+    """
+    Simple caption command.
+    """
     def __init__(self, caption):
+        """
+        Args:
+            caption (str): Caption of the environment.
+        """
         super().__init__('caption', caption)
 
 
 class _FloatingEnvironment(TexEnvironment):
     """
-    LaTeX floating environment.
+    LaTeX floating environment. This should be inherited.
     """
     def __init__(self, env_name, position='h!', label='', label_pos='bottom', caption='', centered=True):
         """
@@ -83,6 +90,8 @@ class FloatingEnvironmentMixin:
     Example:
     >>> class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     ...     pass
+
+    See the Table and the Plot environments for complete examples.
     """
     def __init__(self, *args, as_float_env=True, centered=True, **kwargs):
         """

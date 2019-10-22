@@ -2,6 +2,10 @@
 
 ## Version 0.1.6
 
+### October 21, 2019
+- Added documentations throughout the code.
+- First release.
+
 ### August 6, 2019
 
 - Added Color object.

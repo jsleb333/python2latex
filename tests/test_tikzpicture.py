@@ -2,7 +2,7 @@ import pytest
 from pytest import fixture
 from inspect import cleandoc
 
-from py2tex.tikzpicture import *
+from python2latex.tikzpicture import *
 
 
 class TestTikzPicture:

@@ -2,8 +2,8 @@ import pytest
 from pytest import fixture
 from inspect import cleandoc
 
-from py2tex.floating_environment import *
-from py2tex.floating_environment import _FloatingEnvironment
+from python2latex.floating_environment import *
+from python2latex.floating_environment import _FloatingEnvironment
 
 def test_Caption():
     assert Caption('some caption').build() == r'\caption{some caption}'

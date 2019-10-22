@@ -1,4 +1,4 @@
-from py2tex import Document
+from python2latex import Document
 
 doc = Document(filename='simple_document_example', filepath='./examples/simple document example', doc_type='article', options=('12pt',))
 doc.set_margins(top='3cm', bottom='3cm', margins='2cm')

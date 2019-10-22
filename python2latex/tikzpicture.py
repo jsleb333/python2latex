@@ -1,6 +1,6 @@
 import numpy as np
-from py2tex import TexCommand, TexEnvironment, build
-from py2tex import FloatingFigure, FloatingEnvironmentMixin
+from python2latex import TexCommand, TexEnvironment, build
+from python2latex import FloatingFigure, FloatingEnvironmentMixin
 
 
 class TikzPicture(FloatingEnvironmentMixin, super_class=FloatingFigure):

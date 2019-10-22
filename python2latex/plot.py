@@ -4,11 +4,11 @@ import numpy as np
 import itertools
 import os, sys
 
-import py2tex
-from py2tex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand
+import python2latex
+from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand
 
 
-class AxisProperty:
+class _AxisProperty:
     def __init__(self, param_name):
         self.param_name = param_name
 
@@ -19,13 +19,13 @@ class AxisProperty:
         obj.axis.kwoptions[self.param_name] = value
 
 
-class AxisTicksProperty(AxisProperty):
+class _AxisTicksProperty(_AxisProperty):
     def __set__(self, obj, value):
         value = '{' + ','.join(f"{v:.3f}" for v in value) + '}'
         obj.axis.kwoptions[self.param_name] = value
 
 
-class AxisTicksLabelsProperty(AxisProperty):
+class _AxisTicksLabelsProperty(_AxisProperty):
     def __set__(self, obj, value):
         value = '{' + ','.join(value) + '}'
         obj.axis.kwoptions[self.param_name] = value
@@ -123,18 +123,18 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         if len(X_Y) % 2 != 0: # Copies matplotlib.pyplot.plot() behavior
             self.add_plot(np.arange(len(X_Y[-1])), X_Y[-1])
 
-    x_max = AxisProperty('xmax')
-    x_min = AxisProperty('xmin')
-    y_max = AxisProperty('ymax')
-    y_min = AxisProperty('ymin')
-    x_label = AxisProperty('xlabel')
-    y_label = AxisProperty('ylabel')
-    x_ticks = AxisTicksProperty('xtick')
-    y_ticks = AxisTicksProperty('ytick')
-    x_ticks_labels = AxisTicksLabelsProperty('xticklabels')
-    y_ticks_labels = AxisTicksLabelsProperty('yticklabels')
+    x_max = _AxisProperty('xmax')
+    x_min = _AxisProperty('xmin')
+    y_max = _AxisProperty('ymax')
+    y_min = _AxisProperty('ymin')
+    x_label = _AxisProperty('xlabel')
+    y_label = _AxisProperty('ylabel')
+    x_ticks = _AxisTicksProperty('xtick')
+    y_ticks = _AxisTicksProperty('ytick')
+    x_ticks_labels = _AxisTicksLabelsProperty('xticklabels')
+    y_ticks_labels = _AxisTicksLabelsProperty('yticklabels')
 
-    legend_position = AxisProperty('legend pos')
+    legend_position = _AxisProperty('legend pos')
 
     def add_plot(self, X, Y, *options, legend=None, **kwoptions):
         """
@@ -182,6 +182,9 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
 
 
 class AddPlot(TexCommand):
+    """
+    Simple addplot tex command wrapper.
+    """
     def __init__(self, col_number, plot_path, *options, **kwoptions):
         self.col_number = col_number
         # self.plot_path = os.path.abspath(plot_path).replace('\\', '/')

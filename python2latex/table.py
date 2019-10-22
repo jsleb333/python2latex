@@ -1,6 +1,6 @@
 import numpy as np
-from py2tex import TexEnvironment, TexCommand, build, bold, italic
-from py2tex import FloatingTable, FloatingEnvironmentMixin
+from python2latex import TexEnvironment, TexCommand, build, bold, italic
+from python2latex import FloatingTable, FloatingEnvironmentMixin
 
 
 """
@@ -9,7 +9,16 @@ TODO:
 """
 
 class Rule(TexCommand):
+    """
+    Simple rule object to handle rules added to tables.
+    """
     def __init__(self, start, end, trim):
+        """
+        Args:
+            start (int): Row index where the rule starts (included).
+            end (int): Row index where the rule ends (excluded).
+            trim (str): Any valid LaTeX trim value (see the booktabs package).
+        """
         self.start = start
         self.end = end
         self.trim = trim

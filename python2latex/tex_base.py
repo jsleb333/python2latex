@@ -148,6 +148,9 @@ class TexCommand(TexObject):
 
 
 class Package(TexCommand):
+    """
+    'usepackage' tex command wrapper.
+    """
     def __init__(self, package_name, *options, **kwoptions):
         super().__init__('usepackage', package_name, options=options, options_pos='first', **kwoptions)
 
