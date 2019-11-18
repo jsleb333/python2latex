@@ -123,6 +123,8 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         if len(X_Y) % 2 != 0: # Copies matplotlib.pyplot.plot() behavior
             self.add_plot(np.arange(len(X_Y[-1])), X_Y[-1])
 
+        self.matrix_plot = None
+
     x_max = _AxisProperty('xmax')
     x_min = _AxisProperty('xmin')
     y_max = _AxisProperty('ymax')
@@ -151,15 +153,40 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         Y = np.array([y for y in Y])
         self.plots.append((X, Y, legend, options, kwoptions))
 
+    def add_matrix_plot(self, X, Y, Z, *options, colorbar=True, **kwoptions):
+        """
+        Adds a matrix plot to the axis.
+
+        Args:
+            X (sequence of numbers): X coordinates. Should have the same length as the first dimension of Z.
+            Y (sequence of numbers): Y coordinates. Should have the same length as the second dimension of Z.
+            Z (Array of numbers of dim (x_dim, y_dim)): Z coordinates.
+            options (tuple of str): Options for the plot. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+            colorbar (str): Colorbar legend.
+            kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+        """
+        X = np.array([x for x in X])
+        Y = np.array([y for y in Y])
+        Z = np.array([[z for z in z_row] for z_row in Z])
+        assert Z.shape == X.shape + Y.shape
+        if colorbar:
+            self.axis.options += ('colorbar',)
+        self.matrix_plot = (X, Y, Z, options, kwoptions)
+
     def _build_plots(self):
+        plot_path = self.plot_path + '/' + self.plot_name + '.csv'
         for i, (X, Y, legend, options, kwoptions) in enumerate(self.plots):
-            plot_path = self.plot_path + '/' + self.plot_name + '.csv'
             plot = self.axis.new(AddPlot(i, plot_path, *options, **kwoptions))
 
             if legend:
                 self.axis += fr"\addlegendentry{{{legend}}}"
             else:
                 plot.options += ('forget plot',)
+
+        if self.matrix_plot:
+            X, Y, Z, options, kwoptions = self.matrix_plot
+            options += (f'mesh/rows={len(X)}',)
+            self.axis += AddMatrixPlot('_color', plot_path, *options, **kwoptions)
 
     def save_to_csv(self):
         filepath = os.path.join(self.plot_path, self.plot_name + '.csv')
@@ -168,9 +195,16 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             writer = csv.writer(file)
 
             titles = [coor for i in range(len(self.plots)) for coor in (f'x{i}', f'y{i}')]
+            if self.matrix_plot:
+                titles += ['x_color', 'y_color', 'z_color']
             writer.writerow(titles)
-            X_Y = [x_y for x, y, *_ in self.plots for x_y in (x, y)]
-            for row in itertools.zip_longest(*X_Y, fillvalue=''):
+            data = [x_y for x, y, *_ in self.plots for x_y in (x, y)]
+            if self.matrix_plot:
+                X, Y, Z, *_ = self.matrix_plot
+                XX, YY = np.meshgrid(X, Y)
+                data += [XX.reshape(-1), YY.reshape(-1), Z.reshape(-1)]
+
+            for row in itertools.zip_longest(*data, fillvalue=''):
                 writer.writerow(row)
 
     def build(self):
@@ -202,7 +236,8 @@ class AddMatrixPlot(TexCommand):
     def __init__(self, col_number, plot_path, *options, **kwoptions):
         self.col_number = col_number
         self.plot_path = plot_path
-        super().__init__('addplot', options=options+('matrix plot',), options_pos='first', **kwoptions)
+        options = options+('matrix plot',)
+        super().__init__('addplot', options=options, options_pos='first', **kwoptions)
 
     def build(self):
-        return super().build() + f" table[x=x{self.col_number}, y=y{self.col_number}, meta=c{self.col_number}, col sep=comma]{{{self.plot_path}}};"
+        return super().build() + f" table[x=x{self.col_number}, y=y{self.col_number}, meta=z{self.col_number}, col sep=comma]{{{self.plot_path}}};"

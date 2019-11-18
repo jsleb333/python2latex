@@ -97,6 +97,41 @@ class TestPlot:
         finally:
             shutil.rmtree('./some_doc_path/')
 
+    def test_add_matrix_plot(self):
+        plot = Plot(plot_name='matrix_plot_test')
+        plot.add_matrix_plot(list(range(10)), list(range(10)), [[i for i in range(10)] for _ in range(10)])
+        assert plot.build() == cleandoc(
+            r'''
+            \begin{figure}[h!]
+            \centering
+            \begin{tikzpicture}
+            \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, colorbar, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \addplot[matrix plot] table[x=x_color, y=y_color, meta=z_color, col sep=comma]{./matrix_plot_test.csv};
+            \end{axis}
+            \end{tikzpicture}
+            \end{figure}
+            ''')
+        os.remove('matrix_plot_test.csv')
+
+    def test_build_pdf_with_matrix_plot(self):
+        filepath = './some_doc_path/'
+        plotpath = filepath + 'plot_path/'
+        doc_name = 'Doc name'
+        plot_name = 'plot_name'
+        doc = Document(doc_name, filepath=filepath)
+        X = list(range(10))
+        Y = list(range(10))
+        Z = [[i for i in range(10)] for _ in range(10)]
+        plot = doc.new(Plot(plot_name=plot_name, plot_path=plotpath))
+        plot.add_matrix_plot(X, Y, Z)
+        try:
+            doc.build(show_pdf=False)
+            assert os.path.exists(filepath + doc_name + '.tex')
+            assert os.path.exists(filepath + doc_name + '.pdf')
+            assert os.path.exists(plotpath + plot_name + '.csv')
+        finally:
+            # shutil.rmtree('./some_doc_path/')
+            pass
 
 class TestAddPlot:
     def test_addplot_command(self):
@@ -107,4 +142,4 @@ class TestAddPlot:
 class TestAddMatrixPlot:
     def test_addmatrixplot_command(self):
         add_matrix_plot = AddMatrixPlot(1, './some/path/to/plot.csv')
-        assert add_matrix_plot.build() == r"\addplot[matrix plot] table[x=x1, y=y1, meta=c1, col sep=comma]{./some/path/to/plot.csv};"
+        assert add_matrix_plot.build() == r"\addplot[matrix plot] table[x=x1, y=y1, meta=z1, col sep=comma]{./some/path/to/plot.csv};"
