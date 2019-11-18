@@ -82,13 +82,18 @@ class Document(TexEnvironment):
             self.file._compile_to_pdf()
 
         if show_pdf:
-            os.chdir(self.filepath)
-            if sys.platform.startswith('linux'):
-                open_command = 'xdg-open'
-                subprocess.run([open_command, self.filename + ".pdf"])
-            else:
-                open_command = 'start'
-                subprocess.run([open_command, self.filename + ".pdf"], shell=True)
+            cwd = os.getcwd()
+            try:
+                os.chdir(self.filepath)
+                if sys.platform.startswith('linux'):
+                    open_command = 'xdg-open'
+                    subprocess.run([open_command, self.filename + ".pdf"])
+                else:
+                    open_command = 'start'
+                    subprocess.run([open_command, self.filename + ".pdf"], shell=True)
+            finally:
+                os.chdir(cwd)
+
         return tex
 
 

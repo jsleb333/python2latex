@@ -1,6 +1,7 @@
 import pytest
 from pytest import fixture
 from inspect import cleandoc
+import os, shutil
 
 from python2latex import TexEnvironment, Document, Section, Subsection
 
@@ -73,6 +74,18 @@ class TestDocument:
                 Hey
                 \end{section}
                 \end{document}''')
+
+    def test_build_to_other_relative_path(self):
+        filepath = './some_doc_path/'
+        doc_name = 'Doc name'
+        doc = Document(doc_name, filepath=filepath)
+        doc += 'Some text'
+        try:
+            doc.build(show_pdf=False)
+            assert os.path.exists(filepath + doc_name + '.tex')
+            assert os.path.exists(filepath + doc_name + '.pdf')
+        finally:
+            shutil.rmtree('./some_doc_path/')
 
 
 class TestSection:
