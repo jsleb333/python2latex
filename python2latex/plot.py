@@ -163,6 +163,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
 
     def save_to_csv(self):
         filepath = os.path.join(self.plot_path, self.plot_name + '.csv')
+        os.makedirs(self.plot_path, exist_ok=True)
         with open(filepath, 'w', newline='') as file:
             writer = csv.writer(file)
 

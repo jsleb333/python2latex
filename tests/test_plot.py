@@ -1,10 +1,11 @@
 import pytest
 from pytest import fixture
 from inspect import cleandoc
-import os
+import os, shutil
 
 from python2latex.plot import Plot, AddPlot
 from python2latex.color import Color
+from python2latex.document import Document
 
 
 class TestPlot:
@@ -71,6 +72,30 @@ class TestPlot:
             \end{figure}
             ''')
         os.remove('plot_test.csv')
+
+    def test_save_csv_to_right_path(self):
+        filepath = './some_doc_path/'
+        plotpath = filepath + 'plot_path/'
+        plot_name = 'plot_name'
+        plot = Plot([1,2,3], [1,2,3], plot_name=plot_name, plot_path=plotpath)
+        plot.build()
+        assert os.path.exists(plotpath + plot_name + '.csv')
+        shutil.rmtree(filepath)
+
+    def test_build_pdf_to_other_relative_path(self):
+        filepath = './some_doc_path/'
+        plotpath = filepath + 'plot_path/'
+        doc_name = 'Doc name'
+        plot_name = 'plot_name'
+        doc = Document(doc_name, filepath=filepath)
+        plot = doc.new(Plot([1,2,3], [1,2,3], plot_name=plot_name, plot_path=plotpath))
+        try:
+            doc.build(show_pdf=False)
+            assert os.path.exists(filepath + doc_name + '.tex')
+            assert os.path.exists(filepath + doc_name + '.pdf')
+            assert os.path.exists(plotpath + plot_name + '.csv')
+        finally:
+            shutil.rmtree('./some_doc_path/')
 
 
 class TestAddPlot:
