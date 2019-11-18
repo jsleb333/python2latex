@@ -3,7 +3,7 @@ from pytest import fixture
 from inspect import cleandoc
 import os, shutil
 
-from python2latex.plot import Plot, AddPlot
+from python2latex.plot import Plot, AddPlot, AddMatrixPlot
 from python2latex.color import Color
 from python2latex.document import Document
 
@@ -100,5 +100,11 @@ class TestPlot:
 
 class TestAddPlot:
     def test_addplot_command(self):
-        addplot = AddPlot(1, './some/path/to/plot.csv', 'red', 'dashed', line_width='2pt')
-        assert addplot.build() == r"\addplot[red, dashed, line width=2pt] table[x=x1, y=y1, col sep=comma]{./some/path/to/plot.csv};"
+        add_plot = AddPlot(1, './some/path/to/plot.csv', 'red', 'dashed', line_width='2pt')
+        assert add_plot.build() == r"\addplot[red, dashed, line width=2pt] table[x=x1, y=y1, col sep=comma]{./some/path/to/plot.csv};"
+
+
+class TestAddMatrixPlot:
+    def test_addmatrixplot_command(self):
+        add_matrix_plot = AddMatrixPlot(1, './some/path/to/plot.csv')
+        assert add_matrix_plot.build() == r"\addplot[matrix plot] table[x=x1, y=y1, meta=c1, col sep=comma]{./some/path/to/plot.csv};"
