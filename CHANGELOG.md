@@ -1,5 +1,10 @@
 # Change log
 
+## Version 0.1.7
+
+### November 18, 2019
+- Fixed bug with relative path when building Plot objects.
+
 ## Version 0.1.6
 
 ### October 21, 2019
