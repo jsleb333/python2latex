@@ -185,8 +185,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
 
         if self.matrix_plot:
             X, Y, Z, options, kwoptions = self.matrix_plot
-            options += (f'mesh/rows={len(X)}',)
-            self.axis += AddMatrixPlot('_color', plot_path, *options, **kwoptions)
+            self.axis += AddMatrixPlot(len(X), plot_path, *options, **kwoptions)
 
     def save_to_csv(self):
         filepath = os.path.join(self.plot_path, self.plot_name + '.csv')
@@ -233,11 +232,11 @@ class AddMatrixPlot(TexCommand):
     """
     Simple addplot tex command wrapper for matrix plots/heatmap plots/color plots.
     """
-    def __init__(self, col_number, plot_path, *options, **kwoptions):
-        self.col_number = col_number
+    def __init__(self, n_row, plot_path, *options, **kwoptions):
         self.plot_path = plot_path
         options = options+('matrix plot',)
+        kwoptions['mesh/rows'] = str(n_row)
         super().__init__('addplot', options=options, options_pos='first', **kwoptions)
 
     def build(self):
-        return super().build() + f" table[x=x{self.col_number}, y=y{self.col_number}, meta=z{self.col_number}, col sep=comma]{{{self.plot_path}}};"
+        return super().build() + f" table[x=x_color, y=y_color, meta=z_color, col sep=comma]{{{self.plot_path}}};"

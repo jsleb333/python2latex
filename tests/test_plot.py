@@ -98,15 +98,15 @@ class TestPlot:
             shutil.rmtree('./some_doc_path/')
 
     def test_add_matrix_plot(self):
-        plot = Plot(plot_name='matrix_plot_test')
+        plot = Plot(plot_name='matrix_plot_test', grid=False, lines=False)
         plot.add_matrix_plot(list(range(10)), list(range(10)), [[i for i in range(10)] for _ in range(10)])
         assert plot.build() == cleandoc(
             r'''
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, colorbar, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
-            \addplot[matrix plot] table[x=x_color, y=y_color, meta=z_color, col sep=comma]{./matrix_plot_test.csv};
+            \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, colorbar, every axis plot/.append style={line width=0pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=none]
+            \addplot[matrix plot, mesh/rows=10] table[x=x_color, y=y_color, meta=z_color, col sep=comma]{./matrix_plot_test.csv};
             \end{axis}
             \end{tikzpicture}
             \end{figure}
@@ -122,7 +122,7 @@ class TestPlot:
         X = list(range(10))
         Y = list(range(10))
         Z = [[i for i in range(10)] for _ in range(10)]
-        plot = doc.new(Plot(plot_name=plot_name, plot_path=plotpath))
+        plot = doc.new(Plot(plot_name=plot_name, plot_path=plotpath, grid=False, lines=False))
         plot.add_matrix_plot(X, Y, Z)
         try:
             doc.build(show_pdf=False)
@@ -130,8 +130,7 @@ class TestPlot:
             assert os.path.exists(filepath + doc_name + '.pdf')
             assert os.path.exists(plotpath + plot_name + '.csv')
         finally:
-            # shutil.rmtree('./some_doc_path/')
-            pass
+            shutil.rmtree('./some_doc_path/')
 
 class TestAddPlot:
     def test_addplot_command(self):
@@ -142,4 +141,4 @@ class TestAddPlot:
 class TestAddMatrixPlot:
     def test_addmatrixplot_command(self):
         add_matrix_plot = AddMatrixPlot(1, './some/path/to/plot.csv')
-        assert add_matrix_plot.build() == r"\addplot[matrix plot] table[x=x1, y=y1, meta=z1, col sep=comma]{./some/path/to/plot.csv};"
+        assert add_matrix_plot.build() == r"\addplot[matrix plot, mesh/rows=1] table[x=x_color, y=y_color, meta=z_color, col sep=comma]{./some/path/to/plot.csv};"
