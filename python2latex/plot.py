@@ -211,9 +211,10 @@ class _Plot(TexCommand):
     """
     Basic Plot object to handle plot data and plot options as well as a tex command wrapper.
     """
-    id_number = -1
+    plot_count = 0
     def __init__(self, *options, **kwoptions):
-        _Plot.id_number += 1
+        self.id_number = 1*_Plot.plot_count
+        _Plot.plot_count += 1
         self.plot_filepath = None
         super().__init__('addplot', options=options, options_pos='first', **kwoptions)
 

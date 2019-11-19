@@ -10,7 +10,7 @@ from python2latex.document import Document
 
 class TestPlot:
     def teardown(self):
-        _Plot.id_number = -1
+        _Plot.plot_count = 0
 
     def test_default_plot(self):
         assert Plot(plot_name='plot_test').build() == cleandoc(
@@ -139,7 +139,7 @@ class TestPlot:
 
 class TestLinePlot:
     def teardown(self):
-        _Plot.id_number = -1
+        _Plot.plot_count = 0
 
     def test_build_with_legend(self):
         lineplot = LinePlot([1,2,3], [4,5,6], 'red', 'dashed', legend='Legend', line_width='2pt')
@@ -158,10 +158,17 @@ class TestLinePlot:
             \addplot[red, dashed, forget plot, line width=2pt] table[x=x0, y=y0, col sep=comma]{./some/path/file.csv};
             """)
 
+    def test_lineplot_id_number_correctly_increments(self):
+        l1 = LinePlot([1], [2])
+        l2 = LinePlot([1], [2])
+        l3 = LinePlot([1], [2])
+        assert l1.id_number == 0
+        assert l2.id_number == 1
+        assert l3.id_number == 2
 
 class TestMatrixPlot:
     def teardown(self):
-        _Plot.id_number = -1
+        _Plot.plot_count = 0
 
     def test_build_with_legend(self):
         lineplot = MatrixPlot([1,2,3], [4,5,6], [list(range(3)) for _ in range(3)])
