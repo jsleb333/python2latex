@@ -9,7 +9,7 @@ from python2latex.document import Document
 
 
 class TestPlot:
-    def setup(self):
+    def teardown(self):
         _Plot.id_number = -1
 
     def test_default_plot(self):
@@ -35,7 +35,7 @@ class TestPlot:
             \begin{tikzpicture}
             \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
             \addplot[red, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
-            \addlegendentry{Legend}
+            \addlegendentry{Legend};
             \end{axis}
             \end{tikzpicture}
             \end{figure}
@@ -69,7 +69,7 @@ class TestPlot:
             \begin{tikzpicture}
             \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
             \addplot[spam, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
-            \addlegendentry{Legend}
+            \addlegendentry{Legend};
             \end{axis}
             \end{tikzpicture}
             \end{figure}
@@ -136,13 +136,37 @@ class TestPlot:
             # shutil.rmtree('./some_doc_path/')
             pass
 
-# class TestAddPlot:
-#     def test_addplot_command(self):
-#         add_plot = AddPlot(1, './some/path/to/plot.csv', 'red', 'dashed', line_width='2pt')
-#         assert add_plot.build() == r"\addplot[red, dashed, line width=2pt] table[x=x1, y=y1, col sep=comma]{./some/path/to/plot.csv};"
+
+class TestLinePlot:
+    def teardown(self):
+        _Plot.id_number = -1
+
+    def test_build_with_legend(self):
+        lineplot = LinePlot([1,2,3], [4,5,6], 'red', 'dashed', legend='Legend', line_width='2pt')
+        lineplot.plot_filepath = './some/path/file.csv'
+        assert lineplot.build() == cleandoc(
+            r"""
+            \addplot[red, dashed, line width=2pt] table[x=x0, y=y0, col sep=comma]{./some/path/file.csv};
+            \addlegendentry{Legend};
+            """)
+
+    def test_build_without_legend(self):
+        lineplot = LinePlot([1,2,3], [4,5,6], 'red', 'dashed', line_width='2pt')
+        lineplot.plot_filepath = './some/path/file.csv'
+        assert lineplot.build() == cleandoc(
+            r"""
+            \addplot[red, dashed, forget plot, line width=2pt] table[x=x0, y=y0, col sep=comma]{./some/path/file.csv};
+            """)
 
 
-# class TestAddMatrixPlot:
-#     def test_addmatrixplot_command(self):
-#         add_matrix_plot = AddMatrixPlot(1, './some/path/to/plot.csv')
-#         assert add_matrix_plot.build() == r"\addplot[matrix plot, mesh/rows=1] table[x=x_color, y=y_color, meta=z_color, col sep=comma]{./some/path/to/plot.csv};"
+class TestMatrixPlot:
+    def teardown(self):
+        _Plot.id_number = -1
+
+    def test_build_with_legend(self):
+        lineplot = MatrixPlot([1,2,3], [4,5,6], [list(range(3)) for _ in range(3)])
+        lineplot.plot_filepath = './some/path/file.csv'
+        assert lineplot.build() == cleandoc(
+            r"""
+            \addplot[matrix plot, point meta=explicit, mesh/rows=3, mesh/cols=3] table[x=x0, y=y0, meta=z0, col sep=comma]{./some/path/file.csv};
+            """)

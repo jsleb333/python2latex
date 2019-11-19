@@ -241,7 +241,7 @@ class LinePlot(_Plot):
         assert self.plot_filepath is not None
         legend = ''
         if self.legend:
-            legend = f"\n\\addlegendentry{{{self.legend}}}"
+            legend = f"\n\\addlegendentry{{{self.legend}}};"
         else:
             self.options += ('forget plot',)
 
