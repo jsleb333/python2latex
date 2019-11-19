@@ -109,7 +109,7 @@ class TestPlot:
             \centering
             \begin{tikzpicture}
             \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, colorbar, every axis plot/.append style={line width=0pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=none]
-            \addplot[matrix plot, point meta=explicit, mesh/rows=10, mesh/cols=10] table[x=x0, y=y0, meta=z0, col sep=comma]{./matrix_plot_test.csv};
+            \addplot[matrix plot*, point meta=explicit, mesh/rows=10, mesh/cols=10] table[x=x0, y=y0, meta=z0, col sep=comma]{./matrix_plot_test.csv};
             \end{axis}
             \end{tikzpicture}
             \end{figure}
@@ -168,5 +168,5 @@ class TestMatrixPlot:
         lineplot.plot_filepath = './some/path/file.csv'
         assert lineplot.build() == cleandoc(
             r"""
-            \addplot[matrix plot, point meta=explicit, mesh/rows=3, mesh/cols=3] table[x=x0, y=y0, meta=z0, col sep=comma]{./some/path/file.csv};
+            \addplot[matrix plot*, point meta=explicit, mesh/rows=3, mesh/cols=3] table[x=x0, y=y0, meta=z0, col sep=comma]{./some/path/file.csv};
             """)
