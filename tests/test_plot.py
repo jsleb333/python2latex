@@ -3,12 +3,15 @@ from pytest import fixture
 from inspect import cleandoc
 import os, shutil
 
-from python2latex.plot import Plot, AddPlot, AddMatrixPlot
+from python2latex.plot import Plot, LinePlot, MatrixPlot, _Plot
 from python2latex.color import Color
 from python2latex.document import Document
 
 
 class TestPlot:
+    def setup(self):
+        _Plot.id_number = -1
+
     def test_default_plot(self):
         assert Plot(plot_name='plot_test').build() == cleandoc(
             r'''
@@ -106,7 +109,7 @@ class TestPlot:
             \centering
             \begin{tikzpicture}
             \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, colorbar, every axis plot/.append style={line width=0pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=none]
-            \addplot[matrix plot, mesh/rows=10] table[x=x_color, y=y_color, meta=z_color, col sep=comma]{./matrix_plot_test.csv};
+            \addplot[matrix plot, point meta=explicit, mesh/rows=10, mesh/cols=10] table[x=x0, y=y0, meta=z0, col sep=comma]{./matrix_plot_test.csv};
             \end{axis}
             \end{tikzpicture}
             \end{figure}
@@ -122,7 +125,7 @@ class TestPlot:
         X = list(range(10))
         Y = list(range(10))
         Z = [[i for i in range(10)] for _ in range(10)]
-        plot = doc.new(Plot(plot_name=plot_name, plot_path=plotpath, grid=False, lines=False))
+        plot = doc.new(Plot(plot_name=plot_name, plot_path=plotpath, grid=False, lines=False, enlargelimits='false'))
         plot.add_matrix_plot(X, Y, Z)
         try:
             doc.build(show_pdf=False)
@@ -130,15 +133,16 @@ class TestPlot:
             assert os.path.exists(filepath + doc_name + '.pdf')
             assert os.path.exists(plotpath + plot_name + '.csv')
         finally:
-            shutil.rmtree('./some_doc_path/')
+            # shutil.rmtree('./some_doc_path/')
+            pass
 
-class TestAddPlot:
-    def test_addplot_command(self):
-        add_plot = AddPlot(1, './some/path/to/plot.csv', 'red', 'dashed', line_width='2pt')
-        assert add_plot.build() == r"\addplot[red, dashed, line width=2pt] table[x=x1, y=y1, col sep=comma]{./some/path/to/plot.csv};"
+# class TestAddPlot:
+#     def test_addplot_command(self):
+#         add_plot = AddPlot(1, './some/path/to/plot.csv', 'red', 'dashed', line_width='2pt')
+#         assert add_plot.build() == r"\addplot[red, dashed, line width=2pt] table[x=x1, y=y1, col sep=comma]{./some/path/to/plot.csv};"
 
 
-class TestAddMatrixPlot:
-    def test_addmatrixplot_command(self):
-        add_matrix_plot = AddMatrixPlot(1, './some/path/to/plot.csv')
-        assert add_matrix_plot.build() == r"\addplot[matrix plot, mesh/rows=1] table[x=x_color, y=y_color, meta=z_color, col sep=comma]{./some/path/to/plot.csv};"
+# class TestAddMatrixPlot:
+#     def test_addmatrixplot_command(self):
+#         add_matrix_plot = AddMatrixPlot(1, './some/path/to/plot.csv')
+#         assert add_matrix_plot.build() == r"\addplot[matrix plot, mesh/rows=1] table[x=x_color, y=y_color, meta=z_color, col sep=comma]{./some/path/to/plot.csv};"
