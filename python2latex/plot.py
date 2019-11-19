@@ -135,6 +135,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
     y_ticks = _AxisTicksProperty('ytick')
     x_ticks_labels = _AxisTicksLabelsProperty('xticklabels')
     y_ticks_labels = _AxisTicksLabelsProperty('yticklabels')
+    title = _AxisProperty('title')
 
     legend_position = _AxisProperty('legend pos')
 
