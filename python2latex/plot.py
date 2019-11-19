@@ -171,6 +171,8 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         assert Z.shape == X.shape + Y.shape
         if colorbar:
             self.axis.options += ('colorbar',)
+            self.axis.kwoptions['width'] = self.axis.kwoptions['height']
+            self.axis.kwoptions['enlargelimits'] = 'false'
         self.matrix_plot = (X, Y, Z, options, kwoptions)
 
     def _build_plots(self):
@@ -236,6 +238,7 @@ class AddMatrixPlot(TexCommand):
         self.plot_path = plot_path
         options = options+('matrix plot',)
         kwoptions['mesh/rows'] = str(n_row)
+        kwoptions['point meta'] = 'explicit'
         super().__init__('addplot', options=options, options_pos='first', **kwoptions)
 
     def build(self):
