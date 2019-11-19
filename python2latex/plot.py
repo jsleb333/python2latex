@@ -187,7 +187,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             data = [x_y for p in plots for x_y in (p.X, p.Y)]
             if matrix_plot:
                 XX, YY = np.meshgrid(matrix_plot.X, matrix_plot.Y)
-                data += [XX.reshape(-1), YY.reshape(-1), matrix_plot.Z.reshape(-1)]
+                data += [XX.reshape(-1), YY.reshape(-1), matrix_plot.Z.T.reshape(-1)]
 
             for row in itertools.zip_longest(*data, fillvalue=''):
                 writer.writerow(row)
@@ -270,9 +270,9 @@ class MatrixPlot(_Plot):
         assert self.Z.shape == self.X.shape + self.Y.shape
 
         kwoptions['point meta'] = point_meta
-        kwoptions['mesh/rows'] = str(len(self.X))
-        kwoptions['mesh/cols'] = str(len(self.Y))
-        super().__init__('matrix plot', *options, **kwoptions)
+        kwoptions['mesh/rows'] = str(len(self.Y))
+        kwoptions['mesh/cols'] = str(len(self.X))
+        super().__init__('matrix plot*', *options, **kwoptions)
 
     def build(self):
         assert self.plot_filepath is not None
