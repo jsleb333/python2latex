@@ -3,6 +3,6 @@ from .tex_environment import TexEnvironment
 from .document import Document, Section, Subsection
 from .floating_environment import FloatingFigure, FloatingTable, FloatingEnvironmentMixin
 from .table import Table
-from .plot import Plot
+from .plot import Plot, LinePlot, MatrixPlot
 from .color import Color
 from .tikzpicture import *

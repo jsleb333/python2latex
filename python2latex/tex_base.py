@@ -77,8 +77,8 @@ class TexObject:
 
     def build_preamble(self):
         packages = self.build_packages()
-        preamble = set(build(line, self) for line in self.preamble)
-        preamble = '\n'.join([packages] + list(preamble))
+        preamble = dict((build(line, self),'') for line in self.preamble) # Removes duplicate while keeping order
+        preamble = '\n'.join([packages] + list(preamble.keys()))
 
         return preamble
 
