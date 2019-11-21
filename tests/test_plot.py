@@ -133,8 +133,7 @@ class TestPlot:
             assert os.path.exists(filepath + doc_name + '.pdf')
             assert os.path.exists(plotpath + plot_name + '.csv')
         finally:
-            # shutil.rmtree('./some_doc_path/')
-            pass
+            shutil.rmtree('./some_doc_path/')
 
 
 class TestLinePlot:
