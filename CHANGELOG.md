@@ -1,5 +1,15 @@
 # Change log
 
+## Version 0.2.0
+
+### November 19, 2019
+- Reworked Plot so that lines are objects and are built in the order that have been added to the axis.
+- Added a MatrixPlot object to make heatmaps.
+- Multiple bug fixes in Plot.
+
+### November 18, 2019
+- Fixed bug with relative path when building Plot objects.
+
 ## Version 0.1.6
 
 ### October 21, 2019

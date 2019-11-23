@@ -123,6 +123,8 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         if len(X_Y) % 2 != 0: # Copies matplotlib.pyplot.plot() behavior
             self.add_plot(np.arange(len(X_Y[-1])), X_Y[-1])
 
+        self.matrix_plot = None
+
     x_max = _AxisProperty('xmax')
     x_min = _AxisProperty('xmin')
     y_max = _AxisProperty('ymax')
@@ -133,6 +135,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
     y_ticks = _AxisTicksProperty('ytick')
     x_ticks_labels = _AxisTicksLabelsProperty('xticklabels')
     y_ticks_labels = _AxisTicksLabelsProperty('yticklabels')
+    title = _AxisProperty('title')
 
     legend_position = _AxisProperty('legend pos')
 
@@ -147,49 +150,133 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             legend (str): Entry of the plot.
             kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
         """
-        X = np.array([x for x in X])
-        Y = np.array([y for y in Y])
-        self.plots.append((X, Y, legend, options, kwoptions))
+        self.axis += LinePlot(X, Y, *options, legend=legend, **kwoptions)
 
-    def _build_plots(self):
-        for i, (X, Y, legend, options, kwoptions) in enumerate(self.plots):
-            plot_path = self.plot_path + '/' + self.plot_name + '.csv'
-            plot = self.axis.new(AddPlot(i, plot_path, *options, **kwoptions))
+    def add_matrix_plot(self, X, Y, Z, *options, colorbar=True, **kwoptions):
+        """
+        Adds a matrix plot to the axis.
 
-            if legend:
-                self.axis += fr"\addlegendentry{{{legend}}}"
-            else:
-                plot.options += ('forget plot',)
+        Args:
+            X (sequence of numbers): X coordinates. Should have the same length as the first dimension of Z.
+            Y (sequence of numbers): Y coordinates. Should have the same length as the second dimension of Z.
+            Z (Array of numbers of dim (x_dim, y_dim)): Z coordinates.
+            options (tuple of str): Options for the plot. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+            colorbar (str): Colorbar legend.
+            kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+        """
+        if colorbar:
+            self.axis.options += ('colorbar',)
+            # self.axis.kwoptions['enlargelimits'] = 'false'
+        self.axis += MatrixPlot(X, Y, Z, *options, **kwoptions)
 
     def save_to_csv(self):
         filepath = os.path.join(self.plot_path, self.plot_name + '.csv')
+        os.makedirs(self.plot_path, exist_ok=True)
+        plots = [obj for obj in self.axis.body if isinstance(obj, _Plot)]
+        matrix_plot = None
+        for i, plot in enumerate(plots):
+            if isinstance(plot, MatrixPlot):
+                matrix_plot = plots.pop(i)
+
         with open(filepath, 'w', newline='') as file:
             writer = csv.writer(file)
 
-            titles = [coor for i in range(len(self.plots)) for coor in (f'x{i}', f'y{i}')]
+            titles = [coor for p in plots for coor in (f'x{p.id_number}', f'y{p.id_number}')]
+            if matrix_plot:
+                titles += [f'x{matrix_plot.id_number}', f'y{matrix_plot.id_number}', f'z{matrix_plot.id_number}']
             writer.writerow(titles)
-            X_Y = [x_y for x, y, *_ in self.plots for x_y in (x, y)]
-            for row in itertools.zip_longest(*X_Y, fillvalue=''):
+            data = [x_y for p in plots for x_y in (p.X, p.Y)]
+            if matrix_plot:
+                XX, YY = np.meshgrid(matrix_plot.X, matrix_plot.Y)
+                data += [XX.reshape(-1), YY.reshape(-1), matrix_plot.Z.T.reshape(-1)]
+
+            for row in itertools.zip_longest(*data, fillvalue=''):
                 writer.writerow(row)
 
     def build(self):
+        for obj in self.axis.body:
+            if isinstance(obj, _Plot):
+                # We cannot use os.path.join, since on Windows it uses backslashes, but pgfplots can only read paths with forward slashes.
+                plot_filepath = self.plot_path + '/' + self.plot_name + '.csv'
+                obj.plot_filepath = plot_filepath.replace('//', '/')
+
         self.save_to_csv()
-        self._build_plots()
 
         self.axis.options += (f"every axis plot/.append style={{{', '.join('='.join([k,v]) for k,v in self.default_plot_kwoptions.items())}}}",)
 
         return super().build()
 
 
-class AddPlot(TexCommand):
+class _Plot(TexCommand):
     """
-    Simple addplot tex command wrapper.
+    Basic Plot object to handle plot data and plot options as well as a tex command wrapper.
     """
-    def __init__(self, col_number, plot_path, *options, **kwoptions):
-        self.col_number = col_number
-        # self.plot_path = os.path.abspath(plot_path).replace('\\', '/')
-        self.plot_path = plot_path
+    plot_count = 0
+    def __init__(self, *options, **kwoptions):
+        self.id_number = 1*_Plot.plot_count
+        _Plot.plot_count += 1
+        self.plot_filepath = None
         super().__init__('addplot', options=options, options_pos='first', **kwoptions)
 
+
+class LinePlot(_Plot):
+    """
+    LinePlot object to handle line plots.
+    """
+    def __init__(self, X, Y, *options, legend=None, **kwoptions):
+        """
+        Adds a plot to the axis.
+
+        Args:
+            X (sequence of numbers): X coordinates.
+            Y (sequence of numbers): Y coordinates.
+            options (tuple of str): Options for the plot. Colors can be specified here as strings of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+            legend (str): Entry of the plot.
+            kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+        """
+        self.X = np.array([x for x in X])
+        self.Y = np.array([y for y in Y])
+        self.legend = legend
+        super().__init__(*options, **kwoptions)
+
     def build(self):
-        return super().build() + f" table[x=x{self.col_number}, y=y{self.col_number}, col sep=comma]{{{self.plot_path}}};"
+        assert self.plot_filepath is not None
+        legend = ''
+        if self.legend:
+            legend = f"\n\\addlegendentry{{{self.legend}}};"
+        else:
+            self.options += ('forget plot',)
+
+        return super().build() + f" table[x=x{self.id_number}, y=y{self.id_number}, col sep=comma]{{{self.plot_filepath}}};" + legend
+
+
+class MatrixPlot(_Plot):
+    """
+    MatrixPlot object to handle matrix/image plots AKA heatmaps AKA colormaps.
+    """
+    def __init__(self, X, Y, Z, *options, point_meta='explicit', **kwoptions):
+        """
+        Adds a matrix plot to the axis.
+
+        Args:
+            X (sequence of numbers): X coordinates. Should have the same length as the first dimension of Z.
+            Y (sequence of numbers): Y coordinates. Should have the same length as the second dimension of Z.
+            Z (Array of numbers of dim (x_dim, y_dim)): Z coordinates.
+            options (tuple of str): Options for the plot. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+            colorbar (str): Colorbar legend.
+            kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+        """
+        self.X = np.array([x for x in X])
+        self.Y = np.array([y for y in Y])
+        self.Z = np.array([[z for z in z_row] for z_row in Z])
+        assert self.Z.shape == self.X.shape + self.Y.shape
+
+        kwoptions['point meta'] = point_meta
+        kwoptions['mesh/rows'] = str(len(self.Y))
+        kwoptions['mesh/cols'] = str(len(self.X))
+        super().__init__('matrix plot*', *options, **kwoptions)
+
+    def build(self):
+        assert self.plot_filepath is not None
+
+        return super().build() + f" table[x=x{self.id_number}, y=y{self.id_number}, meta=z{self.id_number}, col sep=comma]{{{self.plot_filepath}}};"
