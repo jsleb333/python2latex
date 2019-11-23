@@ -47,16 +47,19 @@ class TexEnvironment(TexObject):
     Add new environments with the method 'new' and add standard text with 'add_text'.
     Add LaTeX packages needed for this environment with 'add_package'.
     """
-    def __init__(self, env_name, *parameters, options=(), label='', label_pos='top', **kwoptions):
+    def __init__(self, env_name, *parameters, options=(), star_env=False, label='', label_pos='top', **kwoptions):
         """
         Args:
             env_name (str): Name of the environment.
             parameters (tuple of str): Parameters of the environment, appended inside curly braces {}.
             options (str or tuple of str): Options to pass to the environment, appended inside brackets [].
+            star_env (bool): Whether or not the environment should be starred or not.
             label (str): Label of the environment if needed.
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
         """
         super().__init__(env_name)
+        if star_env:
+            env_name += '*'
         self.head = begin(env_name, *parameters, options=options, **kwoptions)
         self.tail = end(env_name)
         self.body = []

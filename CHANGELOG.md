@@ -1,5 +1,10 @@
 # Change log
 
+## Version 0.2.1
+
+### November 23, 2019
+- Added option to star an environment.
+
 ## Version 0.2.0
 
 ### November 19, 2019

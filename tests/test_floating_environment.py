@@ -20,11 +20,11 @@ class Test_FloatingEnvironment:
             ''')
 
     def test_floating_environment_with_options(self):
-        env = _FloatingEnvironment('with_options', position='t', centered=False)
+        env = _FloatingEnvironment('with_options', star_env=True, position='t', centered=False)
         assert env.build() == cleandoc(
             r'''
-            \begin{with_options}[t]
-            \end{with_options}
+            \begin{with_options*}[t]
+            \end{with_options*}
             ''')
 
     def test_floating_environment_with_caption(self):

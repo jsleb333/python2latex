@@ -126,3 +126,11 @@ class TestTexEnvironment:
             \end{level2}
             \end{level1}
             ''')
+
+    def test_star_env(self):
+        star_env = TexEnvironment('figure', star_env=True)
+        assert star_env.build() == cleandoc(
+            r'''
+            \begin{figure*}
+            \end{figure*}
+            ''')

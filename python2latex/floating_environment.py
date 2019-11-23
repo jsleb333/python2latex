@@ -17,16 +17,17 @@ class _FloatingEnvironment(TexEnvironment):
     """
     LaTeX floating environment. This should be inherited.
     """
-    def __init__(self, env_name, position='h!', label='', label_pos='bottom', caption='', centered=True):
+    def __init__(self, env_name, star_env=False, position='h!', label='', label_pos='bottom', caption='', centered=True):
         """
         Args:
             position (str, combination of 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility.
+            star_env (bool): Whether or not the environment should be starred or not.
             label (str): Label of the environment if needed.
             label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
             caption (str): Caption of the floating environment.
             centered (bool): Wheter to center or not the environment.
         """
-        super().__init__(env_name=env_name, options=position, label=label, label_pos=label_pos)
+        super().__init__(env_name=env_name, star_env=star_env, options=position, label=label, label_pos=label_pos)
         self.caption = caption
         self.centered = centered
 
