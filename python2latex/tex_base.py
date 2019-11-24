@@ -26,10 +26,13 @@ class TexFile:
         self.filename = filename + '.tex'
         self.filepath = filepath
 
+    @property
+    def path(self):
+        return os.path.join(self.filepath, self.filename)
+
     def save(self, tex):
         os.makedirs(self.filepath, exist_ok=True)
-        filename = os.path.join(self.filepath, self.filename)
-        with open(filename, 'w', encoding='utf8') as file:
+        with open(self.path, 'w', encoding='utf8') as file:
             file.write(tex)
 
     def _compile_to_pdf(self):
