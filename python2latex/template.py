@@ -13,14 +13,25 @@ class Template:
             filename (str): Name of the file without extension.
             filepath (str): Path where the files will be saved and compiled to pdf.
         """
-        self.filename = filename
-        self.filepath = filepath
+        self.file = TexFile(filename, filepath)
 
         self.anchors = {}
 
+    def _load_tex_file(self):
+        """
+        Returns the loaded tex file as a list of strings.
+        """
+        with open(self.file.path, 'r', encoding='utf8') as file:
+            return [line.strip() for line in file]
+
+    def _parse_tex_file(self, text):
+        """
+        Returns the preamble and the
+        """
+
     def render(self):
-        self._load_text()
-        self._parse_text()
+        tex = self._load_tex_file()
+        self._parse_tex_file(tex)
         self._insert_tex()
         self._update_preamble()
         self._save_file_to_disk()
