@@ -5,14 +5,24 @@ from python2latex.utils import open_file_with_default_program
 
 """
 TODO:
-    - Document syntax for anchors
     - Parsing of same packages, and colors in preamble but with different options
+    - Parsing for 'include' files.
 """
 
 
 class Template:
     """
     Class that allows to insert TeX commands inside an already existing tex file and then compile it. Useful to make figures and tables with python2latex and insert them into your project without needing to copy and paste.
+
+    To tell python2latex where to insert an object, write the line
+        %! python2latex-anchor = *the_name_of_your_object_here*
+    The script will automatically insert the tex under this anchor and add a closing statement as
+        %! python2latex-end-anchor = *the_name_of_your_object_here*
+
+    The preamble will also be automatically updated, where you can find added commands right under the anchor
+        %! python2latex-preamble
+
+    See the examples for a more complete example.
     """
     def __init__(self, filename, filepath='.', output_filename=None, output_filepath=None):
         """
