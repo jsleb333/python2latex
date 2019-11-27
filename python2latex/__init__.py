@@ -5,3 +5,4 @@ from .floating_environment import FloatingFigure, FloatingTable, FloatingEnviron
 from .table import Table
 from .plot import Plot, LinePlot, MatrixPlot
 from .color import Color
+from .template import Template
