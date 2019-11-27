@@ -23,12 +23,12 @@ class TexFile:
     Class that compiles python to tex code. Manages write/read tex.
     """
     def __init__(self, filename, filepath):
-        self.filename = filename + '.tex'
+        self.filename = filename
         self.filepath = filepath
 
     @property
     def path(self):
-        return os.path.join(self.filepath, self.filename)
+        return os.path.join(self.filepath, self.filename + '.tex')
 
     def save(self, tex):
         os.makedirs(self.filepath, exist_ok=True)
@@ -39,7 +39,7 @@ class TexFile:
         # os.chdir(self.filepath)
         check_call(['pdflatex', '-halt-on-error',
                     '--output-directory', self.filepath,
-                    self.filepath + '/' + self.filename],
+                    self.filepath + '/' + self.filename  + '.tex'],
                    stdout=DEVNULL, stderr=STDOUT)
 
 

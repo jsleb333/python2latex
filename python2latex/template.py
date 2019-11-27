@@ -112,4 +112,4 @@ class Template:
             self.output_file._compile_to_pdf()
 
             if show_pdf:
-                open_file_with_default_program(self.filename, self.filepath)
+                open_file_with_default_program(self.output_file.filename, self.output_file.filepath)
