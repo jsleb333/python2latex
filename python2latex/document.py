@@ -1,6 +1,7 @@
 import subprocess, os, sys
 
 from python2latex import TexFile, TexEnvironment, TexCommand, build
+from python2latex.utils import open_file_with_default_program
 
 
 class Document(TexEnvironment):
@@ -82,17 +83,7 @@ class Document(TexEnvironment):
             self.file._compile_to_pdf()
 
         if show_pdf:
-            cwd = os.getcwd()
-            try:
-                os.chdir(self.filepath)
-                if sys.platform.startswith('linux'):
-                    open_command = 'xdg-open'
-                    subprocess.run([open_command, self.filename + ".pdf"])
-                else:
-                    open_command = 'start'
-                    subprocess.run([open_command, self.filename + ".pdf"], shell=True)
-            finally:
-                os.chdir(cwd)
+            open_file_with_default_program(self.filename, self.filepath)
 
         return tex
 
