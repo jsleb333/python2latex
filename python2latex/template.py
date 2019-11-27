@@ -67,11 +67,11 @@ class Template:
             if line.startswith('%! python2latex-end-anchor'):
                 anchors_position[anchor_name] = (anchors_position[anchor_name][0], i)
 
-        for anchor_name, (start, end) in anchors_position.items():
+        for i, (anchor_name, (start, end)) in enumerate(anchors_position.items()):
             if end:
                 del doc[start+1:end+1]
-            doc.insert(start+1, self.anchors[anchor_name])
-            doc.insert(start+2, f'%! python2latex-end-anchor = {anchor_name}')
+            doc.insert(start+1+i, self.anchors[anchor_name])
+            doc.insert(start+2+i, f'%! python2latex-end-anchor = {anchor_name}')
 
     def _update_preamble(self, preamble):
         # Removing old python2latex preamble

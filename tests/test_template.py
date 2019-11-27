@@ -37,6 +37,21 @@ tex_test_file = {
         \end{document}
         """
         ),
+    'text_file_for_2_anchors': cleandoc(
+        r"""
+        \documentclass[12pt]{article}
+        \usepackage[margin=2cm]{geometry}
+        \usepackage[french]{babel}
+        \begin{document}
+        \begin{section}{Section title}
+        %! python2latex-anchor = anchor1
+        something
+        %! python2latex-anchor = anchor2
+        otherthing
+        \end{section}
+        \end{document}
+        """
+        ),
 }
 filenames = list(tex_test_file.keys())
 contents = list(tex_test_file.values())
@@ -90,6 +105,21 @@ class TestTemplate:
         template._insert_tex_at_anchors(doc)
         assert doc[3] is figure
         assert doc[4] == '%! python2latex-end-anchor = anchor1'
+
+    def test_insert_tex_at_anchors_for_2_anchors(self):
+        template = Template(filenames[2])
+        figure1 = FloatingFigure()
+        template.anchors['anchor1'] = figure1
+        figure2 = FloatingFigure()
+        template.anchors['anchor2'] = figure2
+
+        tex = template._load_tex_file()
+        preamble, doc = template._split_preamble(tex)
+        template._insert_tex_at_anchors(doc)
+        assert doc[3] is figure1
+        assert doc[4] == '%! python2latex-end-anchor = anchor1'
+        assert doc[6] is figure2
+        assert doc[7] == '%! python2latex-end-anchor = anchor2'
 
     def test_update_preamble(self):
         template = Template(filenames[1])
