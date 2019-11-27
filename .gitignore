@@ -13,6 +13,9 @@ python2latex.code-workspace
 *.fdb_latexmk
 *.fls
 
+# Exception in examples
+!*already_existing_file.tex
+
 # CSV
 *.csv
 
