@@ -231,6 +231,14 @@ tex = doc.build()
 
 Be sure to check our more complex matrix plot example too!
 
+
+### Templating
+If you do not want to write your whole document in python2latex, you can use our simple templating engine to insert parts of tex code directly inside your file.
+Simply write the command `%! python2latex-anchor = anchor_name_here` and the script will automatically insert the commands below it.
+
+See our example folder for a simple usage example of the Template class.
+
+
 ### Create an unsupported environment
 If some environment is not currently supported, you can create one from the TexEnvironment base class.
 ```python
