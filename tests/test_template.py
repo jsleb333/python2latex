@@ -23,6 +23,8 @@ tex_test_file = {
         \documentclass[12pt]{article}
         \usepackage[margins=2cm]{geometry}
         \usepackage[french]{babel}
+        %! python2latex-preamble
+        \usepackage{tikz}
         \begin{document}
         \begin{section}{Section title}
         %! python2latex-anchor = figure1
@@ -85,3 +87,16 @@ class TestTemplate:
         template._insert_tex_at_anchors(doc)
         assert doc[3] is figure
         assert doc[4] == '%! python2latex-end-anchor = figure1'
+
+    def test_update_preamble(self):
+        template = Template(filenames[1])
+        figure = FloatingFigure()
+        figure.add_package('tikz')
+        figure.add_package('babel', 'french')
+        template.anchors['figure1'] = figure
+
+        tex = template._load_tex_file()
+        preamble, doc = template._split_preamble(tex)
+        template._update_preamble(preamble)
+        assert preamble[-2] == '%! python2latex-preamble'
+        assert preamble[-1] == '\\usepackage{tikz}'

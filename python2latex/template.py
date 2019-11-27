@@ -5,7 +5,7 @@ from python2latex import TexFile, TexEnvironment, TexCommand, build
 """
 TODO:
     - Document syntax for anchors
-    - Parsing of packages, library and colors in preamble
+    - Parsing of same packages, and colors in preamble but with different options
 """
 
 
@@ -56,11 +56,29 @@ class Template:
             doc.insert(start+1, self.anchors[anchor_name])
             doc.insert(start+2, f'%! python2latex-end-anchor = {anchor_name}')
 
-    def render(self):
+    def _update_preamble(self, preamble):
+        # Removing old python2latex preamble
+        for i, line in enumerate(preamble):
+            if line == '%! python2latex-preamble':
+                break
+        del preamble[i:]
+
+        # Adding only new lines to preamble
+        anchor_preambles = set(line for obj in self.anchors.values() for line in obj.build_preamble().split('\n'))
+        lines_to_add = []
+        for line in anchor_preambles:
+            if line not in preamble:
+                lines_to_add.append(line)
+
+        preamble.extend(['%! python2latex-preamble'] + lines_to_add)
+
+    def render(self, compile_to_pdf=True, show_pdf=True):
         tex = self._load_tex_file()
         preamble, doc = self._split_preamble(tex)
         self._insert_tex_at_anchors(doc)
-        self._update_preamble()
-        self._save_file_to_disk()
-        self._compile_to_pdf()
+        self._update_preamble(preamble)
+        tex = '\n'.join(build(line) for line in preamble + doc)
+        self.file.save(tex)
+        if compile_to_pdf:
+            self.file._compile_to_pdf()
         self._show_output()
