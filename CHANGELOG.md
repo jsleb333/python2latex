@@ -1,5 +1,10 @@
 # Change log
 
+## Version 0.3.0
+
+### November 26, 2019
+- New Template class to insert tex in already existing file.
+
 ## Version 0.2.1
 
 ### November 23, 2019
