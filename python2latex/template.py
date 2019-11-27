@@ -2,6 +2,12 @@ import subprocess, os, sys
 
 from python2latex import TexFile, TexEnvironment, TexCommand, build
 
+"""
+TODO:
+    - Document syntax for anchors
+    - Parsing of packages, library and colors in preamble
+"""
+
 
 class Template:
     """
@@ -24,15 +30,36 @@ class Template:
         with open(self.file.path, 'r', encoding='utf8') as file:
             return [line.strip() for line in file]
 
-    def _parse_tex_file(self, text):
+    def _split_preamble(self, text):
         """
-        Returns the preamble and the
+        Returns the preamble and the rest of the document.
         """
+        for i, line in enumerate(text):
+            if r'\begin{document}' in line:
+                begin_document_line = i
+                break
+        return text[:begin_document_line], text[begin_document_line:]
+
+    def _insert_tex_at_anchors(self, doc):
+        anchors_position = {}
+        for i, line in enumerate(doc):
+            if line.startswith('%! python2latex-anchor'):
+                _, anchor_name = line.replace(' ', '').split('=')
+                anchors_position[anchor_name] = (i, None)
+
+            if line.startswith('%! python2latex-end-anchor'):
+                anchors_position[anchor_name] = (anchors_position[anchor_name][0], i)
+
+        for anchor_name, (start, end) in anchors_position.items():
+            if end:
+                del doc[start+1:end+1]
+            doc.insert(start+1, self.anchors[anchor_name])
+            doc.insert(start+2, f'%! python2latex-end-anchor = {anchor_name}')
 
     def render(self):
         tex = self._load_tex_file()
-        self._parse_tex_file(tex)
-        self._insert_tex()
+        preamble, doc = self._split_preamble(tex)
+        self._insert_tex_at_anchors(doc)
         self._update_preamble()
         self._save_file_to_disk()
         self._compile_to_pdf()
