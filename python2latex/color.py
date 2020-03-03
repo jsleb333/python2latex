@@ -14,7 +14,7 @@ class Color(TexObject):
     def __init__(self, r, g, b, color_name=''):
         """
         Args:
-            r, b, g (float): rgb values between 0 and 1.
+            r, g, b (float): rgb values between 0 and 1.
             color_name (str): Name of the color that will be used in the tex file. If no name is specified, a color number will be given automatically.
         """
         super().__init__('color')
