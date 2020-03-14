@@ -1,4 +1,5 @@
 from functools import wraps
+
 from python2latex import TexObject, TexCommand, build
 
 
@@ -6,14 +7,21 @@ class begin(TexCommand):
     """
     'begin' tex command wrapper.
     """
+
     def __init__(self, environment, *parameters, options=list(), options_pos='second', **kwoptions):
-        return super().__init__('begin', environment, *parameters, options=options, options_pos=options_pos, **kwoptions)
+        return super().__init__('begin',
+                                environment,
+                                *parameters,
+                                options=options,
+                                options_pos=options_pos,
+                                **kwoptions)
 
 
 class end(TexCommand):
     """
     'end' tex command wrapper.
     """
+
     def __init__(self, environment):
         return super().__init__('end', environment)
 
@@ -22,6 +30,7 @@ class Label(TexCommand):
     """
     'label' tex command wrapper.
     """
+
     def __init__(self, label, prefix=None):
         self.label = label
         self.prefix = prefix
@@ -30,7 +39,7 @@ class Label(TexCommand):
     def build(self):
         prefix = f'{self.prefix}:' if self.prefix else ''
         if self.label:
-            self.parameters = (prefix + self.label,)
+            self.parameters = (prefix + self.label, )
             return super().build()
         else:
             return ''
@@ -47,14 +56,17 @@ class TexEnvironment(TexObject):
     Add new environments with the method 'new' and add standard text with 'add_text'.
     Add LaTeX packages needed for this environment with 'add_package'.
     """
+
     def __init__(self, env_name, *parameters, options=(), label='', label_pos='top', **kwoptions):
         """
         Args:
             env_name (str): Name of the environment.
             parameters (tuple of str): Parameters of the environment, appended inside curly braces {}.
-            options (str or tuple of str): Options to pass to the environment, appended inside brackets [].
+            options (Union[Tuple[str], str, TexObject]): Options to pass to the environment, appended inside brackets
+            [].
             label (str): Label of the environment if needed.
-            label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
+            label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at
+            the end of the head, else if 'bottom', will be at the top of the tail.
         """
         super().__init__(env_name)
         self.head = begin(env_name, *parameters, options=options, **kwoptions)
@@ -107,7 +119,8 @@ class TexEnvironment(TexObject):
 
     def bind(self, *clss):
         """
-        Binds the classes so that any new instances will automatically be appended to the body of the current environment. Note that the binded classes are new classes and the original classes are left unchanged.
+        Binds the classes so that any new instances will automatically be appended to the body of the current
+        environment. Note that the binded classes are new classes and the original classes are left unchanged.
 
         Usage example:
         >>> from python2latex import Document, Section
@@ -134,9 +147,12 @@ class TexEnvironment(TexObject):
                 instance = cls_to_bind.__new__(cls)
                 self.append(instance)
                 return instance
+
         BindedCls.__name__ = 'Binded' + cls_to_bind.__name__
         BindedCls.__qualname__ = 'Binded' + cls_to_bind.__qualname__
-        BindedCls.__doc__ = f"\tThis is a {cls_to_bind.__name__} object binded to {repr(self)}. Each time an instance is created, it is appended to the body of {repr(self)}. Everything else is identical.\n\n" + str(cls_to_bind.__doc__)
+        BindedCls.__doc__ = f"\tThis is a {cls_to_bind.__name__} object binded to {repr(self)}. Each time an " \
+                            f"instance is created, it is appended to the body of {repr(self)}. " \
+                            f"Everything else is identical.\n\n" + str(cls_to_bind.__doc__)
         return BindedCls
 
     def build(self):

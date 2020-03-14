@@ -1,10 +1,13 @@
 import warnings
+
 from python2latex import TexEnvironment, TexObject, TexCommand, build
+
 
 class Caption(TexCommand):
     """
     Simple caption command.
     """
+
     def __init__(self, caption):
         """
         Args:
@@ -17,12 +20,15 @@ class _FloatingEnvironment(TexEnvironment):
     """
     LaTeX floating environment. This should be inherited.
     """
+
     def __init__(self, env_name, position='h!', label='', label_pos='bottom', caption='', centered=True):
         """
         Args:
-            position (str, combination of 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility.
+            position (str, combination of 'h', 't', 'b', with optional '!'): Position of the float environment.
+            Default is 't'. Combinaisons of letters allow more flexibility.
             label (str): Label of the environment if needed.
-            label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at the end of the head, else if 'bottom', will be at the top of the tail.
+            label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at
+            the end of the head, else if 'bottom', will be at the top of the tail.
             caption (str): Caption of the floating environment.
             centered (bool): Wheter to center or not the environment.
         """
@@ -62,6 +68,7 @@ class FloatingFigure(_FloatingEnvironment):
     """
     LaTeX floating figure environment.
     """
+
     def __init__(self, *args, label_pos='bottom', **kwargs):
         """
         Args:
@@ -74,6 +81,7 @@ class FloatingTable(_FloatingEnvironment):
     """
     LaTeX floating table environment.
     """
+
     def __init__(self, *args, label_pos='top', **kwargs):
         """
         Args:
@@ -85,7 +93,8 @@ class FloatingTable(_FloatingEnvironment):
 class FloatingEnvironmentMixin:
     """
     Makes an environment optionally floatable.
-    Should be inherited and a 'super_class' parameter should be included. 'super_class' should be a FloatingEnvironment class.
+    Should be inherited and a 'super_class' parameter should be included. 'super_class' should be a FloatingEnvironment
+    class.
 
     Example:
     >>> class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
@@ -93,6 +102,7 @@ class FloatingEnvironmentMixin:
 
     See the Table and the Plot environments for complete examples.
     """
+
     def __init__(self, *args, as_float_env=True, centered=True, **kwargs):
         """
         Args:
@@ -108,10 +118,10 @@ class FloatingEnvironmentMixin:
             self.options = ()
 
     def __init_subclass__(cls, super_class):
-        cls.__bases__ += (super_class,)
+        cls.__bases__ += (super_class, )
 
     def build(self):
         if not self.as_float_env and self.caption:
-            self.caption = '' # No caption outside of float env
+            self.caption = ''  # No caption outside of float env
             warnings.warn('Cannot produce caption outside floating environment!')
         return super().build()
