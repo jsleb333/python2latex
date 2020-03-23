@@ -59,7 +59,10 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                  as_float_env=True,
                  top_rule=True,
                  bottom_rule=True,
-                 label=''):
+                 label='',
+                 caption='',
+                 caption_pos='top',
+                 caption_space='6pt'):
         """
         Args:
             shape (tuple of 2 ints): Shape of the table.
@@ -73,8 +76,11 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
             Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
             top_rule, bottom_rule (bool): Whether or not the table should have outside rules.
             label (str): Label of the environment.
+            caption (str): Caption of the table. Does not apply if 'as_float_env' is False.
+            caption_pos (str, either 'top' or 'bottom'): Position of the caption, either above (top) the table or below (bottom). Does not apply if 'as_float_env' is False.
+            caption_space (str, valid TeX length): Space between the caption and the table. Can be any valid TeX length. Does not apply if 'as_float_env' is False.
         """
-        super().__init__(as_float_env=as_float_env, position=position, label=label, label_pos='top')
+        super().__init__(as_float_env=as_float_env, position=position, label=label, label_pos=caption_pos)
 
         self.tabular = TexEnvironment('tabular')
         self.add_package('booktabs')

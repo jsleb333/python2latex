@@ -1,5 +1,5 @@
 from .tex_base import *
-from .tex_environment import TexEnvironment
+from .tex_environment import TexEnvironment, Label
 from .document import Document, Section, Subsection
 from .color import Color
 from .floating_environment import FloatingFigure, FloatingTable, FloatingEnvironmentMixin

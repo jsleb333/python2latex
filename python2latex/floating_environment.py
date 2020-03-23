@@ -1,6 +1,6 @@
 import warnings
 
-from python2latex import TexEnvironment, TexObject, TexCommand, build
+from python2latex import TexEnvironment, TexObject, TexCommand, build, Label
 
 
 class Caption(TexCommand):
@@ -20,47 +20,44 @@ class _FloatingEnvironment(TexEnvironment):
     """
     LaTeX floating environment. This should be inherited.
     """
-    def __init__(self, env_name, star_env=False, position='h!', label='', label_pos='bottom', caption='', centered=True):
+    
+    def __init__(self, env_name, star_env=False, position='h!', label='', caption='', caption_pos='bottom', caption_space='0pt', centered=True):
         """
         Args:
             position (str, combination of 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility.
             star_env (bool): Whether the environment should be starred or not.
             label (str): Label of the environment if needed.
-            label_pos (str, either 'top' or 'bottom'): Position of the label inside the object. If 'top', will be at
-            the end of the head, else if 'bottom', will be at the top of the tail.
             caption (str): Caption of the floating environment.
+            caption_pos (str, either 'top' or 'bottom'): Position of the caption, either at the beginning (top) of the floating environment or at the end (bottom).
+            caption_space (str, valid TeX length): Space between the caption and the object in the floating environment. Can be any valid TeX length.
             centered (bool): Whether to center the environment or not.
         """
-        super().__init__(env_name=env_name, star_env=star_env, options=position, label=label, label_pos=label_pos)
+        super().__init__(env_name=env_name, star_env=star_env, options=position, label=label)
         self.caption = caption
+        self.caption_pos = caption_pos
+        self.caption_space = caption_space
         self.centered = centered
-
+        
     def build(self):
         """
         Builds recursively the environments of the body and converts it to .tex.
         Returns the .tex string of the file.
         """
-        tex = [self.head]
 
         if self.centered:
-            tex.append(r'\centering')
+            self.body = [r'\centering'] + self.body
 
-        if self.label_pos == 'top':
-            if self.caption:
-                tex.append(Caption(self.caption))
-            tex.append(self._label)
-
-        tex.append(self.build_body())
-
-        if self.label_pos == 'bottom':
-            if self.caption:
-                tex.append(Caption(self.caption))
-            tex.append(self._label)
-
-        tex.append(self.tail)
-
-        tex = [build(part) for part in tex]
-        return '\n'.join([part for part in tex if part])
+        if self.caption:
+            caption = Caption(self.caption)
+            space = TexCommand('vspace', self.caption_space)
+            
+            if self.caption_pos == 'top':
+                self.body = [caption, self._label, space] + self.body
+            
+            if self.caption_pos == 'bottom':
+                self.body += [space, caption, self._label]
+                
+        return super.build()
 
 
 class FloatingFigure(_FloatingEnvironment):
