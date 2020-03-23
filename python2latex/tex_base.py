@@ -4,7 +4,8 @@ from subprocess import DEVNULL, STDOUT, check_call
 
 def build(obj, parent=None):
     """
-    Safely builds the object by calling its method 'build' only if 'obj' is not a string. If a parent is passed, all packages and preamble lines needed to the object will be added to the packages and preamble of the parent.
+    Safely builds the object by calling its method 'build' only if 'obj' is not a string. If a parent is passed, all
+    packages and preamble lines needed to the object will be added to the packages and preamble of the parent.
     """
     if isinstance(obj, TexObject):
         built_obj = obj.build()
@@ -22,6 +23,7 @@ class TexFile:
     """
     Class that compiles python to tex code. Manages write/read tex.
     """
+
     def __init__(self, filename, filepath):
         self.filename = filename
         self.filepath = filepath
@@ -37,10 +39,10 @@ class TexFile:
 
     def _compile_to_pdf(self):
         # os.chdir(self.filepath)
-        check_call(['pdflatex', '-halt-on-error',
-                    '--output-directory', self.filepath,
-                    self.filepath + '/' + self.filename  + '.tex'],
-                   stdout=DEVNULL, stderr=STDOUT)
+        check_call(
+            ['pdflatex', '-halt-on-error', '--output-directory', self.filepath, self.filepath + '/' + self.filename + '.tex'],
+            stdout=DEVNULL,
+            stderr=STDOUT)
 
 
 class TexObject:
@@ -49,6 +51,7 @@ class TexObject:
     Provides a 'add_package' method to add packages needed for this object.
     Inherited classes should redefine the 'build' method.
     """
+
     def __init__(self, obj_name):
         """
         Args:
@@ -65,7 +68,7 @@ class TexObject:
 
         Args:
             package (str): The package name.
-            options (tuple of str): Options to pass to the package in brackets.
+            options (Union[Tuple[str], str, TexObject]): Options to pass to the package in brackets.
             kwoptions (dict of str): Keyword options to pass to the package in brackets.
         """
         if not package in self.packages:
@@ -80,7 +83,7 @@ class TexObject:
 
     def build_preamble(self):
         packages = self.build_packages()
-        preamble = dict((build(line, self),'') for line in self.preamble) # Removes duplicate while keeping order
+        preamble = dict((build(line, self), '') for line in self.preamble)  # Removes duplicate while keeping order
         preamble = '\n'.join([packages] + list(preamble.keys()))
 
         return preamble
@@ -108,9 +111,11 @@ class TexCommand(TexObject):
         Args:
             command (str): Name of the command that will be rendered as '\command'.
             parameters: Parameters of the command, appended inside curly braces {}.
-            options (str or list of str): Options to pass to the command, appended inside brackets [].
-            options_pos (str, either 'first', 'second' or 'last'): Position of the options with respect to the parameters.
-            kwoptions (dict of str): Keyword options to pass to the command, appended inside the same brackets as options.
+            options (Union[Tuple[str], str, TexObject]): Options to pass to the command, appended inside brackets [].
+            options_pos (str, either 'first', 'second' or 'last'): Position of the options with respect to the
+            parameters.
+            kwoptions (dict of str): Keyword options to pass to the command, appended inside the same brackets as
+            options.
         """
         super().__init__(command)
         self.command = command
@@ -124,7 +129,8 @@ class TexCommand(TexObject):
         options = ''
 
         if self.options or self.kwoptions:
-            kwoptions = ', '.join('='.join((build(key, self).replace('_', ' '), build(value, self))) for key, value in self.kwoptions.items())
+            kwoptions = ', '.join('='.join((build(key, self).replace('_', ' '), build(value, self)))
+                                  for key, value in self.kwoptions.items())
             options = ', '.join([build(opt, self) for opt in self.options])
             if kwoptions and options:
                 options += ', '
@@ -154,6 +160,7 @@ class Package(TexCommand):
     """
     'usepackage' tex command wrapper.
     """
+
     def __init__(self, package_name, *options, **kwoptions):
         super().__init__('usepackage', package_name, options=options, options_pos='first', **kwoptions)
 
@@ -162,6 +169,7 @@ class bold(TexCommand):
     r"""
     Applies \textbf{...} command on text.
     """
+
     def __init__(self, text):
         """
         Args:
@@ -174,6 +182,7 @@ class italic(TexCommand):
     r"""
     Applies \textit{...} command on text.
     """
+
     def __init__(self, text):
         """
         Args:

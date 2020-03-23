@@ -1,4 +1,6 @@
-import subprocess, os, sys
+import os
+import subprocess
+import sys
 
 from python2latex import TexFile, TexEnvironment, TexCommand, build
 from python2latex.utils import open_file_with_default_program
@@ -10,14 +12,16 @@ class Document(TexEnvironment):
     Has a body, a preamble and a dict of packages updated recursively with other TexEnvironment nested inside the body.
     The 'build' method writes all text to a .tex file and compiles it to pdf.
     """
+
     def __init__(self, filename, filepath='.', doc_type='article', options=(), **kwoptions):
         r"""
         Args:
             filename (str): Name of the file without extension.
             filepath (str): Path where the files will be saved and compiled to pdf.
             doc_type (str): Any document type LaTeX supports, like 'article', 'standalone', etc.
-            options (tuple of str): Any options that goes between brackets. See template further.
-            kwoptions (keyword options of the document type): Options should be strings. The dict is converted to string when building to tex. See template below.
+            options (Union[Tuple[str], str, TexObject]): Any options that goes between brackets. See template further.
+            kwoptions (keyword options of the document type): Options should be strings. The dict is converted to string
+            when building to tex. See template below.
 
         The doc_type, options and kwoptions arguments will be compiled in the following way:
             \documentclass[*options, **kwoptions]{doc_type}
@@ -41,7 +45,8 @@ class Document(TexEnvironment):
 
         Args:
             margins (str): Default value for all sides.
-            top, bottom, left, right (str, any valid LaTeX length): Overrides the 'margins' argument with the specified length.
+            top, bottom, left, right (str, any valid LaTeX length): Overrides the 'margins' argument with the specified
+            length.
         """
         top = top or margins
         bottom = bottom or margins
@@ -62,12 +67,15 @@ class Document(TexEnvironment):
 
     def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True):
         """
-        Builds the document to a tex file and optionally compiles it into tex and show the output pdf in the default pdf reader of the system.
+        Builds the document to a tex file and optionally compiles it into tex and show the output pdf in the default
+        pdf reader of the system.
 
         Args:
-            save_to_disk (bool): If True, the built tex will be save to disk automatically. Else, one can recover the tex string from the return of the current methond.
+            save_to_disk (bool): If True, the built tex will be save to disk automatically. Else, one can recover the
+            tex string from the return of the current method.
             compile_to_pdf (bool): If True, automatically call pdflatex to compile the generated tex file to pdf.
-            show_pdf (bool): If True, the default pdf reader will be called to show the compiled pdf. This may not work well with non-read-only pdf viewer such as Acrobat Reader or Foxit Reader.
+            show_pdf (bool): If True, the default pdf reader will be called to show the compiled pdf. This may not work
+            well with non-read-only pdf viewer such as Acrobat Reader or Foxit Reader.
 
         Returns:
             The tex string of the file.
@@ -92,6 +100,7 @@ class Section(TexEnvironment):
     """
     Implements a LaTeX section.
     """
+
     def __init__(self, name, label=''):
         """
         Args:
@@ -113,6 +122,7 @@ class Subsection(TexEnvironment):
     """
     Implements a LaTeX subsection.
     """
+
     def __init__(self, name, label=''):
         """
         Args:
