@@ -74,7 +74,7 @@ class TexEnvironment(TexObject):
         Adds text (or a tex command) as a string or another TexObject to be appended.
 
         Args:
-            text (str): Text to add.
+            text (Union[str, TexObject]): Text to add.
         """
         self.append(text)
 
@@ -83,7 +83,7 @@ class TexEnvironment(TexObject):
         Adds text (or a tex command) as a string or another TexObject to be appended.
 
         Args:
-            text (str): Text to add.
+            text (Union[str, TexObject]): Text to add.
         """
         self.body.append(text)
 
