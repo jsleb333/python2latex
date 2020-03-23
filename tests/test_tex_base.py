@@ -1,6 +1,3 @@
-import pytest
-from inspect import cleandoc
-
 from python2latex.tex_base import *
 
 
@@ -21,7 +18,7 @@ class TestTexObject:
         self.tex_obj.add_package(package_name, 'spam', 'egg', answer=42, question="We don't know")
         assert package_name in self.tex_obj.packages
         assert self.tex_obj.packages[package_name].options == ['spam', 'egg']
-        assert self.tex_obj.packages[package_name].kwoptions == {'answer':42, 'question':"We don't know"}
+        assert self.tex_obj.packages[package_name].kwoptions == {'answer': 42, 'question': "We don't know"}
 
     def test_repr(self):
         assert repr(self.tex_obj) == 'TexObject DefaultTexObject'
@@ -39,19 +36,39 @@ class TestTexCommand:
         assert TexCommand('begin', 'tabular', 'ccc').build() == r'\begin{tabular}{ccc}'
 
     def test_command_with_parameters_and_options_order_first(self):
-        assert TexCommand('command', 'param1', 'param2', options=('spam', 'egg'), top='2cm', bottom='3cm', options_pos='first').build() == r'\command[spam, egg, top=2cm, bottom=3cm]{param1}{param2}'
+        assert TexCommand('command',
+                          'param1',
+                          'param2',
+                          options=('spam', 'egg'),
+                          top='2cm',
+                          bottom='3cm',
+                          options_pos='first').build() == r'\command[spam, egg, top=2cm, bottom=3cm]{param1}{param2}'
 
     def test_command_with_parameters_and_options_order_second(self):
-        assert TexCommand('command', 'param1', 'param2', options=('spam', 'egg'), top='2cm', bottom='3cm', options_pos='second').build() == r'\command{param1}[spam, egg, top=2cm, bottom=3cm]{param2}'
+        assert TexCommand('command',
+                          'param1',
+                          'param2',
+                          options=('spam', 'egg'),
+                          top='2cm',
+                          bottom='3cm',
+                          options_pos='second').build() == r'\command{param1}[spam, egg, top=2cm, bottom=3cm]{param2}'
 
     def test_command_with_parameters_and_options_order_last(self):
-        assert TexCommand('command', 'param1', 'param2', options=('spam', 'egg'), top='2cm', bottom='3cm', options_pos='last').build() == r'\command{param1}{param2}[spam, egg, top=2cm, bottom=3cm]'
+        assert TexCommand('command',
+                          'param1',
+                          'param2',
+                          options=('spam', 'egg'),
+                          top='2cm',
+                          bottom='3cm',
+                          options_pos='last').build() == r'\command{param1}{param2}[spam, egg, top=2cm, bottom=3cm]'
 
     def test_str(self):
         assert f"{TexCommand('test')}" == r'\test'
 
+
 def test_bold():
     assert bold('test').build() == r'\textbf{test}'
+
 
 def test_italic():
     assert italic('test').build() == r'\textit{test}'
