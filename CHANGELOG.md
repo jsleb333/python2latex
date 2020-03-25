@@ -12,6 +12,9 @@
 
 ## Version 0.2.0
 
+### March 24, 2020
+- Add forget_plot argument to add_plot method of Plot class to fix incompatibilities with histogram.
+
 ### November 19, 2019
 - Reworked Plot so that lines are objects and are built in the order that have been added to the axis.
 - Added a MatrixPlot object to make heatmaps.
