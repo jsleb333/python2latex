@@ -168,21 +168,19 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
 
     legend_position = _AxisProperty('legend pos')
 
-    def add_plot(self, X, Y, *options, legend=None, **kwoptions):
+    def add_plot(self, X, Y, *options, legend=None, forget_plot=True, **kwoptions):
         """
         Adds a plot to the axis.
 
         Args:
             X (sequence of numbers): X coordinates.
             Y (sequence of numbers): Y coordinates.
-            options (Union[Tuple[str], str, TexObject]): Options for the plot. Colors can be specified here as strings
-            of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options.
-             All underscores are replaced by spaces when converted to LaTeX.
+            options (Tuple[Union(str, TexObject]): Options for the plot. Colors can be specified here as strings of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
             legend (str): Entry of the plot.
-            kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible
-            options. All underscores are replaced by spaces when converted to LaTeX.
+            forget_plot (bool): forget_plot is used to correctly present the legend. Default behavior is to add 'forget plot' option when no legend is provided. However, this can lead to incompatibility when plotting histograms. It is advised to set it to False in that case.
+            kwoptions (Dict[str, Union(str, TexObject)): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
         """
-        self.axis += LinePlot(X, Y, *options, legend=legend, **kwoptions)
+        self.axis += LinePlot(X, Y, *options, legend=legend, forget_plot=forget_plot, **kwoptions)
 
     def add_matrix_plot(self, X, Y, Z, *options, colorbar=True, **kwoptions):
         """
