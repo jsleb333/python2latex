@@ -7,34 +7,31 @@ class begin(TexCommand):
     """
     'begin' tex command wrapper.
     """
-
     def __init__(self, environment, *parameters, options=list(), options_pos='second', **kwoptions):
-        return super().__init__('begin',
-                                environment,
-                                *parameters,
-                                options=options,
-                                options_pos=options_pos,
-                                **kwoptions)
+        super().__init__('begin',
+                         environment,
+                         *parameters,
+                         options=options,
+                         options_pos=options_pos,
+                         **kwoptions)
 
 
 class end(TexCommand):
     """
     'end' tex command wrapper.
     """
-
     def __init__(self, environment):
-        return super().__init__('end', environment)
+        super().__init__('end', environment)
 
 
 class Label(TexCommand):
     """
     'label' tex command wrapper.
     """
-
     def __init__(self, label, prefix=None):
         self.label = label
         self.prefix = prefix
-        return super().__init__('label')
+        super().__init__('label')
 
     def build(self):
         prefix = f'{self.prefix}:' if self.prefix else ''
@@ -56,7 +53,14 @@ class TexEnvironment(TexObject):
     Add new environments with the method 'new' and add standard text with 'add_text'.
     Add LaTeX packages needed for this environment with 'add_package'.
     """
-    def __init__(self, env_name, *parameters, options=(), star_env=False, label='', label_pos='top', **kwoptions):
+    def __init__(self,
+                 env_name,
+                 *parameters,
+                 options=(),
+                 star_env=False,
+                 label='',
+                 label_pos='top',
+                 **kwoptions):
         """
         Args:
             env_name (str): Name of the environment.

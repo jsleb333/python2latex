@@ -7,7 +7,6 @@ class Caption(TexCommand):
     """
     Simple caption command.
     """
-
     def __init__(self, caption):
         """
         Args:
@@ -20,7 +19,14 @@ class _FloatingEnvironment(TexEnvironment):
     """
     LaTeX floating environment. This should be inherited.
     """
-    def __init__(self, env_name, star_env=False, position='h!', label='', label_pos='bottom', caption='', centered=True):
+    def __init__(self,
+                 env_name,
+                 star_env=False,
+                 position='h!',
+                 label='',
+                 label_pos='bottom',
+                 caption='',
+                 centered=True):
         """
         Args:
             position (str, combination of 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility.
@@ -31,7 +37,11 @@ class _FloatingEnvironment(TexEnvironment):
             caption (str): Caption of the floating environment.
             centered (bool): Whether to center the environment or not.
         """
-        super().__init__(env_name=env_name, star_env=star_env, options=position, label=label, label_pos=label_pos)
+        super().__init__(env_name=env_name,
+                         star_env=star_env,
+                         options=position,
+                         label=label,
+                         label_pos=label_pos)
         self.caption = caption
         self.centered = centered
 
@@ -67,7 +77,6 @@ class FloatingFigure(_FloatingEnvironment):
     """
     LaTeX floating figure environment.
     """
-
     def __init__(self, *args, label_pos='bottom', **kwargs):
         """
         Args:
@@ -80,7 +89,6 @@ class FloatingTable(_FloatingEnvironment):
     """
     LaTeX floating table environment.
     """
-
     def __init__(self, *args, label_pos='top', **kwargs):
         """
         Args:
@@ -101,7 +109,6 @@ class FloatingEnvironmentMixin:
 
     See the Table and the Plot environments for complete examples.
     """
-
     def __init__(self, *args, as_float_env=True, centered=True, **kwargs):
         """
         Args:

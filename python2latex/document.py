@@ -12,7 +12,6 @@ class Document(TexEnvironment):
     Has a body, a preamble and a dict of packages updated recursively with other TexEnvironment nested inside the body.
     The 'build' method writes all text to a .tex file and compiles it to pdf.
     """
-
     def __init__(self, filename, filepath='.', doc_type='article', options=(), **kwoptions):
         r"""
         Args:
@@ -31,7 +30,11 @@ class Document(TexEnvironment):
         self.filepath = filepath
         self.file = TexFile(filename, filepath)
 
-        self.doc_class = TexCommand('documentclass', doc_type, options=options, options_pos='first', **kwoptions)
+        self.doc_class = TexCommand('documentclass',
+                                    doc_type,
+                                    options=options,
+                                    options_pos='first',
+                                    **kwoptions)
 
         self.add_package('inputenc', 'utf8')
         self.set_margins('2.5cm')
@@ -100,7 +103,6 @@ class Section(TexEnvironment):
     """
     Implements a LaTeX section.
     """
-
     def __init__(self, name, label=''):
         """
         Args:
@@ -122,7 +124,6 @@ class Subsection(TexEnvironment):
     """
     Implements a LaTeX subsection.
     """
-
     def __init__(self, name, label=''):
         """
         Args:

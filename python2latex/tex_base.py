@@ -23,7 +23,6 @@ class TexFile:
     """
     Class that compiles python to tex code. Manages write/read tex.
     """
-
     def __init__(self, filename, filepath):
         self.filename = filename
         self.filepath = filepath
@@ -39,10 +38,12 @@ class TexFile:
 
     def _compile_to_pdf(self):
         # os.chdir(self.filepath)
-        check_call(
-            ['pdflatex', '-halt-on-error', '--output-directory', self.filepath, self.filepath + '/' + self.filename + '.tex'],
-            stdout=DEVNULL,
-            stderr=STDOUT)
+        check_call([
+            'pdflatex', '-halt-on-error', '--output-directory', self.filepath,
+            self.filepath + '/' + self.filename + '.tex'
+        ],
+                   stdout=DEVNULL,
+                   stderr=STDOUT)
 
 
 class TexObject:
@@ -51,7 +52,6 @@ class TexObject:
     Provides a 'add_package' method to add packages needed for this object.
     Inherited classes should redefine the 'build' method.
     """
-
     def __init__(self, obj_name):
         """
         Args:
@@ -83,7 +83,8 @@ class TexObject:
 
     def build_preamble(self):
         packages = self.build_packages()
-        preamble = dict((build(line, self), '') for line in self.preamble)  # Removes duplicate while keeping order
+        preamble = dict((build(line, self), '')
+                        for line in self.preamble)  # Removes duplicate while keeping order
         preamble = '\n'.join([packages] + list(preamble.keys()))
 
         return preamble
@@ -160,16 +161,18 @@ class Package(TexCommand):
     """
     'usepackage' tex command wrapper.
     """
-
     def __init__(self, package_name, *options, **kwoptions):
-        super().__init__('usepackage', package_name, options=options, options_pos='first', **kwoptions)
+        super().__init__('usepackage',
+                         package_name,
+                         options=options,
+                         options_pos='first',
+                         **kwoptions)
 
 
 class bold(TexCommand):
     r"""
     Applies \textbf{...} command on text.
     """
-
     def __init__(self, text):
         """
         Args:
@@ -182,7 +185,6 @@ class italic(TexCommand):
     r"""
     Applies \textit{...} command on text.
     """
-
     def __init__(self, text):
         """
         Args:

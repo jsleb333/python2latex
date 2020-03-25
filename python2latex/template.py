@@ -2,7 +2,6 @@ import subprocess, os, sys
 
 from python2latex import TexFile, TexEnvironment, TexCommand, build
 from python2latex.utils import open_file_with_default_program
-
 """
 TODO:
     - Parsing of same packages, and colors in preamble but with different options
@@ -69,9 +68,9 @@ class Template:
 
         for i, (anchor_name, (start, end)) in enumerate(anchors_position.items()):
             if end:
-                del doc[start+1:end+1]
-            doc.insert(start+1+i, self.anchors[anchor_name])
-            doc.insert(start+2+i, f'%! python2latex-end-anchor = {anchor_name}')
+                del doc[start + 1:end + 1]
+            doc.insert(start + 1 + i, self.anchors[anchor_name])
+            doc.insert(start + 2 + i, f'%! python2latex-end-anchor = {anchor_name}')
 
     def _update_preamble(self, preamble):
         # Removing old python2latex preamble
@@ -82,7 +81,8 @@ class Template:
             preamble[i:]
 
         # Adding only new lines to preamble
-        anchor_preambles = set(line for obj in self.anchors.values() for line in obj.build_preamble().split('\n'))
+        anchor_preambles = set(line for obj in self.anchors.values()
+                               for line in obj.build_preamble().split('\n'))
         lines_to_add = []
         for line in anchor_preambles:
             if line not in preamble and line:
