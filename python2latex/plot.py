@@ -1,9 +1,8 @@
 import csv
 import itertools
+import numpy as np
 import os
 from datetime import datetime as dt
-
-import numpy as np
 
 from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand
 
@@ -200,7 +199,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             options. All underscores are replaced by spaces when converted to LaTeX.
         """
         if colorbar:
-            self.axis.options += ('colorbar', )
+            self.axis.options += ('colorbar',)
             # self.axis.kwoptions['enlargelimits'] = 'false'
         self.axis += MatrixPlot(X, Y, Z, *options, **kwoptions)
 
@@ -263,7 +262,7 @@ class LinePlot(_Plot):
     LinePlot object to handle line plots.
     """
 
-    def __init__(self, X, Y, *options, legend=None, **kwoptions):
+    def __init__(self, X, Y, *options, legend=None, forget_plot=True, **kwoptions):
         """
         Adds a plot to the axis.
 
@@ -274,12 +273,15 @@ class LinePlot(_Plot):
             of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options.
             All underscores are replaced by spaces when converted to LaTeX.
             legend (str): Entry of the plot.
+            forget_plot (bool): Either or not to forget plot when adding plot. In some case, like histogram, the forget plot
+            don't allow to have multiple plots near each other. By default the forget plot is activated.
             kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible
             options. All underscores are replaced by spaces when converted to LaTeX.
         """
         self.X = np.array([x for x in X])
         self.Y = np.array([y for y in Y])
         self.legend = legend
+        self.forget_plot = forget_plot
         super().__init__(*options, **kwoptions)
 
     def build(self):
@@ -287,8 +289,8 @@ class LinePlot(_Plot):
         legend = ''
         if self.legend:
             legend = f"\n\\addlegendentry{{{self.legend}}};"
-        else:
-            self.options += ('forget plot', )
+        elif self.forget_plot:
+            self.options += ('forget plot',)
 
         return super().build(
         ) + f" table[x=x{self.id_number}, y=y{self.id_number}, col sep=comma]{{{self.plot_filepath}}};" + legend
