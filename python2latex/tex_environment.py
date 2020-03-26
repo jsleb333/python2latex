@@ -154,8 +154,8 @@ class TexEnvironment(TexObject):
 
         BindedCls.__name__ = 'Binded' + cls_to_bind.__name__
         BindedCls.__qualname__ = 'Binded' + cls_to_bind.__qualname__
-        BindedCls.__doc__ = f"\tThis is a {cls_to_bind.__name__} object binded to {repr(self)}. Each time an " \
-                            f"instance is created, it is appended to the body of {repr(self)}. " \
+        BindedCls.__doc__ = f"\tThis is a {cls_to_bind.__name__} object binded to {repr(self)}." \
+                            f"Each time an instance is created, it is appended to the body of {repr(self)}. " \
                             f"Everything else is identical.\n\n" + str(cls_to_bind.__doc__)
         return BindedCls
 
@@ -169,7 +169,7 @@ class TexEnvironment(TexObject):
         if self.label_pos == 'top':
             tex.append(self._label)
 
-        tex.append(self.build_body())
+        tex.extend(self.body)
 
         if self.label_pos == 'bottom':
             tex.append(self._label)
@@ -177,7 +177,5 @@ class TexEnvironment(TexObject):
         tex.append(self.tail)
 
         tex = [build(part, self) for part in tex]
-        return '\n'.join([part for part in tex if part])
 
-    def build_body(self):
-        return '\n'.join([build(line, self) for line in self.body])
+        return '\n'.join([part for part in tex if part])
