@@ -79,7 +79,7 @@ class TestFloatingTable:
             ''')
 
     def test_floating_table_label_bottom(self):
-        fig = FloatingTable(caption='some caption', caption_space='0pt', label='test_table')
+        fig = FloatingTable(caption='some caption', caption_pos='bottom', caption_space='0pt', label='test_table')
         fig.add_text('some text')
         assert fig.build() == cleandoc(r'''
             \begin{table}[h!]
