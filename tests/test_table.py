@@ -162,6 +162,7 @@ def test_captioned_labeled_table():
         \centering
         \caption{My caption}
         \label{table:my_label}
+        \vspace{5pt}
         \begin{tabular}{ccc}
         \toprule
         1 & 2 & 3\\

@@ -128,3 +128,15 @@ class TestTexEnvironment:
             \begin{figure*}
             \end{figure*}
             ''')
+
+    def test_build_ignores_empty_str(self):
+        env = TexEnvironment('test')
+        env += 'text 1'
+        env += ''
+        env += 'text 2'
+        env.build() == cleandoc(r'''
+            \begin{test}
+            text 1
+            text 2
+            \end{test}
+            ''')
