@@ -26,7 +26,7 @@ class _FloatingEnvironment(TexEnvironment):
                  label='',
                  caption='',
                  caption_pos='bottom',
-                 caption_space='0pt',
+                 caption_space='',
                  centered=True):
         """
         Args:
@@ -35,13 +35,15 @@ class _FloatingEnvironment(TexEnvironment):
             label (str): Label of the environment if needed.
             caption (str): Caption of the floating environment.
             caption_pos (str, either 'top' or 'bottom'): Position of the caption, either at the beginning (top) of the floating environment or at the end (bottom).
-            caption_space (str, valid TeX length): Space between the caption and the object in the floating environment. Can be any valid TeX length.
+            caption_space (str, valid TeX length or empty str): Space between the caption and the object in the floating environment. Can be any valid TeX length. If empty string, no space is added.
             centered (bool): Whether to center the environment or not.
         """
         super().__init__(env_name=env_name,
                          star_env=star_env,
                          options=position,
-                         label=label)
+                         label=label,
+                         label_pos=None, # Label positioning is handled here instead of in TexEnvironment.
+                         )
         self.caption = caption
         self.caption_pos = caption_pos
         self.caption_space = caption_space
@@ -52,13 +54,9 @@ class _FloatingEnvironment(TexEnvironment):
         Builds recursively the environments of the body and converts it to .tex.
         Returns the .tex string of the file.
         """
-
-        if self.centered:
-            self.body = [r'\centering'] + self.body
-
         if self.caption:
             caption = Caption(self.caption)
-            space = TexCommand('vspace', self.caption_space)
+            space = TexCommand('vspace', self.caption_space) if self.caption_space else ''
 
             if self.caption_pos == 'top':
                 self.body = [caption, self._label, space] + self.body
@@ -66,7 +64,10 @@ class _FloatingEnvironment(TexEnvironment):
             if self.caption_pos == 'bottom':
                 self.body += [space, caption, self._label]
 
-        return super.build()
+        if self.centered:
+            self.body = [r'\centering'] + self.body
+
+        return super().build()
 
 
 class FloatingFigure(_FloatingEnvironment):
@@ -78,19 +79,19 @@ class FloatingFigure(_FloatingEnvironment):
         Args:
             See _FloatingEnvironment arguments.
         """
-        super().__init__('figure', *args, label_pos=label_pos, **kwargs)
+        super().__init__('figure', *args, caption_pos=label_pos, **kwargs)
 
 
 class FloatingTable(_FloatingEnvironment):
     """
     LaTeX floating table environment.
     """
-    def __init__(self, *args, label_pos='top', **kwargs):
+    def __init__(self, *args, caption_pos='top', caption_space='5pt', **kwargs):
         """
         Args:
             See _FloatingEnvironment arguments.
         """
-        super().__init__('table', *args, label_pos=label_pos, **kwargs)
+        super().__init__('table', *args, caption_pos=caption_pos, caption_space=caption_space, **kwargs)
 
 
 class FloatingEnvironmentMixin:
