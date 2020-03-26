@@ -36,7 +36,7 @@ class TexFile:
         with open(self.path, 'w', encoding='utf8') as file:
             file.write(tex)
 
-    def _compile_to_pdf(self):
+    def compile_to_pdf(self):
         # os.chdir(self.filepath)
         check_call([
             'pdflatex', '-halt-on-error', '--output-directory', self.filepath,
@@ -68,7 +68,7 @@ class TexObject:
 
         Args:
             package (str): The package name.
-            options (Union[Tuple[str], str, TexObject]): Options to pass to the package in brackets.
+            options (Tuple[Union[str, TexObject]): Options to pass to the package in brackets.
             kwoptions (dict of str): Keyword options to pass to the package in brackets.
         """
         if not package in self.packages:
@@ -112,7 +112,7 @@ class TexCommand(TexObject):
         Args:
             command (str): Name of the command that will be rendered as '\command'.
             parameters: Parameters of the command, appended inside curly braces {}.
-            options (Union[Tuple[str], str, TexObject]): Options to pass to the command, appended inside brackets [].
+            options (Tuple[Union[str, TexObject]): Options to pass to the command, appended inside brackets [].
             options_pos (str, either 'first', 'second' or 'last'): Position of the options with respect to the
             parameters.
             kwoptions (dict of str): Keyword options to pass to the command, appended inside the same brackets as
