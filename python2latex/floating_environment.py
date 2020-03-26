@@ -74,12 +74,12 @@ class FloatingFigure(_FloatingEnvironment):
     """
     LaTeX floating figure environment.
     """
-    def __init__(self, *args, label_pos='bottom', **kwargs):
+    def __init__(self, *args, caption_pos='bottom', **kwargs):
         """
         Args:
             See _FloatingEnvironment arguments.
         """
-        super().__init__('figure', *args, caption_pos=label_pos, **kwargs)
+        super().__init__('figure', *args, caption_pos=caption_pos, **kwargs)
 
 
 class FloatingTable(_FloatingEnvironment):

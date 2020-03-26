@@ -65,6 +65,9 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
                  position='h!',
                  as_float_env=True,
                  label='',
+                 caption='',
+                 caption_pos='bottom',
+                 caption_space='',
                  **axis_kwoptions):
         """
         Args:
@@ -94,13 +97,17 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             environment. If False, only the 'tabular' is constructed.
             label (str): Label of the environment.
 
+            caption, caption_pos, caption_space: See _FloatingEnvironment for description.
+
             axis_kwoptions (dict): pgfplots keyword options for the axis. All underscore will be replaced by spaces
             when converted to LaTeX parameters.
         """
         super().__init__(as_float_env=as_float_env,
                          position=position,
                          label=label,
-                         label_pos='bottom')
+                         caption=caption,
+                         caption_pos='bottom',
+                         caption_space=caption_space)
 
         self.add_package('tikz')
         self.add_package('pgfplots')
@@ -132,7 +139,6 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
 
         self.plot_name = plot_name or f"plot-{dt.now().strftime(r'%Y-%m-%d %Hh%Mm%Ss')}"
         self.plot_path = plot_path
-        self.caption = ''
 
         if not marks:
             mark_size = '0pt'
