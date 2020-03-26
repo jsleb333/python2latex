@@ -7,7 +7,6 @@ class Caption(TexCommand):
     """
     Simple caption command.
     """
-
     def __init__(self, caption):
         """
         Args:
@@ -20,8 +19,15 @@ class _FloatingEnvironment(TexEnvironment):
     """
     LaTeX floating environment. This should be inherited.
     """
-    
-    def __init__(self, env_name, star_env=False, position='h!', label='', caption='', caption_pos='bottom', caption_space='0pt', centered=True):
+    def __init__(self,
+                 env_name,
+                 star_env=False,
+                 position='h!',
+                 label='',
+                 caption='',
+                 caption_pos='bottom',
+                 caption_space='0pt',
+                 centered=True):
         """
         Args:
             position (str, combination of 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility.
@@ -32,12 +38,15 @@ class _FloatingEnvironment(TexEnvironment):
             caption_space (str, valid TeX length): Space between the caption and the object in the floating environment. Can be any valid TeX length.
             centered (bool): Whether to center the environment or not.
         """
-        super().__init__(env_name=env_name, star_env=star_env, options=position, label=label)
+        super().__init__(env_name=env_name,
+                         star_env=star_env,
+                         options=position,
+                         label=label)
         self.caption = caption
         self.caption_pos = caption_pos
         self.caption_space = caption_space
         self.centered = centered
-        
+
     def build(self):
         """
         Builds recursively the environments of the body and converts it to .tex.
@@ -50,13 +59,13 @@ class _FloatingEnvironment(TexEnvironment):
         if self.caption:
             caption = Caption(self.caption)
             space = TexCommand('vspace', self.caption_space)
-            
+
             if self.caption_pos == 'top':
                 self.body = [caption, self._label, space] + self.body
-            
+
             if self.caption_pos == 'bottom':
                 self.body += [space, caption, self._label]
-                
+
         return super.build()
 
 
@@ -64,7 +73,6 @@ class FloatingFigure(_FloatingEnvironment):
     """
     LaTeX floating figure environment.
     """
-
     def __init__(self, *args, label_pos='bottom', **kwargs):
         """
         Args:
@@ -77,7 +85,6 @@ class FloatingTable(_FloatingEnvironment):
     """
     LaTeX floating table environment.
     """
-
     def __init__(self, *args, label_pos='top', **kwargs):
         """
         Args:
@@ -98,7 +105,6 @@ class FloatingEnvironmentMixin:
 
     See the Table and the Plot environments for complete examples.
     """
-
     def __init__(self, *args, as_float_env=True, centered=True, **kwargs):
         """
         Args:

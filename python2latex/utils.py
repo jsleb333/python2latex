@@ -1,4 +1,6 @@
-import sys, os, subprocess
+import sys
+import os
+import subprocess
 
 
 def open_file_with_default_program(filename, filepath):

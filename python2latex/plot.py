@@ -1,9 +1,8 @@
 import csv
 import itertools
+import numpy as np
 import os
 from datetime import datetime as dt
-
-import numpy as np
 
 from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand
 
@@ -13,7 +12,8 @@ class _AxisProperty:
         self.param_name = param_name
 
     def __get__(self, obj, cls=None):
-        return obj.axis.kwoptions[self.param_name] if self.param_name in obj.axis.kwoptions else None
+        return obj.axis.kwoptions[
+            self.param_name] if self.param_name in obj.axis.kwoptions else None
 
     def __set__(self, obj, value):
         obj.axis.kwoptions[self.param_name] = value
@@ -51,7 +51,6 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
     If you know the pgfplots library, all 'axis' environment's parameters can be accessed and modified via the
     'self.axis.options' and the 'self.axis.kwoptions' attributes.
     """
-
     def __init__(self,
                  *X_Y,
                  plot_name=None,
@@ -98,7 +97,10 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             axis_kwoptions (dict): pgfplots keyword options for the axis. All underscore will be replaced by spaces
             when converted to LaTeX parameters.
         """
-        super().__init__(as_float_env=as_float_env, position=position, label=label, label_pos='bottom')
+        super().__init__(as_float_env=as_float_env,
+                         position=position,
+                         label=label,
+                         label_pos='bottom')
 
         self.add_package('tikz')
         self.add_package('pgfplots')
@@ -118,7 +120,12 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             f'axis x line*={axis_x}',
             # 'axis line style={-latex}',
         )
-        self.axis = TexEnvironment('axis', options=options, width=width, height=height, grid=grid, **axis_kwoptions)
+        self.axis = TexEnvironment('axis',
+                                   options=options,
+                                   width=width,
+                                   height=height,
+                                   grid=grid,
+                                   **axis_kwoptions)
         self.tikzpicture.add_text(self.axis)
         # if not marks:
         #     self.axis.options += ['no marks',]
@@ -169,21 +176,19 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
 
     legend_position = _AxisProperty('legend pos')
 
-    def add_plot(self, X, Y, *options, legend=None, **kwoptions):
+    def add_plot(self, X, Y, *options, legend=None, forget_plot=True, **kwoptions):
         """
         Adds a plot to the axis.
 
         Args:
             X (sequence of numbers): X coordinates.
             Y (sequence of numbers): Y coordinates.
-            options (Union[Tuple[str], str, TexObject]): Options for the plot. Colors can be specified here as strings
-            of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options.
-             All underscores are replaced by spaces when converted to LaTeX.
+            options (Tuple[Union(str, TexObject]): Options for the plot. Colors can be specified here as strings of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
             legend (str): Entry of the plot.
-            kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible
-            options. All underscores are replaced by spaces when converted to LaTeX.
+            forget_plot (bool): forget_plot is used to correctly present the legend. Default behavior is to add 'forget plot' option when no legend is provided. However, this can lead to incompatibility when plotting histograms. It is advised to set it to False in that case.
+            kwoptions (Dict[str, Union(str, TexObject)): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
         """
-        self.axis += LinePlot(X, Y, *options, legend=legend, **kwoptions)
+        self.axis += LinePlot(X, Y, *options, legend=legend, forget_plot=forget_plot, **kwoptions)
 
     def add_matrix_plot(self, X, Y, Z, *options, colorbar=True, **kwoptions):
         """
@@ -218,7 +223,11 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
 
             titles = [coor for p in plots for coor in (f'x{p.id_number}', f'y{p.id_number}')]
             if matrix_plot:
-                titles += [f'x{matrix_plot.id_number}', f'y{matrix_plot.id_number}', f'z{matrix_plot.id_number}']
+                titles += [
+                    f'x{matrix_plot.id_number}',
+                    f'y{matrix_plot.id_number}',
+                    f'z{matrix_plot.id_number}'
+                ]
             writer.writerow(titles)
             data = [x_y for p in plots for x_y in (p.X, p.Y)]
             if matrix_plot:
@@ -262,8 +271,7 @@ class LinePlot(_Plot):
     """
     LinePlot object to handle line plots.
     """
-
-    def __init__(self, X, Y, *options, legend=None, **kwoptions):
+    def __init__(self, X, Y, *options, legend=None, forget_plot=True, **kwoptions):
         """
         Adds a plot to the axis.
 
@@ -274,12 +282,15 @@ class LinePlot(_Plot):
             of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options.
             All underscores are replaced by spaces when converted to LaTeX.
             legend (str): Entry of the plot.
+            forget_plot (bool): Either or not to forget plot when adding plot. In some case, like histogram, the forget plot
+            don't allow to have multiple plots near each other. By default the forget plot is activated.
             kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible
             options. All underscores are replaced by spaces when converted to LaTeX.
         """
         self.X = np.array([x for x in X])
         self.Y = np.array([y for y in Y])
         self.legend = legend
+        self.forget_plot = forget_plot
         super().__init__(*options, **kwoptions)
 
     def build(self):
@@ -287,7 +298,7 @@ class LinePlot(_Plot):
         legend = ''
         if self.legend:
             legend = f"\n\\addlegendentry{{{self.legend}}};"
-        else:
+        elif self.forget_plot:
             self.options += ('forget plot', )
 
         return super().build(
@@ -298,7 +309,6 @@ class MatrixPlot(_Plot):
     """
     MatrixPlot object to handle matrix/image plots AKA heatmaps AKA colormaps.
     """
-
     def __init__(self, X, Y, Z, *options, point_meta='explicit', **kwoptions):
         """
         Adds a matrix plot to the axis.

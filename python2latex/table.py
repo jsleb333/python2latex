@@ -2,7 +2,6 @@ import numpy as np
 
 from python2latex import FloatingTable, FloatingEnvironmentMixin
 from python2latex import TexEnvironment, TexCommand, build, bold, italic
-
 """
 TODO:
     - Convert 'multicell' into Multirow and Multicol Tex commands
@@ -13,7 +12,6 @@ class Rule(TexCommand):
     """
     Simple rule object to handle rules added to tables.
     """
-
     def __init__(self, start, end, trim):
         """
         Args:
@@ -50,7 +48,6 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     TODO:
         - Maybe: Add a 'insert_row' and 'insert_column' methods.
     """
-
     def __init__(self,
                  shape=(1, 1),
                  alignment='c',
@@ -122,8 +119,9 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
             cell_shape = table_format[idx].shape
 
             if start_i == stop_i - 1:
-                self.data[start_i,
-                          start_j] = f"\\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
+                self.data[
+                    start_i,
+                    start_j] = f"\\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
             else:
                 shift = ''
                 if v_shift:
@@ -133,8 +131,9 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                     start_j] = f"\\multirow{{{cell_shape[0]}}}{{{v_align}}}{shift}{{{self.data[start_i, start_j]}}}"
 
             if start_j < stop_j - 1 and start_i < stop_i - 1:
-                self.data[start_i,
-                          start_j] = f"\\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
+                self.data[
+                    start_i,
+                    start_j] = f"\\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
 
         return table_format
 
@@ -156,16 +155,18 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
             self.data[i, j] = command(self.data[i, j])
 
         # Build the tabular
-        table_format = np.array([[' & '] * (self.shape[1] - 1) + [r'\\']] * self.shape[0], dtype=object)
+        table_format = np.array([[' & '] * (self.shape[1] - 1) + [r'\\']] * self.shape[0],
+                                dtype=object)
         table_format = self._apply_multicells(table_format)
         for i, (row, row_format) in enumerate(zip(self.data, table_format)):
-            self.tabular.body.append(''.join(str(build(item, self)) for pair in zip(row, row_format) for item in pair))
+            self.tabular.body.append(''.join(
+                str(build(item, self)) for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
                 for rule in self.rules[i]:
                     self.tabular.body.append(build(rule))
         build(self.tabular)
 
-        self.tabular.head.parameters += (''.join(self.alignment),)
+        self.tabular.head.parameters += (''.join(self.alignment), )
         if self.top_rule:
             self.tabular.body.insert(0, r"\toprule")
         if self.bottom_rule:
@@ -179,7 +180,6 @@ class SelectedArea:
     Represents a selected area in a table. Contains a reference to the actual table and methods to apply on an area of
     the table.
     """
-
     def __init__(self, table, idx):
         self.table = table
         self.slices = self._convert_idx_to_slice(idx)
@@ -319,7 +319,9 @@ class SelectedArea:
                 elif isinstance(value, (float, int)) and np.isclose(value, best, rtol, atol):
                     best_idx.append((i, j))
 
-        if best_idx[0][0] is None: return  # No best have been found (i.e. no floats or ints in selected area)
+        if best_idx[0][0] is None:
+            return  # No best have been found (i.e. no floats or ints in selected area)
+
         start_i, start_j = self.idx[0]
         for i, j in best_idx:
             self.table.highlights.append((i + start_i, j + start_j, highlight))
@@ -338,6 +340,11 @@ class SelectedArea:
         if self.size > 1:
             raise RuntimeError('Invalid selected area. It should be of size 1.')
 
-        subtable = Table(shape, alignment, float_format, as_float_env=False, bottom_rule=False, top_rule=False)
+        subtable = Table(shape,
+                         alignment,
+                         float_format,
+                         as_float_env=False,
+                         bottom_rule=False,
+                         top_rule=False)
         self.data = subtable
         return subtable
