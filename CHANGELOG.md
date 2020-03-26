@@ -2,6 +2,10 @@
 
 ## Version 0.3.0
 
+### March 26, 2020
+- Add caption, caption_pos and caption_space as arguments to _FloatingEnvironment and its children to allow manual space between caption and the content.
+- Change the behavior of build to ignore empty strings.
+
 ### November 26, 2019
 - New Template class to insert tex in already existing file.
 
