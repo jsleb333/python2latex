@@ -136,8 +136,6 @@ class TexCommand(TexObject):
             if kwoptions and options:
                 options += ', '
             options = f'[{options}{kwoptions}]'
-        if self.parameters:
-            parameters = f"{{{'}{'.join([build(param, self) for param in self.parameters])}}}"
 
         if self.options_pos == 'first':
             command += options
