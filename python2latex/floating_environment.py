@@ -1,6 +1,6 @@
 import warnings
 
-from python2latex import TexEnvironment, TexObject, TexCommand, build, Label
+from python2latex import TexEnvironment, TexObject, TexCommand
 
 
 class Caption(TexCommand):

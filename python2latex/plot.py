@@ -1,8 +1,8 @@
-import csv
-import itertools
-import numpy as np
 import os
 from datetime import datetime as dt
+import itertools
+import csv
+import numpy as np
 
 from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand
 
@@ -106,7 +106,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
                          position=position,
                          label=label,
                          caption=caption,
-                         caption_pos='bottom',
+                         caption_pos=caption_pos,
                          caption_space=caption_space)
 
         self.add_package('tikz')
@@ -293,8 +293,10 @@ class LinePlot(_Plot):
             kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible
             options. All underscores are replaced by spaces when converted to LaTeX.
         """
-        self.X = np.array([x for x in X])
-        self.Y = np.array([y for y in Y])
+        # self.X = np.array([x for x in X])
+        # self.Y = np.array([y for y in Y])
+        self.X = np.array(X)
+        self.Y = np.array(Y)
         self.legend = legend
         self.forget_plot = forget_plot
         super().__init__(*options, **kwoptions)
@@ -329,8 +331,8 @@ class MatrixPlot(_Plot):
             kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible
             options. All underscores are replaced by spaces when converted to LaTeX.
         """
-        self.X = np.array([x for x in X])
-        self.Y = np.array([y for y in Y])
+        self.X = np.array(X)
+        self.Y = np.array(Y)
         self.Z = np.array([[z for z in z_row] for z_row in Z])
         assert self.Z.shape == self.X.shape + self.Y.shape
 

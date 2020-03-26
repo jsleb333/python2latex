@@ -1,6 +1,4 @@
-import subprocess, os, sys
-
-from python2latex import TexFile, TexEnvironment, TexCommand, build
+from python2latex import TexFile, build
 from python2latex.utils import open_file_with_default_program
 """
 TODO:
@@ -109,7 +107,7 @@ class Template:
         self.output_file.save(tex)
 
         if compile_to_pdf:
-            self.output_file._compile_to_pdf()
+            self.output_file.compile_to_pdf()
 
             if show_pdf:
                 open_file_with_default_program(self.output_file.filename, self.output_file.filepath)

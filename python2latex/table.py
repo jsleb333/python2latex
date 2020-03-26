@@ -77,7 +77,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
             caption_pos (str, either 'top' or 'bottom'): Position of the caption, either above (top) the table or below (bottom). Does not apply if 'as_float_env' is False.
             caption_space (str, valid TeX length): Space between the caption and the table. Can be any valid TeX length. Does not apply if 'as_float_env' is False.
         """
-        super().__init__(as_float_env=as_float_env, position=position, label=label, caption_pos=caption_pos)
+        super().__init__(as_float_env=as_float_env, position=position, label=label, caption=caption, caption_pos=caption_pos, caption_space=caption_space)
 
         self.tabular = TexEnvironment('tabular')
         self.add_package('booktabs')
@@ -112,8 +112,8 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     def _apply_multicells(self, table_format):
         for idx, v_align, h_align, v_shift in self.multicells:
 
-            start_i, stop_i, step = idx[0].indices(self.shape[0])
-            start_j, stop_j, step = idx[1].indices(self.shape[1])
+            start_i, stop_i, _ = idx[0].indices(self.shape[0])
+            start_j, stop_j, _ = idx[1].indices(self.shape[1])
 
             table_format[start_i, slice(start_j, stop_j - 1)] = ''
             cell_shape = table_format[idx].shape
@@ -138,7 +138,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         return table_format
 
     def build(self):
-        row, col = self.data.shape
+        row, _ = self.data.shape
         # Format floats
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
@@ -209,8 +209,8 @@ class SelectedArea:
 
     @property
     def idx(self):
-        start_i, stop_i, step_i = self.slices[0].indices(self.table.shape[0])
-        start_j, stop_j, step_j = self.slices[1].indices(self.table.shape[1])
+        start_i, stop_i, _ = self.slices[0].indices(self.table.shape[0])
+        start_j, stop_j, _ = self.slices[1].indices(self.table.shape[1])
         return (start_i, start_j), (stop_i, stop_j)
 
     def __repr__(self):
@@ -319,12 +319,10 @@ class SelectedArea:
                 elif isinstance(value, (float, int)) and np.isclose(value, best, rtol, atol):
                     best_idx.append((i, j))
 
-        if best_idx[0][0] is None:
-            return  # No best have been found (i.e. no floats or ints in selected area)
-
-        start_i, start_j = self.idx[0]
-        for i, j in best_idx:
-            self.table.highlights.append((i + start_i, j + start_j, highlight))
+        if best_idx[0][0] is not None: # Best have been found (i.e. no floats or ints in selected area)
+            start_i, start_j = self.idx[0]
+            for i, j in best_idx:
+                self.table.highlights.append((i + start_i, j + start_j, highlight))
 
         return self
 

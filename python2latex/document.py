@@ -1,7 +1,3 @@
-import os
-import subprocess
-import sys
-
 from python2latex import TexFile, TexEnvironment, TexCommand, build
 from python2latex.utils import open_file_with_default_program
 
@@ -91,7 +87,7 @@ class Document(TexEnvironment):
 
         if compile_to_pdf:
             self.file.save(tex)
-            self.file._compile_to_pdf()
+            self.file.compile_to_pdf()
 
         if show_pdf:
             open_file_with_default_program(self.filename, self.filepath)
