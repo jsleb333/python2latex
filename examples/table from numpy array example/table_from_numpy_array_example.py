@@ -12,6 +12,8 @@ data = np.random.rand(row, col)
 table = sec.new(Table(shape=(row+2, col+1), alignment='c', float_format='.2f'))
 # Set a caption if desired
 table.caption = 'Table from numpy array'
+table.caption_space = '10pt' # Space between table and caption.
+
 # Set entries with a slice directly from a numpy array!
 table[2:,1:] = data
 

@@ -59,6 +59,7 @@ table = sec.new(Table(shape=(row+2, col+1), alignment='c', float_format='.2f'))
 table.caption = 'Table from numpy array'
 # Set entries with a slice directly from a numpy array!
 table[2:,1:] = data
+table.caption_space = '10pt' # Space between table and caption.
 
 # Set a columns title as a multicell with custom parameters
 table[0,1:4].multicell('Title1', h_align='c')
