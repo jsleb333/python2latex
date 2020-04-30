@@ -5,6 +5,7 @@ from python2latex import TexEnvironment, TexCommand, build, bold, italic
 """
 TODO:
     - Convert 'multicell' into Multirow and Multicol Tex commands
+    - Per cell/slice formating
 """
 
 
