@@ -1,7 +1,7 @@
-from python2latex import Document, Table, build
+from python2latex import Document, Table
 import numpy as np
 
-doc = Document(filename='table_from_numpy_array_example', filepath='examples/table examples', doc_type='article', options=('12pt',))
+doc = Document(filename='more_complex_table_from_numpy_array_example', filepath='examples/table examples', doc_type='article', options=('12pt',))
 
 sec = doc.new_section('Testing tables from numpy array')
 sec.add_text("This section tests tables from numpy array.")
