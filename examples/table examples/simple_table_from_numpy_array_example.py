@@ -14,8 +14,8 @@ table = doc.new(Table(shape=(row+2, col+1), as_float_env=False)) # No float envi
 # Set entries with a slice directly from a numpy array!
 table[2:,1:] = data
 
-# Set a columns title as a multicell with custom parameters
-table[0,1:].multicell('Col title', h_align='c')
+# Set a columns title as a multicell with a simple slice assignment
+table[0,1:] = 'Col title'
 # Set whole lines or columns in a single line with lists
 table[1,1:] = [f'Col{i+1}' for i in range(col)]
 table[2:,0] = [f'Row{i+1}' for i in range(row)]
