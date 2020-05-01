@@ -115,7 +115,14 @@ class TestSelectedArea:
         pass
 
     def test_divide_cell(self):
-        pass
+        self.table[0, 0].divide_cell((2, 1))
+        assert isinstance(self.table.data[0, 0], Table)
+        self.table.build()
+
+    def test_divide_cell_carry_cell_format(self):
+        self.table[0, 0].change_format('e')
+        self.table[0, 0].divide_cell((2, 1))
+        assert (self.table.data[0, 0].formats == np.array([['e', 'e']])).all()
 
 
 # General Table build tests
