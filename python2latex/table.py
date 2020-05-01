@@ -113,16 +113,13 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                 cell_format = self.formats[i,j]
                 if cell_format is not None and not isinstance(cell_format, str): # Callable
                     self.data[i, j] = build(cell_format(value), self)
-                else:
-                    if cell_format is None:
-                        if isinstance(value, float):
-                            cell_format = self.float_format
-                        elif isinstance(value, int):
-                            cell_format = self.int_format
-
-                    value = f'{{:{cell_format}}}'.format(value)
-                    self.data[i, j] = build(value, self)
-        
+                elif cell_format is not None and isinstance(value, (float, int)): # String
+                    self.data[i, j] = f'{{:{cell_format}}}'.format(value)
+                elif cell_format is None and isinstance(value, float): # Fallback to default
+                    self.data[i, j] = f'{{:{self.float_format}}}'.format(value)
+                elif cell_format is None and isinstance(value, int):
+                    self.data[i, j] = f'{{:{self.int_format}}}'.format(value)
+    
     def _apply_highlights(self):
         for i, j, highlight in self.highlights:
             if highlight == 'bold':
