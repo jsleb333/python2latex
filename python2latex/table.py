@@ -42,9 +42,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         - Supports slices to set items.
         - Easy and automatic multirow and multicolumn cells.
         - Automatically highlights best value inside a region of the table.
-    To do so, the brackets access [] (__getitem__) has been repurposed to select an area and returns a SelectedArea
-    object. Announced features are defined on SelectedArea objects only. To access the actual data inside the table,
-    use the 'data' attribute with brackets.
+    To do so, the brackets access [] (__getitem__) has been repurposed to select an area and returns a SelectedArea object. Announced features are defined on SelectedArea objects only. To access the actual data inside the table, use the 'data' attribute with brackets.
 
     TODO:
         - Maybe: Add a 'insert_row' and 'insert_column' methods.
@@ -64,14 +62,10 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         """
         Args:
             shape (tuple of 2 ints): Shape of the table.
-            alignment (str or sequence of str, either 'c', 'r', or 'l'): Alignment of the text inside the columns. If a
-            sequence, it should be the same length as the number of columns. If only a string, it will be used for all
-            columns.
+            alignment (str or sequence of str, either 'c', 'r', or 'l'): Alignment of the text inside the columns. If a sequence, it should be the same length as the number of columns. If only a string, it will be used for all columns.
             float_format (str): Standard Python float formating available.
-            as_float_env (bool): If True (default), will wrap a 'tabular' environment with a floating 'table'
-            environment. If False, only the 'tabular' is constructed.
-            position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'.
-            Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
+            as_float_env (bool): If True (default), will wrap a 'tabular' environment with a floating 'table' environment. If False, only the 'tabular' is constructed.
+            position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
             top_rule, bottom_rule (bool): Whether or not the table should have outside rules.
             label (str): Label of the environment.
             caption (str): Caption of the table. Does not apply if 'as_float_env' is False.
@@ -178,8 +172,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
 
 class SelectedArea:
     """
-    Represents a selected area in a table. Contains a reference to the actual table and methods to apply on an area of
-    the table.
+    Represents a selected area in a table. Contains a reference to the actual table and methods to apply on an area of the table.
     """
     def __init__(self, table, idx):
         self.table = table
@@ -226,8 +219,7 @@ class SelectedArea:
 
         Args:
             position (str, either 'below' or 'above'): Position of the rule below or above the selected area.
-            trim_left (bool or str): Whether to trim the left end of the rule or not. If True, default trim length is
-            used ('.5em'). If a string, can be any valid LaTeX distance.
+            trim_left (bool or str): Whether to trim the left end of the rule or not. If True, default trim length is used ('.5em'). If a string, can be any valid LaTeX distance.
             trim_right (bool or str): Same a trim_left, but for the right end.
 
         Returns self.
@@ -257,8 +249,7 @@ class SelectedArea:
 
         Args:
             value (str, int or float): Value of the cell.
-            v_align (str, ex. '*'): '*' means the same alignment of the other cells in the row. See LaTeX 'multirow'
-            documentation.
+            v_align (str, ex. '*'): '*' means the same alignment of the other cells in the row. See LaTeX 'multirow' documentation.
             h_align (str, ex. 'c', 'l' or 'r'): See LaTeX 'multicolumn' documentation.
             v_shift (str, any valid length of LaTeX): Vertical shift of the text position of multirow merging.
 
