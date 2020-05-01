@@ -1,7 +1,7 @@
 from python2latex import Document, Table, build
 import numpy as np
 
-doc = Document(filename='table_from_numpy_array_example', filepath='examples/table from numpy array example', doc_type='article', options=('12pt',))
+doc = Document(filename='table_from_numpy_array_example', filepath='examples/table examples', doc_type='article', options=('12pt',))
 
 sec = doc.new_section('Testing tables from numpy array')
 sec.add_text("This section tests tables from numpy array.")
@@ -14,8 +14,14 @@ table = sec.new(Table(shape=(row+2, col+1), alignment='c', float_format='.2f'))
 table.caption = 'Table from numpy array'
 table.caption_space = '10pt' # Space between table and caption.
 
-# Set entries with a slice directly from a numpy array!
+# Set entries with slices
 table[2:,1:] = data
+# Overwrite data if needed, whatever the object type
+table[2:,1] = [i*1000 for i in range(row)]
+
+# Change format of cells easily
+table[2:,1].change_format('.0e') # Exponential format
+table[2,1].change_format(lambda value: f'{value:.0E}') # Also takes custom function for flexibility
 
 # Set a columns title as a multicell with custom parameters
 table[0,1:4].multicell('Title1', h_align='c')
@@ -42,9 +48,9 @@ table[1,4:].add_rule(trim_left='.3em', trim_right=True)
 for row in range(2,6):
     table[row,4:].highlight_best('low', 'italic') # Best per row, for the last 3 columns
 # Highlights equal or near equal values too!
-table[5,1] = 1.0
-table[5,2] = 0.996
-table[5].highlight_best('high', 'bold') # Whole row 4
+table[2,2] = 1.0
+table[2,3] = 0.996
+table[2].highlight_best('high', 'bold') # Whole row
 
 tex = doc.build()
 print(tex)

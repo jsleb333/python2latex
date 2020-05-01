@@ -2,7 +2,7 @@ from python2latex import Document, Table
 import numpy as np
 
 # Create the document of type standalone
-doc = Document(filename='simple_table_from_numpy_array_example', filepath='examples/simple_table from numpy array example', doc_type='standalone', border='10pt')
+doc = Document(filename='simple_table_from_numpy_array_example', filepath='examples/table examples', doc_type='standalone', border='10pt')
 
 # Create the data
 col, row = 4, 4
