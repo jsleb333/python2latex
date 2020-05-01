@@ -2,6 +2,10 @@
 
 ## Version 0.3.0
 
+### May 1, 2020
+- Add individual cell formating in tables
+- Add simpler example of tables
+
 ### March 26, 2020
 - Add caption, caption_pos and caption_space as arguments to _FloatingEnvironment and its children to allow manual space between caption and the content.
 - Change the behavior of build to ignore empty strings.
