@@ -119,7 +119,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                     self.data[i, j] = f'{{:{self.float_format}}}'.format(value)
                 elif cell_format is None and isinstance(value, int):
                     self.data[i, j] = f'{{:{self.int_format}}}'.format(value)
-    
+
     def _apply_highlights(self):
         for i, j, highlight in self.highlights:
             if highlight == 'bold':
@@ -134,7 +134,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         """
         table_format = np.array([[' & '] * (self.shape[1] - 1) + [r'\\']] * self.shape[0],
                                 dtype=object)
-        
+
         for idx, v_align, h_align, v_shift in self.multicells:
 
             start_i, stop_i, _ = idx[0].indices(self.shape[0])
@@ -166,11 +166,11 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         self.tabular.head.parameters += (''.join(self.alignment), )
         if self.top_rule:
             self.tabular.body.append(r"\toprule")
-        
+
         self._format_cells()
         self._apply_highlights()
         table_format = self._generate_table_format()
-        
+
         for i, (row, row_format) in enumerate(zip(self.data, table_format)):
             self.tabular.body.append(''.join(
                 str(build(item, self)) for pair in zip(row, row_format) for item in pair))
@@ -180,7 +180,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
 
         if self.bottom_rule:
             self.tabular.append(r'\bottomrule')
-        
+
         return super().build()
 
 
@@ -226,11 +226,11 @@ class SelectedArea:
 
     def __str__(self):
         return str(self.data)
-    
+
     def change_format(self, new_format):
         """
         Changes the format used to format cells in the selected area.
-        
+
         Args:
             format (Union[str, callable]): If str, should be a valid Python string format such as '.2f' for float with 2 decimals for example. If callable, will receive the value of the cell and should return a string in place.
         """
@@ -341,7 +341,11 @@ class SelectedArea:
 
         return self
 
-    def divide_cell(self, shape=(1, 1), alignment='c', float_format='.2f'):
+    def divide_cell(self,
+                    shape=(1, 1),
+                    alignment='c',
+                    float_format=None,
+                    int_format=None):
         """
         Divides the selected cell in another subtable. Useful for long title to manually cut for example.
 
@@ -353,11 +357,20 @@ class SelectedArea:
         if self.size > 1:
             raise RuntimeError('Invalid selected area. It should be of size 1.')
 
+        if float_format is None:
+            float_format = self.table.float_format
+        if int_format is None:
+            int_format = self.table.int_format
+
         subtable = Table(shape,
                          alignment,
                          float_format,
+                         int_format,
                          as_float_env=False,
                          bottom_rule=False,
                          top_rule=False)
         self.data = subtable
+
+        subtable[:,:].change_format(self.table.formats[self.slices])
+
         return subtable
