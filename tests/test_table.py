@@ -301,6 +301,28 @@ def test_table_with_int_and_float_formats_changed():
         ''')
 
 
+def test_table_with_divide_cell():
+    n_rows, n_cols = 3, 3
+    table = Table((n_rows, n_cols))
+    table[:, :] = [[j * n_cols + i + 1 for i in range(n_cols)] for j in range(n_rows)]
+    table[0, 0].divide_cell((2, 1))[:] = [['long'], ['title']]
+    assert table.build() == cleandoc(r'''
+        \begin{table}[h!]
+        \centering
+        \begin{tabular}{ccc}
+        \toprule
+        \begin{tabular}{c}
+        long\\
+        title\\
+        \end{tabular} & 2 & 3\\
+        4 & 5 & 6\\
+        7 & 8 & 9\\
+        \bottomrule
+        \end{tabular}
+        \end{table}
+        ''')
+
+
 def test_table_with_multirow():
     pass
 
@@ -314,8 +336,4 @@ def test_table_with_highlight_best():
 
 
 def test_table_with_highlight_best_with_equalities():
-    pass
-
-
-def test_table_with_divide_cell():
     pass

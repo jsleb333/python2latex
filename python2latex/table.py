@@ -110,8 +110,6 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     def _format_cells(self):
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
-                if hasattr(value, 'build'):
-                    value = build(value, self)
                 cell_format = self.formats[i, j]
                 if cell_format is not None and not isinstance(cell_format, str): # Callable
                     self.data[i, j] = cell_format(value)
