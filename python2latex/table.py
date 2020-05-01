@@ -5,7 +5,6 @@ from python2latex import TexEnvironment, TexCommand, build, bold, italic
 """
 TODO:
     - Convert 'multicell' into Multirow and Multicol Tex commands
-    - Per cell/slice formating
 """
 
 
@@ -51,6 +50,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                  shape=(1, 1),
                  alignment='c',
                  float_format='.2f',
+                 int_format='d',
                  position='h!',
                  as_float_env=True,
                  top_rule=True,
@@ -63,7 +63,8 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         Args:
             shape (tuple of 2 ints): Shape of the table.
             alignment (str or sequence of str, either 'c', 'r', or 'l'): Alignment of the text inside the columns. If a sequence, it should be the same length as the number of columns. If only a string, it will be used for all columns.
-            float_format (str): Standard Python float formating available.
+            float_format (str): Standard Python float formating available used as default for every float in the table. To change specific cell formats, use the 'change_format' method on a selected area.
+            int_format (str): Standard Python int formating available used as default for every int in the table. To change specific cell formats, use the 'change_format' method on a selected area.
             as_float_env (bool): If True (default), will wrap a 'tabular' environment with a floating 'table' environment. If False, only the 'tabular' is constructed.
             position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
             top_rule, bottom_rule (bool): Whether or not the table should have outside rules.
@@ -84,11 +85,13 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         self.shape = shape
         self.alignment = [alignment] * shape[1] if len(alignment) == 1 else alignment
         self.float_format = float_format
+        self.int_format = int_format
         self.data = np.full(shape, '', dtype=object)
 
         self.rules = {}
         self.multicells = []
         self.highlights = []
+        self.formats = np.full(shape, None, dtype=object)
 
     def __getitem__(self, idx):
         return SelectedArea(self, idx)
@@ -104,7 +107,37 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     def __repr__(self):
         return repr(self.data)
 
-    def _apply_multicells(self, table_format):
+    def _format_cells(self):
+        for i, row in enumerate(self.data):
+            for j, value in enumerate(row):
+                cell_format = self.formats[i,j]
+                if cell_format is not None and not isinstance(cell_format, str): # Callable
+                    self.data[i, j] = build(cell_format(value), self)
+                else:
+                    if cell_format is None:
+                        if isinstance(value, float):
+                            cell_format = self.float_format
+                        elif isinstance(value, int):
+                            cell_format = self.int_format
+
+                    value = f'{{:{cell_format}}}'.format(value)
+                    self.data[i, j] = build(value, self)
+        
+    def _apply_highlights(self):
+        for i, j, highlight in self.highlights:
+            if highlight == 'bold':
+                command = bold
+            elif highlight == 'italic':
+                command = italic
+            self.data[i, j] = command(self.data[i, j])
+
+    def _generate_table_format(self):
+        """
+        Generates table format and applies multicells if needed.
+        """
+        table_format = np.array([[' & '] * (self.shape[1] - 1) + [r'\\']] * self.shape[0],
+                                dtype=object)
+        
         for idx, v_align, h_align, v_shift in self.multicells:
 
             start_i, stop_i, _ = idx[0].indices(self.shape[0])
@@ -133,40 +166,24 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         return table_format
 
     def build(self):
-        row, _ = self.data.shape
-        # Format floats
-        for i, row in enumerate(self.data):
-            for j, value in enumerate(row):
-                if isinstance(value, float):
-                    value = f'{{value:{self.float_format}}}'.format(value=value)
-                self.data[i, j] = build(value, self)
-
-        # Apply highlights
-        for i, j, highlight in self.highlights:
-            if highlight == 'bold':
-                command = bold
-            elif highlight == 'italic':
-                command = italic
-            self.data[i, j] = command(self.data[i, j])
-
-        # Build the tabular
-        table_format = np.array([[' & '] * (self.shape[1] - 1) + [r'\\']] * self.shape[0],
-                                dtype=object)
-        table_format = self._apply_multicells(table_format)
+        self.tabular.head.parameters += (''.join(self.alignment), )
+        if self.top_rule:
+            self.tabular.body.append(r"\toprule")
+        
+        self._format_cells()
+        self._apply_highlights()
+        table_format = self._generate_table_format()
+        
         for i, (row, row_format) in enumerate(zip(self.data, table_format)):
             self.tabular.body.append(''.join(
                 str(build(item, self)) for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
                 for rule in self.rules[i]:
                     self.tabular.body.append(build(rule))
-        build(self.tabular)
 
-        self.tabular.head.parameters += (''.join(self.alignment), )
-        if self.top_rule:
-            self.tabular.body.insert(0, r"\toprule")
         if self.bottom_rule:
             self.tabular.append(r'\bottomrule')
-
+        
         return super().build()
 
 
@@ -212,6 +229,15 @@ class SelectedArea:
 
     def __str__(self):
         return str(self.data)
+    
+    def change_format(self, new_format):
+        """
+        Changes the format used to format cells in the selected area.
+        
+        Args:
+            format (Union[str, callable]): If str, should be a valid Python string format such as '.2f' for float with 2 decimals for example. If callable, will receive the value of the cell and should return a string in place.
+        """
+        self.table.formats[self.slices] = new_format
 
     def add_rule(self, position='below', trim_right=False, trim_left=False):
         """

@@ -220,6 +220,80 @@ def test_with_midrules_table():
         ''')
 
 
+def test_table_with_int_format():
+    n_rows, n_cols = 3, 3
+    table = Table((n_rows, n_cols), int_format='.0e')
+    table[:, :] = np.array([[j * n_cols + i + 1 for i in range(n_cols)] for j in range(n_rows)])*1000
+    assert table.build() == cleandoc(r'''
+        \begin{table}[h!]
+        \centering
+        \begin{tabular}{ccc}
+        \toprule
+        1e+03 & 2e+03 & 3e+03\\
+        4e+03 & 5e+03 & 6e+03\\
+        7e+03 & 8e+03 & 9e+03\\
+        \bottomrule
+        \end{tabular}
+        \end{table}
+        ''')
+
+
+def test_table_with_float_format():
+    n_rows, n_cols = 3, 3
+    table = Table((n_rows, n_cols), float_format='.1f')
+    table[:, :] = np.array([[j * n_cols + i + 1 for i in range(n_cols)] for j in range(n_rows)])/10
+    assert table.build() == cleandoc(r'''
+        \begin{table}[h!]
+        \centering
+        \begin{tabular}{ccc}
+        \toprule
+        0.1 & 0.2 & 0.3\\
+        0.4 & 0.5 & 0.6\\
+        0.7 & 0.8 & 0.9\\
+        \bottomrule
+        \end{tabular}
+        \end{table}
+        ''')
+
+
+def test_table_with_ints_and_floats():
+    n_rows, n_cols = 2, 3
+    table = Table((n_rows, n_cols))
+    table[:, :] = [[.1,.2,.3],[4,5,6]]
+    assert table.build() == cleandoc(r'''
+        \begin{table}[h!]
+        \centering
+        \begin{tabular}{ccc}
+        \toprule
+        0.10 & 0.20 & 0.30\\
+        4 & 5 & 6\\
+        \bottomrule
+        \end{tabular}
+        \end{table}
+        ''')
+
+
+def test_table_with_int_and_float_formats_changed():
+    n_rows, n_cols = 2, 3
+    table = Table((n_rows, n_cols))
+    table[:, :] = [[.1,.2,.3],[4,5,6]]
+    table[0,0].change_format('.3f')
+    table[1,0:2].change_format('.0e')
+    some_format_function = lambda value: f'The new value: {value:.1f}'
+    table[0,1:3].change_format(some_format_function)
+    assert table.build() == cleandoc(r'''
+        \begin{table}[h!]
+        \centering
+        \begin{tabular}{ccc}
+        \toprule
+        0.100 & The new value: 0.2 & The new value: 0.3\\
+        4e+00 & 5e+00 & 6\\
+        \bottomrule
+        \end{tabular}
+        \end{table}
+        ''')
+
+
 def test_table_with_multirow():
     pass
 
@@ -237,8 +311,4 @@ def test_table_with_highlight_best_with_equalities():
 
 
 def test_table_with_divide_cell():
-    pass
-
-
-def test_table_with_other_float_format():
     pass
