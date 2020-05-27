@@ -326,12 +326,17 @@ class SelectedArea:
             best = np.inf
             value_is_better_than_best = lambda value, best: value < best
 
+        # Find best value
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
                 if isinstance(value, (float, int)) and value_is_better_than_best(value, best):
                     best_idx = [(i, j)]
                     best = value
-                elif isinstance(value, (float, int)) and np.isclose(value, best, rtol, atol):
+        
+        # Find values close to best
+        for i, row in enumerate(self.data):
+            for j, value in enumerate(row):
+                if isinstance(value, (float, int)) and np.isclose(value, best, rtol, atol):
                     best_idx.append((i, j))
 
         if best_idx[0][0] is not None: # Best have been found (i.e. no floats or ints in selected area)
