@@ -123,10 +123,10 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     def _apply_highlights(self):
         for i, j, highlight in self.highlights:
             if highlight == 'bold':
-                command = bold
+                highlight = bold
             elif highlight == 'italic':
-                command = italic
-            self.data[i, j] = command(self.data[i, j])
+                highlight = italic
+            self.data[i, j] = highlight(self.data[i, j])
 
     def _generate_table_format(self):
         """
@@ -294,7 +294,7 @@ class SelectedArea:
         Highlights the values inside the selected area.
 
         Args:
-            highlight (str, either 'bold' or 'italic'): The value will be highlighted following this parameter.
+            highlight (Union[str, callable]): The best value will be highlighted following this parameter. Accepted strings are 'bold' and 'italic'. If a callable, the callable should output a valid tex command.
 
         Returns self.
         """
@@ -312,7 +312,7 @@ class SelectedArea:
 
         Args:
             mode (str, either 'high' or 'low'): Determines what is the best value.
-            highlight (str, either 'bold' or 'italic'): The best value will be highlighted following this parameter.
+            highlight (Union[str, callable]): The best value will be highlighted following this parameter. Accepted strings are 'bold' and 'italic'. If a callable, the callable should output a valid tex command.
             atol (float): Absolute tolerance when comparing best.
             atol (float): Relative tolerance when comparing best.
 
