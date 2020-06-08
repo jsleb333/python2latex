@@ -75,6 +75,7 @@ for r in range(2,row+2):
 tex = doc.build()
 print(tex)
 ```
+_Result:_
 <p>
 <img src="https://github.com/jsleb333/python2latex/blob/master/examples/table%20examples/simple_table_from_numpy_array_example.jpg" alt="Table from numpy result">
 </p>
@@ -102,14 +103,11 @@ plot = doc.new(Plot(X, Y1, X, Y2, plot_path=filepath, as_float_env=False))
 
 tex = doc.build()
 ```
-<details>
-<summary>
-<i> Click to unfold result </i>
-</summary>
+_Result:_
 <p>
 <img src="https://github.com/jsleb333/python2latex/blob/master/examples/simple%20plot%20example/simple_plot_example.jpg" alt="Simple plot result">
 </p>
-</details>
+
 
 
 ### Create a more complex plot
@@ -198,14 +196,10 @@ plot.title = 'Some title'
 
 tex = doc.build()
 ```
-<details>
-<summary>
-<i> Click to unfold result </i>
-</summary>
+_Result:_
 <p>
 <img src="https://github.com/jsleb333/python2latex/blob/master/examples/simple%20matrix%20plot%20example/simple_matrix_plot_example.jpg" alt="Simple matrix plot result">
 </p>
-</details>
 
 Be sure to check our more complex matrix plot example too!
 
