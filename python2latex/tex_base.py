@@ -102,7 +102,7 @@ class TexObject:
 
     def build(self):
         """
-        Builds the object. Should return a valid LaTeX string.
+        Builds the object. Should return a valid LaTeX string and *should not modify* self (i.e. should be read-only).
         """
         return ''
 
