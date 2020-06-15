@@ -4,17 +4,18 @@ from subprocess import DEVNULL, STDOUT, check_call
 
 def build(obj, parent=None):
     """
-    Safely builds the object by calling its method 'build' only if 'obj' is not a string. If a parent is passed, all
-    packages and preamble lines needed to the object will be added to the packages and preamble of the parent.
+    Safely builds the object by calling its method 'build' only if 'obj' possesses a 'build' method. Otherwise, will convert it to a string using the 'str' function. If a parent is passed, all packages and preamble lines needed to the object will be added to the packages and preamble of the parent.
     """
     if isinstance(obj, TexObject):
         built_obj = obj.build()
-        if parent:
+        if parent is not None:
             for package_name, package in obj.packages.items():
                 parent.add_package(package_name, *package.options, **package.kwoptions)
             for line in obj.preamble:
                 parent.add_to_preamble(line)
         return built_obj
+    elif hasattr(obj, 'build'):
+        built_obj = obj.build()
     else:
         return str(obj)
 
