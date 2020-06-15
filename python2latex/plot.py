@@ -288,8 +288,7 @@ class LinePlot(_Plot):
             of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options.
             All underscores are replaced by spaces when converted to LaTeX.
             legend (str): Entry of the plot.
-            forget_plot (bool): Either or not to forget plot when adding plot. In some case, like histogram, the forget plot
-            don't allow to have multiple plots near each other. By default the forget plot is activated.
+            forget_plot (bool): Either or not to forget plot when adding plot. In some case, like histogram, the forget plot option does not allow to have multiple plots near each other. By default the forget_plot is set to True.
             kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible
             options. All underscores are replaced by spaces when converted to LaTeX.
         """
