@@ -116,13 +116,13 @@ class TestSelectedArea:
 
     def test_divide_cell(self):
         self.table[0, 0].divide_cell((2, 1))
-        assert isinstance(self.table.data[0, 0], Table)
+        assert isinstance(self.table.data[0, 0], Tabular)
         self.table.build()
 
     def test_divide_cell_carry_cell_format(self):
-        self.table[0, 0].change_format('e')
+        self.table[0, 0].format_spec('e')
         self.table[0, 0].divide_cell((2, 1))
-        assert (self.table.data[0, 0].formats == np.array([['e', 'e']])).all()
+        assert (self.table.data[0, 0].formats_spec == np.array([['e', 'e']])).all()
 
 
 # General Table build tests
@@ -284,16 +284,14 @@ def test_table_with_int_and_float_formats_changed():
     n_rows, n_cols = 2, 3
     table = Table((n_rows, n_cols))
     table[:, :] = [[.1,.2,.3],[4,5,6]]
-    table[0,0].change_format('.3f')
-    table[1,0:2].change_format('.0e')
-    some_format_function = lambda value: f'The new value: {value:.1f}'
-    table[0,1:3].change_format(some_format_function)
+    table[0,0].format_spec('.3f')
+    table[1,0:2].format_spec('.0e')
     assert table.build() == cleandoc(r'''
         \begin{table}[h!]
         \centering
         \begin{tabular}{ccc}
         \toprule
-        0.100 & The new value: 0.2 & The new value: 0.3\\
+        0.100 & 0.20 & 0.30\\
         4e+00 & 5e+00 & 6\\
         \bottomrule
         \end{tabular}

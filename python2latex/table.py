@@ -33,6 +33,30 @@ class Rule(TexCommand):
             rule += f"({self.trim})"
         rule += f"{{{self.start + 1}-{self.end}}}"
         return rule
+    
+
+class multicolumn(TexCommand):
+    def __init__(self, col_span, alignment, cell_content):
+        super().__init__('multicolumn')
+        self.col_span = col_span
+        self.alignment = alignment
+        self.cell_content = cell_content
+    
+    def build(self):
+        return super().build() + f'{{{self.col_span}}}{{{self.alignment}}}{{{self.cell_content}}}'
+    
+
+class multirow(TexCommand):
+    def __init__(self, col_span, alignment, shift, cell_content):
+        super().__init__('multirow')
+        self.col_span = col_span
+        self.alignment = alignment
+        self.shift = shift
+        self.cell_content = cell_content
+    
+    def build(self):
+        shift = f'[{self.shift}]' if self.shift else ''
+        return super().build() + f'{{{self.col_span}}}{{{self.alignment}}}{shift}{{{self.cell_content}}}'
 
 
 class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
@@ -50,6 +74,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                  shape=(1, 1),
                  alignment='c',
                  float_format='.2f',
+                 use_comma_for_float_point=False,
                  int_format='d',
                  position='h!',
                  as_float_env=True,
@@ -58,7 +83,8 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                  label='',
                  caption='',
                  caption_pos='top',
-                 caption_space='6pt'):
+                 caption_space='6pt',
+                 **kwoptions):
         """
         Args:
             shape (tuple of 2 ints): Shape of the table.
@@ -73,11 +99,45 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
             caption_pos (str, either 'top' or 'bottom'): Position of the caption, either above (top) the table or below (bottom). Does not apply if 'as_float_env' is False.
             caption_space (str, valid TeX length): Space between the caption and the table. Can be any valid TeX length. Does not apply if 'as_float_env' is False.
         """
-        super().__init__(as_float_env=as_float_env, position=position, label=label, caption=caption, caption_pos=caption_pos, caption_space=caption_space)
+        super().__init__(as_float_env=as_float_env, position=position, label=label, caption=caption, caption_pos=caption_pos, caption_space=caption_space, **kwoptions)
 
-        self.tabular = TexEnvironment('tabular')
-        self.add_package('booktabs')
+        self.tabular = Tabular(shape=shape,
+                               alignment=alignment,
+                               float_format=float_format,
+                               use_comma_for_float_point=use_comma_for_float_point,
+                               int_format=int_format,
+                               top_rule=top_rule,
+                               bottom_rule=bottom_rule)
         self.body.append(self.tabular)
+    
+    def __getattr__(self, name):
+        if name in vars(self):
+            return getattr(self, name)
+        else:
+            return getattr(self.tabular, name)
+
+    def __getitem__(self, idx):
+        return self.tabular[idx]
+
+    def __setitem__(self, idx, value):
+        self.tabular[idx] = value
+
+    def __repr__(self):
+        return repr(self.tabular)
+
+
+class Tabular(TexEnvironment):
+    def __init__(self, shape=(1, 1),
+                       alignment='c',
+                       float_format='.2f',
+                       use_comma_for_float_point=False,
+                       int_format='d',
+                       top_rule=True,
+                       bottom_rule=True,
+                       **kwoptions
+                       ):
+        super().__init__('tabular', **kwoptions)
+        self.add_package('booktabs')
 
         self.top_rule = top_rule
         self.bottom_rule = bottom_rule
@@ -85,13 +145,18 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         self.shape = shape
         self.alignment = [alignment] * shape[1] if len(alignment) == 1 else alignment
         self.float_format = float_format
+        self.use_comma_for_float_point = use_comma_for_float_point
         self.int_format = int_format
         self.data = np.full(shape, '', dtype=object)
 
         self.rules = {}
         self.multicells = []
         self.highlights = []
-        self.formats = np.full(shape, None, dtype=object)
+        self.formats_spec = np.full(shape, None, dtype=object)
+        self.commands = np.full(shape, None, dtype=object)
+        for i in range(shape[0]):
+            for j in range(shape[1]):
+                self.commands[i, j] = list()
 
     def __getitem__(self, idx):
         return SelectedArea(self, idx)
@@ -106,90 +171,85 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
 
     def __repr__(self):
         return repr(self.data)
+    
+    def _apply_commands(self, i, j, content):
+        command_list = self.commands[i, j]
+        for command in command_list:
+            content = build(command(content), self)
+        return content
+    
+    def _format_number(self, i, j, content):
+        format_spec = self.formats_spec[i, j]
+        
+        if format_spec is not None and isinstance(content, (float, int)):
+            content = format(content, format_spec)
+        elif format_spec is None and isinstance(content, float): # Fallback to default
+            content = format(content, self.float_format)
+            if self.use_comma_for_float_point:
+                content = tex_array.replace('.', ',')
+        elif format_spec is None and isinstance(content, int):
+            content = format(content, self.int_format)
 
-    def _format_cells(self):
-        for i, row in enumerate(self.data):
-            for j, value in enumerate(row):
-                cell_format = self.formats[i, j]
-                if cell_format is not None and not isinstance(cell_format, str): # Callable
-                    self.data[i, j] = cell_format(value)
-                elif cell_format is not None and isinstance(value, (float, int)): # String
-                    self.data[i, j] = f'{{:{cell_format}}}'.format(value)
-                elif cell_format is None and isinstance(value, float): # Fallback to default
-                    self.data[i, j] = f'{{:{self.float_format}}}'.format(value)
-                elif cell_format is None and isinstance(value, int):
-                    self.data[i, j] = f'{{:{self.int_format}}}'.format(value)
-
-    def _apply_highlights(self):
-        for i, j, highlight in self.highlights:
-            if highlight == 'bold':
-                highlight = bold
-            elif highlight == 'italic':
-                highlight = italic
-            self.data[i, j] = highlight(self.data[i, j])
-
-    def _generate_table_format(self):
-        """
-        Generates table format and applies multicells if needed.
-        """
-        table_format = np.array([[' & '] * (self.shape[1] - 1) + [r'\\']] * self.shape[0],
-                                dtype=object)
-
+        return content
+    
+    def _apply_multicells(self, tex_array, tex_array_format):
         for idx, v_align, h_align, v_shift in self.multicells:
 
             start_i, stop_i, _ = idx[0].indices(self.shape[0])
             start_j, stop_j, _ = idx[1].indices(self.shape[1])
 
-            table_format[start_i, slice(start_j, stop_j - 1)] = ''
-            cell_shape = table_format[idx].shape
+            tex_array_format[start_i, slice(start_j, stop_j - 1)] = ''
+            cell_shape = tex_array[idx].shape
+            content = tex_array[start_i, start_j]
 
-            if start_i == stop_i - 1:
-                self.data[
-                    start_i,
-                    start_j] = f"\\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
-            else:
-                shift = ''
-                if v_shift:
-                    shift = f'[{v_shift}]'
-                self.data[
-                    start_i,
-                    start_j] = f"\\multirow{{{cell_shape[0]}}}{{{v_align}}}{shift}{{{self.data[start_i, start_j]}}}"
+            if start_i == stop_i - 1: # Multicolumn only
+                content = multicolumn(cell_shape[1], h_align, content)
+            else: # Multirow needed
+                content = multirow(cell_shape[0], v_align, v_shift, content)
 
-            if start_j < stop_j - 1 and start_i < stop_i - 1:
-                self.data[
-                    start_i,
-                    start_j] = f"\\multicolumn{{{cell_shape[1]}}}{{{h_align}}}{{{self.data[start_i, start_j]}}}"
+            if start_j < stop_j - 1 and start_i < stop_i - 1: # Multirow and multicolumn needed
+                content = multicolumn(cell_shape[1], h_align, content)
 
-        return table_format
-
+            tex_array[start_i, start_j] = content
+            
     def build(self):
-        self.tabular.head.parameters += (''.join(self.alignment), )
+        tex = [build(self.head) + '{' + ''.join(self.alignment) + '}']
+        
         if self.top_rule:
-            self.tabular.body.append(r"\toprule")
+            tex.append(r'\toprule')
 
-        self._format_cells()
-        self._apply_highlights()
-        table_format = self._generate_table_format()
-
-        for i, (row, row_format) in enumerate(zip(self.data, table_format)):
-            self.tabular.body.append(''.join(
-                str(build(item, self)) for pair in zip(row, row_format) for item in pair))
+        tex_array = np.full_like(self.data, '', dtype=object)
+        
+        for i, row in enumerate(self.data):
+            for j, content in enumerate(row):
+                content = self._format_number(i, j, content)
+                content = build(content)
+                content = self._apply_commands(i, j, content)
+                tex_array[i, j] = content
+        
+        tex_array_format = np.array([[' & ']*(self.shape[1] - 1) + [r'\\']]*self.shape[0])
+        
+        self._apply_multicells(tex_array, tex_array_format)
+        
+        for i, (row, row_format) in enumerate(zip(tex_array, tex_array_format)):
+            tex.append(''.join(build(item, self) for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
                 for rule in self.rules[i]:
-                    self.tabular.body.append(build(rule))
-
+                    tex.append(build(rule))
+        
         if self.bottom_rule:
-            self.tabular.append(r'\bottomrule')
-
-        return super().build()
-
+            tex.append(r'\bottomrule')
+            
+        tex += [self.tail]
+        return self._build_list(tex)
+    
 
 class SelectedArea:
     """
-    Represents a selected area in a table. Contains a reference to the actual table and methods to apply on an area of the table.
+    Represents a selected area in a table. Contains a reference to the actual tabular and methods to apply on an area of the tabular.
     """
-    def __init__(self, table, idx):
-        self.table = table
+    def __init__(self, tabular, idx):
+        self.tabular = tabular
         self.slices = self._convert_idx_to_slice(idx)
 
     def _convert_idx_to_slice(self, idx):
@@ -205,20 +265,20 @@ class SelectedArea:
 
     @property
     def data(self):
-        return self.table.data[self.slices]
+        return self.tabular.data[self.slices]
 
     @data.setter
     def data(self, value):
-        self.table.data[self.slices] = value
+        self.tabular.data[self.slices] = value
 
     @property
     def size(self):
-        return self.data.size
+        return self.tabular.data[self.slices].size
 
     @property
     def idx(self):
-        start_i, stop_i, _ = self.slices[0].indices(self.table.shape[0])
-        start_j, stop_j, _ = self.slices[1].indices(self.table.shape[1])
+        start_i, stop_i, _ = self.slices[0].indices(self.tabular.shape[0])
+        start_j, stop_j, _ = self.slices[1].indices(self.tabular.shape[1])
         return (start_i, start_j), (stop_i, stop_j)
 
     def __repr__(self):
@@ -227,18 +287,18 @@ class SelectedArea:
     def __str__(self):
         return str(self.data)
 
-    def change_format(self, new_format):
+    def format_spec(self, format_spec):
         """
-        Changes the format used to format cells in the selected area.
+        Changes the format specifications used to format numbers in the selected area.
 
         Args:
-            format (Union[str, callable]): If str, should be a valid Python string format such as '.2f' for float with 2 decimals for example. If callable, will receive the value of the cell and should return a string in place.
+            format_spec (str): Python string format (e.g. '.2f' for float with 2 decimals).
         """
-        self.table.formats[self.slices] = new_format
+        self.tabular.formats_spec[self.slices] = format_spec
 
     def add_rule(self, position='below', trim_right=False, trim_left=False):
         """
-        Adds a rule below or above the selected area of the table.
+        Adds a rule below or above the selected area of the tabular.
 
         Args:
             position (str, either 'below' or 'above'): Position of the rule below or above the selected area.
@@ -260,9 +320,9 @@ class SelectedArea:
         else:
             i = i_start - 1
 
-        if i not in self.table.rules:
-            self.table.rules[i] = []
-        self.table.rules[i].append(Rule(j_start, j_stop, r + l))
+        if i not in self.tabular.rules:
+            self.tabular.rules[i] = []
+        self.tabular.rules[i].append(Rule(j_start, j_stop, r + l))
 
         return self
 
@@ -278,55 +338,60 @@ class SelectedArea:
 
         Returns self.
         """
-        self.table.add_package('multicol')
-        self.table.add_package('multirow')
+        self.tabular.add_package('multicol')
+        self.tabular.add_package('multirow')
 
         self.data = ''  # Erase old value
         multicell_params = (self.slices, v_align, h_align, v_shift)
-        self.table.multicells.append(multicell_params)  # Save position of multiple cells span
+        self.tabular.multicells.append(multicell_params)  # Save position of multiple cells span
 
-        self.table.data[self.idx[0]] = value
+        self.tabular.data[self.idx[0]] = value
 
         return self
 
-    def highlight(self, highlight='bold'):
+    def apply_command(self, command):
         """
-        Highlights the values inside the selected area.
-
+        Will apply the command to the selected cell content. Commands are stored and will be applied chronologically if many commands are added on the same cells.
+        
+        N.B. 'highlight_best' will add commands to be applied on the cells. The order in which 'apply_command' and 'highlight_best' are called may have an impact on the final result.
+        
         Args:
-            highlight (Union[str, callable]): The best value will be highlighted following this parameter. Accepted strings are 'bold' and 'italic'. If a callable, the callable should output a valid tex command.
-
-        Returns self.
+            command (Union[TexCommand, callable]): Non-instanciated TexCommand or callable that will receive the cell content as argument. If a callable, should return a valid TeX string.
         """
-        (i_start, j_start), (i_stop, j_stop) = self.idx
-        for i in range(i_start, i_stop):
-            for j in range(j_start, j_stop):
-                self.table.highlights.append((i, j, highlight))
+        self.tabular.commands[self.slices].append(command)
 
-        return self
-
-    def highlight_best(self, mode='high', highlight='bold', atol=5e-3, rtol=0):
+    def highlight_best(self, mode='high', best='bold', not_best=None, atol=5e-3, rtol=0):
         """
-        Highlights the best value(s) inside the selected area of the table. Ignores text. If multiple values are equal
-        to an absolute tolerance of atol and relative tolerance of rtol, both are highlighted.
+        Highlights the best value(s) inside the selected area of the tabular. Ignores text. If multiple values are equal to an absolute tolerance of atol and relative tolerance of rtol, both are highlighted.
 
         Args:
             mode (str, either 'high' or 'low'): Determines what is the best value.
-            highlight (Union[str, callable]): The best value will be highlighted following this parameter. Accepted strings are 'bold' and 'italic'. If a callable, the callable should output a valid tex command.
+            best (Union[str, callable]): Specifies how to highlight the best. Accepted strings are 'bold' and 'italic'. If a callable, the callable will receive the cell content as argument and should output a valid tex command.
+            not_best (Union[str, callable, None]): Specifies a command to apply to all other cells that are *not* the best. Accepted strings are 'bold' and 'italic'. If a callable, the callable will receive the cell content as argument and should output a valid tex command.
             atol (float): Absolute tolerance when comparing best.
             atol (float): Relative tolerance when comparing best.
 
         Returns self.
         """
-        best_idx = [(None, None)]
         if mode == 'high':
             best = -np.inf
-            value_is_better_than_best = lambda value, best: value > best
+            value_is_better_than_best = lambda value, current_best: value > current_best
         elif mode == 'low':
             best = np.inf
-            value_is_better_than_best = lambda value, best: value < best
+            value_is_better_than_best = lambda value, current_best: value < current_best
+        
+        if best == 'bold':
+            best = bold
+        elif best == 'italic':
+            best = italic
+
+        if not_best == 'bold':
+            not_best = bold
+        elif not_best == 'italic':
+            not_best = italic
 
         # Find best value
+        best_idx = [(None, None)]
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
                 if isinstance(value, (float, int)) and value_is_better_than_best(value, best):
@@ -339,10 +404,16 @@ class SelectedArea:
                 if isinstance(value, (float, int)) and np.isclose(value, best, rtol, atol):
                     best_idx.append((i, j))
 
-        if best_idx[0][0] is not None: # Best have been found (i.e. no floats or ints in selected area)
+        if best_idx[0][0] is not None: # Best have been found (i.e. there are floats or ints in selected area)
             start_i, start_j = self.idx[0]
-            for i, j in best_idx:
-                self.table.highlights.append((i + start_i, j + start_j, highlight))
+            stop_i, stop_j = self.idx[1]
+            
+            for i in range(stop_i-start_i):
+                for j in range(stop_j-start_j):
+                    if (i, j) in best_idx:
+                        self.tabular.commands[i, j] = best
+                    else:
+                        self.tabular.command[i, j] = not_best
 
         return self
 
@@ -350,32 +421,35 @@ class SelectedArea:
                     shape=(1, 1),
                     alignment='c',
                     float_format=None,
+                    use_comma_for_float_point=None,
                     int_format=None):
         """
         Divides the selected cell in another subtable. Useful for long title to manually cut for example.
 
         Args:
-            See Table documentation.
+            See Tabular documentation.
 
-        Returns a Table object.
+        Returns a Tabular object.
         """
         if self.size > 1:
             raise RuntimeError('Invalid selected area. It should be of size 1.')
 
         if float_format is None:
-            float_format = self.table.float_format
+            float_format = self.tabular.float_format
+        if use_comma_for_float_point is None:
+            use_comma_for_float_point = self.tabular.use_comma_for_float_point
         if int_format is None:
-            int_format = self.table.int_format
+            int_format = self.tabular.int_format
 
-        subtable = Table(shape,
-                         alignment,
-                         float_format,
-                         int_format,
-                         as_float_env=False,
-                         bottom_rule=False,
-                         top_rule=False)
-        self.data = subtable
+        subtabular = Tabular(shape=shape,
+                             alignment=alignment,
+                             float_format=float_format,
+                             use_comma_for_float_point=use_comma_for_float_point,
+                             int_format=int_format,
+                             bottom_rule=False,
+                             top_rule=False)
+        self.data = subtabular
 
-        subtable[:,:].change_format(self.table.formats[self.slices])
+        subtabular[:,:].format_spec(self.tabular.formats_spec[self.slices])
 
-        return subtable
+        return subtabular
