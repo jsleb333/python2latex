@@ -49,25 +49,27 @@ class _FloatingEnvironment(TexEnvironment):
         self.caption_space = caption_space
         self.centered = centered
 
-    def build(self):
+    def _build_body(self):
         """
-        Builds recursively the environments of the body and converts it to .tex.
-        Returns the .tex string of the file.
+        Builds recursively the environments of the body and converts it to TeX.
+        Returns the TeX string of the body.
         """
+        tex_body = [part for part in self.body]
+        
         if self.caption:
             caption = Caption(self.caption)
             space = TexCommand('vspace', self.caption_space) if self.caption_space else ''
 
             if self.caption_pos == 'top':
-                self.body = [caption, self._label, space] + self.body
+                tex_body = [caption, self._label, space] + tex_body
 
             if self.caption_pos == 'bottom':
-                self.body += [space, caption, self._label]
+                tex_body += [space, caption, self._label]
 
         if self.centered:
-            self.body = [r'\centering'] + self.body
+            tex_body = [r'\centering'] + tex_body
 
-        return super().build()
+        return self._build_list(tex_body)
 
 
 class FloatingFigure(_FloatingEnvironment):
