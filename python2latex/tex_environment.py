@@ -159,6 +159,17 @@ class TexEnvironment(TexObject):
                             f"Everything else is identical.\n\n" + str(cls_to_bind.__doc__)
         return BindedCls
 
+    def _build_list(self, list_to_build):
+        """
+        Builds a list of objects to build for a TeX string representation.
+        Return a TeX string representation of the list.
+        """
+        tex = [build(part, self) for part in list_to_build]
+        return '\n'.join([part for part in tex if part])
+    
+    def _build_body(self):
+        return self._build_list(self.body)
+
     def build(self):
         """
         Builds recursively the environments of the body and converts it to .tex.
@@ -169,13 +180,11 @@ class TexEnvironment(TexObject):
         if self.label_pos == 'top':
             tex.append(self._label)
 
-        tex.extend(self.body)
+        tex.append(self._build_body())
 
         if self.label_pos == 'bottom':
             tex.append(self._label)
 
         tex.append(self.tail)
 
-        tex = [build(part, self) for part in tex]
-
-        return '\n'.join([part for part in tex if part])
+        return self._build_list(tex)
