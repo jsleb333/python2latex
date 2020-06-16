@@ -2,61 +2,6 @@ import numpy as np
 
 from python2latex import FloatingTable, FloatingEnvironmentMixin
 from python2latex import TexEnvironment, TexCommand, build, bold, italic
-"""
-TODO:
-    - Convert 'multicell' into Multirow and Multicol Tex commands
-"""
-
-
-class Rule(TexCommand):
-    """
-    Simple rule object to handle rules added to tables.
-    """
-    def __init__(self, start, end, trim):
-        """
-        Args:
-            start (int): Row index where the rule starts (included).
-            end (int): Row index where the rule ends (excluded).
-            trim (str): Any valid LaTeX trim value (see the booktabs package).
-        """
-        self.start = start
-        self.end = end
-        self.trim = trim
-        super().__init__('cmidrule')
-
-    def __eq__(self, other):
-        return self.start == other.start and self.end == other.end and self.trim == other.trim
-
-    def build(self):
-        rule = super().build()
-        if self.trim:
-            rule += f"({self.trim})"
-        rule += f"{{{self.start + 1}-{self.end}}}"
-        return rule
-    
-
-class multicolumn(TexCommand):
-    def __init__(self, col_span, alignment, cell_content):
-        super().__init__('multicolumn')
-        self.col_span = col_span
-        self.alignment = alignment
-        self.cell_content = cell_content
-    
-    def build(self):
-        return super().build() + f'{{{self.col_span}}}{{{self.alignment}}}{{{self.cell_content}}}'
-    
-
-class multirow(TexCommand):
-    def __init__(self, col_span, alignment, shift, cell_content):
-        super().__init__('multirow')
-        self.col_span = col_span
-        self.alignment = alignment
-        self.shift = shift
-        self.cell_content = cell_content
-    
-    def build(self):
-        shift = f'[{self.shift}]' if self.shift else ''
-        return super().build() + f'{{{self.col_span}}}{{{self.alignment}}}{shift}{{{self.cell_content}}}'
 
 
 class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
@@ -66,9 +11,6 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         - Easy and automatic multirow and multicolumn cells.
         - Automatically highlights best value inside a region of the table.
     To do so, the brackets access [] (__getitem__) has been repurposed to select an area and returns a SelectedArea object. Announced features are defined on SelectedArea objects only. To access the actual data inside the table, use the 'data' attribute with brackets.
-
-    TODO:
-        - Maybe: Add a 'insert_row' and 'insert_column' methods.
     """
     def __init__(self,
                  shape=(1, 1),
@@ -109,7 +51,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                                top_rule=top_rule,
                                bottom_rule=bottom_rule)
         self.body.append(self.tabular)
-    
+
     def __getattr__(self, name):
         if name in vars(self):
             return getattr(self, name)
@@ -171,27 +113,28 @@ class Tabular(TexEnvironment):
 
     def __repr__(self):
         return repr(self.data)
-    
+
     def _apply_commands(self, i, j, content):
         command_list = self.commands[i, j]
         for command in command_list:
             content = build(command(content), self)
         return content
-    
+
     def _format_number(self, i, j, content):
         format_spec = self.formats_spec[i, j]
-        
+
         if format_spec is not None and isinstance(content, (float, int)):
             content = format(content, format_spec)
         elif format_spec is None and isinstance(content, float): # Fallback to default
             content = format(content, self.float_format)
-            if self.use_comma_for_float_point:
-                content = tex_array.replace('.', ',')
         elif format_spec is None and isinstance(content, int):
             content = format(content, self.int_format)
 
+        if self.use_comma_for_float_point:
+            content = content.replace('.', ',')
+
         return content
-    
+
     def _apply_multicells(self, tex_array, tex_array_format):
         for idx, v_align, h_align, v_shift in self.multicells:
 
@@ -211,38 +154,38 @@ class Tabular(TexEnvironment):
                 content = multicolumn(cell_shape[1], h_align, content)
 
             tex_array[start_i, start_j] = content
-            
+
     def build(self):
         tex = [build(self.head) + '{' + ''.join(self.alignment) + '}']
-        
+
         if self.top_rule:
             tex.append(r'\toprule')
 
         tex_array = np.full_like(self.data, '', dtype=object)
-        
+
         for i, row in enumerate(self.data):
             for j, content in enumerate(row):
                 content = self._format_number(i, j, content)
                 content = build(content)
                 content = self._apply_commands(i, j, content)
                 tex_array[i, j] = content
-        
+
         tex_array_format = np.array([[' & ']*(self.shape[1] - 1) + [r'\\']]*self.shape[0])
-        
+
         self._apply_multicells(tex_array, tex_array_format)
-        
+
         for i, (row, row_format) in enumerate(zip(tex_array, tex_array_format)):
             tex.append(''.join(build(item, self) for pair in zip(row, row_format) for item in pair))
             if i in self.rules:
                 for rule in self.rules[i]:
                     tex.append(build(rule))
-        
+
         if self.bottom_rule:
             tex.append(r'\bottomrule')
-            
+
         tex += [self.tail]
         return self._build_list(tex)
-    
+
 
 class SelectedArea:
     """
@@ -307,6 +250,7 @@ class SelectedArea:
 
         Returns self.
         """
+
         r = 'r' if trim_right else ''
         if isinstance(trim_right, str):
             r += f"{{{trim_right}}}"
@@ -322,7 +266,11 @@ class SelectedArea:
 
         if i not in self.tabular.rules:
             self.tabular.rules[i] = []
-        self.tabular.rules[i].append(Rule(j_start, j_stop, r + l))
+
+        if self.slices[1] == slice(None) and not trim_left and not trim_right:
+            self.tabular.rules[i].append(midrule())
+        else:
+            self.tabular.rules[i].append(cmidrule(j_start, j_stop, r + l))
 
         return self
 
@@ -352,13 +300,15 @@ class SelectedArea:
     def apply_command(self, command):
         """
         Will apply the command to the selected cell content. Commands are stored and will be applied chronologically if many commands are added on the same cells.
-        
+
         N.B. 'highlight_best' will add commands to be applied on the cells. The order in which 'apply_command' and 'highlight_best' are called may have an impact on the final result.
-        
+
         Args:
             command (Union[TexCommand, callable]): Non-instanciated TexCommand or callable that will receive the cell content as argument. If a callable, should return a valid TeX string.
         """
-        self.tabular.commands[self.slices].append(command)
+        for row in self.tabular.commands[self.slices]:
+            for command_list in row:
+                command_list.append(command)
 
     def highlight_best(self, mode='high', best='bold', not_best=None, atol=5e-3, rtol=0):
         """
@@ -373,13 +323,15 @@ class SelectedArea:
 
         Returns self.
         """
-        if mode == 'high':
-            best = -np.inf
+        if mode == 'high' or mode == 'max':
+            best_value = -np.inf
             value_is_better_than_best = lambda value, current_best: value > current_best
-        elif mode == 'low':
-            best = np.inf
+        elif mode == 'low' or mode == 'min':
+            best_value = np.inf
             value_is_better_than_best = lambda value, current_best: value < current_best
-        
+        else:
+            raise ValueError(f'Invalid value {mode} for mode argument.')
+
         if best == 'bold':
             best = bold
         elif best == 'italic':
@@ -394,26 +346,27 @@ class SelectedArea:
         best_idx = [(None, None)]
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
-                if isinstance(value, (float, int)) and value_is_better_than_best(value, best):
+                if isinstance(value, (float, int)) and value_is_better_than_best(value, best_value):
                     best_idx = [(i, j)]
-                    best = value
-        
+                    best_value = value
+
         # Find values close to best
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
-                if isinstance(value, (float, int)) and np.isclose(value, best, rtol, atol):
+                if isinstance(value, (float, int)) and np.isclose(value, best_value, rtol, atol) \
+                    and (i, j) not in best_idx:
                     best_idx.append((i, j))
 
         if best_idx[0][0] is not None: # Best have been found (i.e. there are floats or ints in selected area)
             start_i, start_j = self.idx[0]
             stop_i, stop_j = self.idx[1]
-            
+
             for i in range(stop_i-start_i):
                 for j in range(stop_j-start_j):
                     if (i, j) in best_idx:
-                        self.tabular.commands[i, j] = best
-                    else:
-                        self.tabular.command[i, j] = not_best
+                        self.tabular.commands[i+start_i, j+start_j].append(best)
+                    elif not_best is not None:
+                        self.tabular.commands[i+start_i, j+start_j].append(not_best)
 
         return self
 
@@ -453,3 +406,62 @@ class SelectedArea:
         subtabular[:,:].format_spec(self.tabular.formats_spec[self.slices])
 
         return subtabular
+
+
+class cmidrule(TexCommand):
+    """
+    Simple rule object to handle rules added to tables.
+    """
+    def __init__(self, start, end, trim):
+        """
+        Args:
+            start (int): Row index where the rule starts (included).
+            end (int): Row index where the rule ends (excluded).
+            trim (str): Any valid LaTeX trim value (see the booktabs package).
+        """
+        self.start = start
+        self.end = end
+        self.trim = trim
+        super().__init__('cmidrule')
+
+    def __eq__(self, other):
+        return self.start == other.start and self.end == other.end and self.trim == other.trim
+
+    def build(self):
+        rule = super().build()
+        if self.trim:
+            rule += f"({self.trim})"
+        rule += f"{{{self.start + 1}-{self.end}}}"
+        return rule
+
+
+class midrule(TexCommand):
+    def __init__(self):
+        super().__init__('midrule')
+
+    def __eq__(self, other):
+        return isinstance(other, midrule)
+
+
+class multicolumn(TexCommand):
+    def __init__(self, col_span, alignment, cell_content):
+        super().__init__('multicolumn')
+        self.col_span = col_span
+        self.alignment = alignment
+        self.cell_content = cell_content
+
+    def build(self):
+        return super().build() + f'{{{self.col_span}}}{{{self.alignment}}}{{{build(self.cell_content, self)}}}'
+
+
+class multirow(TexCommand):
+    def __init__(self, col_span, alignment, shift, cell_content):
+        super().__init__('multirow')
+        self.col_span = col_span
+        self.alignment = alignment
+        self.shift = shift
+        self.cell_content = cell_content
+
+    def build(self):
+        shift = f'[{self.shift}]' if self.shift else ''
+        return super().build() + f'{{{self.col_span}}}{{{self.alignment}}}{shift}{{{build(self.cell_content, self)}}}'
