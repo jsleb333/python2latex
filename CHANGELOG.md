@@ -1,5 +1,19 @@
 # Change log
 
+## Version 0.4.0
+
+### June 16, 2020
+- Breaking changes:
+    - SelectedArea 'change_format' method removed for a 'format_spec' property and a 'apply_command' method.
+    - SelectedArea 'highlight' method removed, as it overlapped the 'apply_command' method purpose.
+- Complete rework of Table:
+    - New Tabular object handling the mechanics of the table.
+    - Table is now a "shell" for a Tabular object, with main purpose to have a floating 'table' environment without boilerplate.
+    - Build phase is simplified and more clear. Steps are: Number formatting, individual cell building and then command applications.
+- Added 'decimal_separator' parameter to allow comma for other languages typesetting such as French.
+- Added 'mean_with_std_table_example.py' with applications for machine learning practitioners.
+- Complete test coverage for features of Table.
+
 ## Version 0.3.0
 
 ### May 1, 2020
