@@ -42,7 +42,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                  alignment='c',
                  float_format='.2f',
                  decimal_separator='.',
-                 int_format='d',
+                 int_format='.d',
                  top_rule=True,
                  bottom_rule=True,
                  as_float_env=True,
@@ -116,7 +116,7 @@ class Tabular(TexEnvironment):
                  alignment='c',
                  float_format='.2f',
                  decimal_separator='.',
-                 int_format='d',
+                 int_format='.d',
                  top_rule=True,
                  bottom_rule=True,
                  **kwoptions
