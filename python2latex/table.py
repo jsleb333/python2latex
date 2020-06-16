@@ -42,7 +42,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                  alignment='c',
                  float_format='.2f',
                  decimal_separator='.',
-                 int_format='.d',
+                 int_format='d',
                  top_rule=True,
                  bottom_rule=True,
                  as_float_env=True,
@@ -116,7 +116,7 @@ class Tabular(TexEnvironment):
                  alignment='c',
                  float_format='.2f',
                  decimal_separator='.',
-                 int_format='.d',
+                 int_format='d',
                  top_rule=True,
                  bottom_rule=True,
                  **kwoptions
@@ -170,7 +170,10 @@ class Tabular(TexEnvironment):
     def _format_number(self, i, j, content):
         format_spec = self.formats_spec[i, j]
 
-        if format_spec is not None and isinstance(content, (float, int)):
+        if not isinstance(content, (float, int)):
+            return content
+
+        if format_spec is not None:
             content = format(content, format_spec)
         elif format_spec is None and isinstance(content, float): # Fallback to default
             content = format(content, self.float_format)
