@@ -4,8 +4,8 @@ from python2latex import FloatingTable, FloatingEnvironmentMixin
 from python2latex import TexEnvironment, TexCommand, build, bold, italic
 """
 TODO:
-- Doc
 - Remove as_float_env?
+- deal with col_space
 - Complex example
 """
 
@@ -13,10 +13,30 @@ TODO:
 class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     """
     Implements a (floating) 'table' environment. Wraps many features for easy usage and flexibility, such as:
-        - Supports slices to set items.
+        - Supports slices to set items via bracket access.
         - Easy and automatic multirow and multicolumn cells.
         - Automatically highlights best value inside a region of the table.
-    To do so, the brackets access [] (__getitem__) has been repurposed to select an area and returns a SelectedArea object. Announced features are defined on SelectedArea objects only. To access the actual data inside the table, use the 'data' attribute with brackets.
+        - Apply commands to every cells in a region.
+        - Quick way to insert rules and partial rules.
+        - Customizable number formatting.
+    To do so, the brackets access [] (__getitem__ and __setitem__) has been repurposed to select an area and returns a SelectedArea object, which is a kind of view of the table. To access the actual data inside the table, use the 'data' attribute with brackets.
+
+    Feature implementations:
+        SelectedArea objects defines multiple methods to edit the table that wraps LaTeX commands. These are 'format_spec' to choose the format specifier of numbers, 'add_rule' to insert rules, 'multicell' to merge cells, 'apply_command' to apply custom commands, 'highlight_best' to highlight the best value in a given region, and 'divide_cell' to divide a cell in multiple subcells. See the documentation of each method for more details.
+
+    Table vs Tabular:
+        The Table class is a wrapper of the floating TeX environment 'table' (with integrated 'tabular' environment), while the Tabular class implements the 'tabular' TeX environment. As such, Tabular does the hard work, while Table is simply a wrapper to make TeX tables creation easier.
+
+        The Table object created will instaciate a Tabular object with the arguments passed at the initialization. The Tabular object is accessible via the 'tabular' attribute and is appended to the body. Attribute access of the Table objects are rerouted to the underlying Tabular object. For example, 'table.data' will actually return 'table.tabular.data'. This is done via the __getattr__ method.
+
+    Building the table:
+        The build phase of the Table object relies on the build phase of the Tabular object. The 'build' method follows some steps, which order could be relevant when making complex Tables. The order is:
+            1. Append the alignment to the tabular TeX environment (e.g. {ccc} for 3 centered columns table).
+            2. Format all numbers to specifications using 'format(number, format_spec)'.
+            3. Call the 'build' method (or cast to string) every cells.
+            4. Apply chronologically all commands added with the 'apply_command' and the 'highlight_best' methods.
+            5. Apply 'multicolumn' and 'multirow' commands if necessary.
+            6. Piece together the table into a single string, inserting rules where needed.
     """
     def __init__(self,
                  shape=(1, 1),
@@ -24,10 +44,10 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                  float_format='.2f',
                  decimal_separator='.',
                  int_format='d',
-                 position='h!',
-                 as_float_env=True,
                  top_rule=True,
                  bottom_rule=True,
+                 as_float_env=True,
+                 position='h!',
                  label='',
                  caption='',
                  caption_pos='top',
@@ -36,16 +56,30 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         """
         Args:
             shape (tuple of 2 ints): Shape of the table.
+
             alignment (str or sequence of str, either 'c', 'r', or 'l'): Alignment of the text inside the columns. If a sequence, it should be the same length as the number of columns. If only a string, it will be used for all columns.
+
             float_format (str): Standard Python float formating available used as default for every float in the table. To change specific cell formats, use the 'change_format' method on a selected area.
+
+            decimal_separator (str): Character used as decimal separator. Default is '.'. Useful for typesetting numbers in other languages such as French, where the comma is used instead.
+
             int_format (str): Standard Python int formating available used as default for every int in the table. To change specific cell formats, use the 'change_format' method on a selected area.
+
+            top_rule, bottom_rule (bool): Whether or not the table should have border rules.
+
             as_float_env (bool): If True (default), will wrap a 'tabular' environment with a floating 'table' environment. If False, only the 'tabular' is constructed.
-            position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
-            top_rule, bottom_rule (bool): Whether or not the table should have outside rules.
+
+            The following arguments are only valid if 'as_float_env' is set to True.
+
+            position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility.
+
             label (str): Label of the environment.
-            caption (str): Caption of the table. Does not apply if 'as_float_env' is False.
-            caption_pos (str, either 'top' or 'bottom'): Position of the caption, either above (top) the table or below (bottom). Does not apply if 'as_float_env' is False.
-            caption_space (str, valid TeX length): Space between the caption and the table. Can be any valid TeX length. Does not apply if 'as_float_env' is False.
+
+            caption (str): Caption of the table.
+
+            caption_pos (str, either 'top' or 'bottom'): Position of the caption, either above (top) the table or below (bottom). Default is 'top' since captions are conventionally above the Table.
+
+            caption_space (str, valid TeX length): Space between the caption and the table. Can be any valid TeX length (e.g. '5pt').
         """
         super().__init__(as_float_env=as_float_env, position=position, label=label, caption=caption, caption_pos=caption_pos, caption_space=caption_space, **kwoptions)
 
@@ -75,15 +109,23 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
 
 
 class Tabular(TexEnvironment):
-    def __init__(self, shape=(1, 1),
-                       alignment='c',
-                       float_format='.2f',
-                       decimal_separator='.',
-                       int_format='d',
-                       top_rule=True,
-                       bottom_rule=True,
-                       **kwoptions
-                       ):
+    """
+    Implementation of tabular TeX environment.
+    """
+    def __init__(self,
+                 shape=(1, 1),
+                 alignment='c',
+                 float_format='.2f',
+                 decimal_separator='.',
+                 int_format='d',
+                 top_rule=True,
+                 bottom_rule=True,
+                 **kwoptions
+                 ):
+        """
+        Args:
+            See Table documentation.
+        """
         super().__init__('tabular', **kwoptions)
         self.add_package('booktabs')
 
@@ -91,7 +133,7 @@ class Tabular(TexEnvironment):
         self.bottom_rule = bottom_rule
 
         self.shape = shape
-        self.alignment = [alignment] * shape[1] if len(alignment) == 1 else alignment
+        self.alignment = [alignment] * shape[1] if isinstance(alignment, str) else alignment
         self.float_format = float_format
         self.decimal_separator = decimal_separator
         self.int_format = int_format
@@ -196,6 +238,10 @@ class Tabular(TexEnvironment):
 class SelectedArea:
     """
     Represents a selected area in a table. Contains a reference to the actual tabular and methods to apply on an area of the tabular.
+
+    SelectedArea objects defines multiple methods to edit the table that wraps LaTeX commands. These are 'format_spec' to choose the format specifier of numbers, 'add_rule' to insert rules, 'multicell' to merge cells, 'apply_command' to apply custom commands, 'highlight_best' to highlight the best value in a given region, and 'divide_cell' to divide a cell in multiple subcells. See the documentation of each method for more details.
+
+    Furthermore, it has a 'data' property to access the actual data of the selected area, as well as 'idx' and 'size' properties, respectively returning the starting and stoping indices of the area and the size of the area.
     """
     def __init__(self, tabular, idx):
         self.tabular = tabular
@@ -256,7 +302,6 @@ class SelectedArea:
 
         Returns self.
         """
-
         r = 'r' if trim_right else ''
         if isinstance(trim_right, str):
             r += f"{{{trim_right}}}"
