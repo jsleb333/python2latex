@@ -5,8 +5,7 @@ from python2latex import TexEnvironment, TexCommand, build, bold, italic
 """
 TODO:
 - Remove as_float_env?
-- deal with col_space
-- Complex example
+- Add col_space params
 """
 
 
@@ -22,7 +21,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
     To do so, the brackets access [] (__getitem__ and __setitem__) has been repurposed to select an area and returns a SelectedArea object, which is a kind of view of the table. To access the actual data inside the table, use the 'data' attribute with brackets.
 
     Feature implementations:
-        SelectedArea objects defines multiple methods to edit the table that wraps LaTeX commands. These are 'format_spec' to choose the format specifier of numbers, 'add_rule' to insert rules, 'multicell' to merge cells, 'apply_command' to apply custom commands, 'highlight_best' to highlight the best value in a given region, and 'divide_cell' to divide a cell in multiple subcells. See the documentation of each method for more details.
+        SelectedArea objects defines multiple methods and properies to edit the table that wraps LaTeX commands. These are 'format_spec' to choose the format specifier of numbers, 'add_rule' to insert rules, 'multicell' to merge cells, 'apply_command' to apply custom commands, 'highlight_best' to highlight the best value in a given region, and 'divide_cell' to divide a cell in multiple subcells. See the documentation of each method for more details.
 
     Table vs Tabular:
         The Table class is a wrapper of the floating TeX environment 'table' (with integrated 'tabular' environment), while the Tabular class implements the 'tabular' TeX environment. As such, Tabular does the hard work, while Table is simply a wrapper to make TeX tables creation easier.
@@ -282,6 +281,11 @@ class SelectedArea:
     def __str__(self):
         return str(self.data)
 
+    @property
+    def format_spec(self):
+        return self.tabular.formats_spec[self.slices]
+
+    @format_spec.setter
     def format_spec(self, format_spec):
         """
         Changes the format specifications used to format numbers in the selected area.
@@ -454,7 +458,7 @@ class SelectedArea:
                              top_rule=False)
         self.data = subtabular
 
-        subtabular[:,:].format_spec(self.tabular.formats_spec[self.slices])
+        subtabular[:,:].format_spec = self.tabular.formats_spec[self.slices]
 
         return subtabular
 

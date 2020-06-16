@@ -58,9 +58,9 @@ class TestTabular:
         assert three_by_three_tabular._format_number(0, 0, 100) == '100'
 
     def test_format_number_custom_format_spec(self, three_by_three_tabular):
-        three_by_three_tabular[0, 0].format_spec('.3f')
+        three_by_three_tabular[0, 0].format_spec = '.3f'
         assert three_by_three_tabular._format_number(0, 0, .1) == '0.100'
-        three_by_three_tabular[0, 1].format_spec('.3e')
+        three_by_three_tabular[0, 1].format_spec = '.3e'
         assert three_by_three_tabular._format_number(0, 1, 12345.0) == '1.234e+04'
 
     def test_format_number_decimal_separator(self, three_by_three_tabular):
@@ -133,7 +133,7 @@ class TestSelectedArea:
         assert self.one_cell_area.idx == ((0, 0), (1, 1))
 
     def test_format_spec(self):
-        self.one_cell_area.format_spec('3e')
+        self.one_cell_area.format_spec = '3e'
         assert self.table.formats_spec[0, 0] == '3e'
 
     def test_add_rule_default(self):
@@ -205,7 +205,7 @@ class TestSelectedArea:
         self.table.build()
 
     def test_divide_cell_carry_cell_format(self):
-        self.table[0, 0].format_spec('e')
+        self.table[0, 0].format_spec = 'e'
         self.table[0, 0].divide_cell((2, 1))
         assert (self.table.data[0, 0].formats_spec == np.array([['e', 'e']])).all()
 
@@ -389,8 +389,8 @@ def test_table_with_int_and_float_formats_changed():
     n_rows, n_cols = 2, 3
     table = Table((n_rows, n_cols))
     table[:, :] = [[.1,.2,.3],[4,5,6]]
-    table[0,0].format_spec('.3f')
-    table[1,0:2].format_spec('.0e')
+    table[0,0].format_spec = '.3f'
+    table[1,0:2].format_spec = '.0e'
     assert table.build() == cleandoc(r'''
         \begin{table}[h!]
         \centering
