@@ -6,9 +6,8 @@ from python2latex import TexEnvironment, TexCommand, build, bold, italic
 TODO:
 - Doc
 - Remove as_float_env?
-
+- Complex example
 """
-
 
 
 class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
