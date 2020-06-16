@@ -1,4 +1,4 @@
-from python2latex import Document, Table
+from python2latex import Document, Table, italic
 import numpy as np
 
 doc = Document(filename='more_complex_table_from_numpy_array_example', filepath='examples/table examples', doc_type='article', options=('12pt',))
@@ -20,8 +20,10 @@ table[2:,1:] = data
 table[2:,1] = [i*1000 for i in range(row)]
 
 # Change format of cells easily
-table[2:,1].change_format('.0e') # Exponential format
-table[2,1].change_format(lambda value: f'{value:.0E}') # Also takes custom function for flexibility
+table[2:,1].format_spec = '.0e' # Exponential format
+
+# Apply custom functions on the cell content for flexibility
+table[2,1].apply_command(lambda value: f'${value}$')
 
 # Set a columns title as a multicell with custom parameters
 table[0,1:4].multicell('Title1', h_align='c')
@@ -36,7 +38,7 @@ subtable = Table(shape=(2,1), as_float_env=False, bottom_rule=False, top_rule=Fa
 subtable[:,0] = ['From', 'Numpy']
 
 # Chain multiple methods on the same area for easy combinations of operations
-table[2:,0].multicell(subtable, v_align='*', v_shift='0pt').highlight('italic')
+table[2:,0].multicell(subtable, v_align='*', v_shift='0pt').apply_command(italic)
 # Set multicell areas with a slice too
 table[3:5,2:4] = 'Array' # The value is stored in the top left cell (here it would be cell (2,2))
 
