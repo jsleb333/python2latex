@@ -63,8 +63,8 @@ class TestTabular:
         three_by_three_tabular[0, 1].format_spec('.3e')
         assert three_by_three_tabular._format_number(0, 1, 12345.0) == '1.234e+04'
 
-    def test_format_number_use_comma_for_float_point(self, three_by_three_tabular):
-        three_by_three_tabular.use_comma_for_float_point = True
+    def test_format_number_decimal_separator(self, three_by_three_tabular):
+        three_by_three_tabular.decimal_separator = ','
         assert three_by_three_tabular._format_number(0, 0, .1) == '0,10'
 
     def test_apply_multicells_multicolumn(self, three_by_three_tabular):

@@ -2,6 +2,13 @@ import numpy as np
 
 from python2latex import FloatingTable, FloatingEnvironmentMixin
 from python2latex import TexEnvironment, TexCommand, build, bold, italic
+"""
+TODO:
+- Doc
+- Remove as_float_env?
+
+"""
+
 
 
 class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
@@ -16,7 +23,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
                  shape=(1, 1),
                  alignment='c',
                  float_format='.2f',
-                 use_comma_for_float_point=False,
+                 decimal_separator='.',
                  int_format='d',
                  position='h!',
                  as_float_env=True,
@@ -46,7 +53,7 @@ class Table(FloatingEnvironmentMixin, super_class=FloatingTable):
         self.tabular = Tabular(shape=shape,
                                alignment=alignment,
                                float_format=float_format,
-                               use_comma_for_float_point=use_comma_for_float_point,
+                               decimal_separator=decimal_separator,
                                int_format=int_format,
                                top_rule=top_rule,
                                bottom_rule=bottom_rule)
@@ -72,7 +79,7 @@ class Tabular(TexEnvironment):
     def __init__(self, shape=(1, 1),
                        alignment='c',
                        float_format='.2f',
-                       use_comma_for_float_point=False,
+                       decimal_separator='.',
                        int_format='d',
                        top_rule=True,
                        bottom_rule=True,
@@ -87,7 +94,7 @@ class Tabular(TexEnvironment):
         self.shape = shape
         self.alignment = [alignment] * shape[1] if len(alignment) == 1 else alignment
         self.float_format = float_format
-        self.use_comma_for_float_point = use_comma_for_float_point
+        self.decimal_separator = decimal_separator
         self.int_format = int_format
         self.data = np.full(shape, '', dtype=object)
 
@@ -130,8 +137,8 @@ class Tabular(TexEnvironment):
         elif format_spec is None and isinstance(content, int):
             content = format(content, self.int_format)
 
-        if self.use_comma_for_float_point:
-            content = content.replace('.', ',')
+        if self.decimal_separator != '.':
+            content = content.replace('.', self.decimal_separator)
 
         return content
 
@@ -374,7 +381,7 @@ class SelectedArea:
                     shape=(1, 1),
                     alignment='c',
                     float_format=None,
-                    use_comma_for_float_point=None,
+                    decimal_separator=None,
                     int_format=None):
         """
         Divides the selected cell in another subtable. Useful for long title to manually cut for example.
@@ -389,15 +396,15 @@ class SelectedArea:
 
         if float_format is None:
             float_format = self.tabular.float_format
-        if use_comma_for_float_point is None:
-            use_comma_for_float_point = self.tabular.use_comma_for_float_point
+        if decimal_separator is None:
+            decimal_separator = self.tabular.decimal_separator
         if int_format is None:
             int_format = self.tabular.int_format
 
         subtabular = Tabular(shape=shape,
                              alignment=alignment,
                              float_format=float_format,
-                             use_comma_for_float_point=use_comma_for_float_point,
+                             decimal_separator=decimal_separator,
                              int_format=int_format,
                              bottom_rule=False,
                              top_rule=False)
