@@ -259,6 +259,8 @@ class SelectedArea:
             i = slice(i, i + 1)
         if isinstance(j, Integral):
             j = slice(j, j + 1)
+        if not isinstance(i, slice) or not isinstance(i, slice):
+            raise ValueError(f'Invalid index {idx}. It should be an integral, a slice or a tuple of intregrals or slices.')
         return i, j
 
     @property

@@ -1,6 +1,6 @@
 from inspect import cleandoc
 
-from pytest import fixture
+from pytest import fixture, raises
 
 from python2latex.table import *
 from python2latex.tex_base import bold, italic
@@ -126,6 +126,9 @@ class TestSelectedArea:
         ]
         for idx, expected_value in zip(indices, expected_values):
             assert self.row_area._convert_idx_to_slice(idx) == expected_value
+
+        with raises(ValueError):
+            self.row_area._convert_idx_to_slice((np.array(1), np.array(2)))
 
     def test_idx(self):
         assert self.whole_table_area.idx == ((0, 0), (3, 3))
