@@ -114,6 +114,7 @@ class TestSelectedArea:
             (slice(None), slice(None)),
             (1, slice(None)),
             (slice(1, 3)),
+            (np.int64(1), np.int64(2)),
         ]
         expected_values = [
             (slice(1, 2), slice(2, 3)),
@@ -121,6 +122,7 @@ class TestSelectedArea:
             (slice(None), slice(None)),
             (slice(1, 2), slice(None)),
             (slice(1, 3), slice(None)),
+            (slice(1, 2), slice(2, 3)),
         ]
         for idx, expected_value in zip(indices, expected_values):
             assert self.row_area._convert_idx_to_slice(idx) == expected_value

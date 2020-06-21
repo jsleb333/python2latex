@@ -1,3 +1,4 @@
+from numbers import Integral
 import numpy as np
 
 from python2latex import FloatingTable, FloatingEnvironmentMixin
@@ -254,9 +255,9 @@ class SelectedArea:
             i, j = idx
         else:
             i, j = idx, slice(None)
-        if isinstance(i, int):
+        if isinstance(i, Integral):
             i = slice(i, i + 1)
-        if isinstance(j, int):
+        if isinstance(j, Integral):
             j = slice(j, j + 1)
         return i, j
 
