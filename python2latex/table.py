@@ -1,3 +1,4 @@
+from numbers import Real, Integral
 import numpy as np
 
 from python2latex import FloatingTable, FloatingEnvironmentMixin
@@ -152,7 +153,7 @@ class Tabular(TexEnvironment):
 
     def __setitem__(self, idx, value):
         selected_area = self[idx]
-        if isinstance(value, (str, int, float)) and selected_area.size > 1:
+        if isinstance(value, (str, Real, Integral)) and selected_area.size > 1:
             # There are multirows or multicolumns to treat
             selected_area.multicell(value)
         else:
@@ -170,15 +171,15 @@ class Tabular(TexEnvironment):
     def _format_number(self, i, j, content):
         format_spec = self.formats_spec[i, j]
 
-        if not isinstance(content, (float, int)):
+        if not isinstance(content, (Real, Integral)):
             return content
 
         if format_spec is not None:
             content = format(content, format_spec)
-        elif format_spec is None and isinstance(content, float): # Fallback to default
-            content = format(content, self.float_format)
-        elif format_spec is None and isinstance(content, int):
+        elif format_spec is None and isinstance(content, Integral):
             content = format(content, self.int_format)
+        elif format_spec is None and isinstance(content, Real): # Fallback to default
+            content = format(content, self.float_format)
 
         if self.decimal_separator != '.':
             content = content.replace('.', self.decimal_separator)
@@ -254,10 +255,12 @@ class SelectedArea:
             i, j = idx
         else:
             i, j = idx, slice(None)
-        if isinstance(i, int):
+        if isinstance(i, Integral):
             i = slice(i, i + 1)
-        if isinstance(j, int):
+        if isinstance(j, Integral):
             j = slice(j, j + 1)
+        if not isinstance(i, slice) or not isinstance(i, slice):
+            raise ValueError(f'Invalid index {idx}. It should be an integral, a slice or a tuple of intregrals or slices.')
         return i, j
 
     @property
@@ -404,14 +407,14 @@ class SelectedArea:
         best_idx = [(None, None)]
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
-                if isinstance(value, (float, int)) and value_is_better_than_best(value, best_value):
+                if isinstance(value, (Real, Integral)) and value_is_better_than_best(value, best_value):
                     best_idx = [(i, j)]
                     best_value = value
 
         # Find values close to best
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
-                if isinstance(value, (float, int)) and np.isclose(value, best_value, rtol, atol) \
+                if isinstance(value, (Real, Integral)) and np.isclose(value, best_value, rtol, atol) \
                     and (i, j) not in best_idx:
                     best_idx.append((i, j))
 
