@@ -2,6 +2,10 @@
 
 ## Version 0.4.0
 
+### June 21, 2020
+- Tables now support every kind of int and float by using the Integral and Real types.
+- Bad indexing in Tables raises an exception.
+
 ### June 16, 2020
 - Breaking changes:
     - SelectedArea 'change_format' method removed for a 'format_spec' property and a 'apply_command' method.
