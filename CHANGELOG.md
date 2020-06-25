@@ -2,6 +2,9 @@
 
 ## Version 0.4.0
 
+### June 25, 2020
+- Add support for TeX command 'textcolor'.
+
 ### June 21, 2020
 - Tables now support every kind of int and float by using the Integral and Real types.
 - Bad indexing in Tables raises an exception.

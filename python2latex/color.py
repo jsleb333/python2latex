@@ -1,3 +1,4 @@
+import sys
 from python2latex import TexObject, TexCommand
 
 
@@ -28,3 +29,47 @@ class Color(TexObject):
 
     def build(self):
         return self.color_name
+
+
+class textcolor(TexCommand):
+    """
+    Applies \\textcolor{color}{...} command on text.
+    """
+    def __init__(self, color, text):
+        """
+        Args:
+            color (Union[str,Color]): Name of the color or instance of Color.
+            text (str): Text to print in bold.
+        """
+        super().__init__('textcolor', color, text)
+        self.add_package('xcolor', 'dvipsnames')
+
+
+PREDEFINED_COLORS = ['black', 'blue', 'brown', 'cyan', 'darkgray', 'gray', 'green', 'lightgray', 'lime', 'magenta', 'olive', 'orange', 'pink', 'purple', 'red', 'teal', 'violet', 'white', 'yellow', 'Apricot', 'Aquamarine', 'Bittersweet', 'Black', 'Blue', 'BlueGreen', 'BlueViolet', 'BrickRed', 'Brown', 'BurntOrange', 'CadetBlue', 'CarnationPink', 'Cerulean', 'CornflowerBlue', 'Cyan', 'Dandelion', 'DarkOrchid', 'Emerald', 'ForestGreen', 'Fuchsia', 'Goldenrod', 'Gray', 'Green', 'GreenYellow', 'JungleGreen', 'Lavender', 'LimeGreen', 'Magenta', 'Mahogany', 'Maroon', 'Melon', 'MidnightBlue', 'Mulberry', 'NavyBlue', 'OliveGreen', 'Orange', 'OrangeRed', 'Orchid', 'Peach', 'Periwinkle', 'PineGreen', 'Plum', 'ProcessBlue', 'Purple', 'RawSienna', 'Red', 'RedOrange', 'RedViolet', 'Rhodamine', 'RoyalBlue', 'RoyalPurple', 'RubineRed', 'Salmon', 'SeaGreen', 'Sepia', 'SkyBlue', 'SpringGreen', 'Tan', 'TealBlue', 'Thistle', 'Turquoise', 'Violet', 'VioletRed', 'White', 'WildStrawberry', 'Yellow', 'YellowGreen', 'YellowOrange']
+
+def textcolor_callable(color):
+    """
+    Returns a callable which returns a textcolor from some text. This is useful, for instance, in tables as
+    a command to color the text of a cell. Functions for the colors of the xcolor and dvipsnames packages are
+    already defined as "textNAMEOFTHECOLOR" where NAMEOFTHECOLOR is the name given their respective packages.
+
+    Example:
+        The following code define a text with the defined color:
+
+            from python2latex import textcolor_callable, Color
+            my_color_callable = textcolor_callable(Color(1, 0, 0, color_name='my_color'))
+            colored_text = my_color_callable('hello')
+
+        The following code define a text with a predefined color:
+
+            from python2latex import textred
+            colored_text = textred('hello')
+
+    """
+    def color_func(text):
+        return textcolor(color, text)
+    return color_func
+
+
+for color in PREDEFINED_COLORS:
+    setattr(sys.modules[__name__], 'text' + color, textcolor_callable(color))
