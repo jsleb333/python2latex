@@ -70,6 +70,6 @@ def textcolor_callable(color):
         return textcolor(color, text)
     return color_func
 
-import sys
+
 for color in PREDEFINED_COLORS:
     setattr(sys.modules[__name__], 'text' + color, textcolor_callable(color))
