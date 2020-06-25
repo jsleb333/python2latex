@@ -56,11 +56,13 @@ def textcolor_callable(color):
     Example:
         The following code define a text with the defined color:
 
+            from python2latex import textcolor_callable, Color
             my_color_callable = textcolor_callable(Color(1, 0, 0, color_name='my_color'))
             colored_text = my_color_callable('hello')
 
         The following code define a text with a predefined color:
 
+            from python2latex import textred
             colored_text = textred('hello')
 
     """
