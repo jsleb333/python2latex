@@ -34,7 +34,6 @@ class TestColor:
             \end{document}''')
 
 
-
 class TestTextColor:
     def teardown_method(self, mtd):
         Color.color_count = 0
@@ -84,5 +83,58 @@ class TestTextColor:
         colored_text = my_color_callable('hello')
         assert colored_text.build() == '\\textcolor{my_color}{hello}'
         assert colored_text.build_preamble() == cleandoc(r'''
+            \usepackage[dvipsnames]{xcolor}
+            \definecolor{my_color}{rgb}{1,0,0}''')
+
+
+class TestColorBox:
+    def teardown_method(self, mtd):
+        Color.color_count = 0
+
+    def test_build(self):
+        highlighted_text = colorbox('red', 'hello')
+        assert highlighted_text.build() == '\\colorbox{red}{hello}'
+        assert highlighted_text.build_preamble() == '\\usepackage[dvipsnames]{xcolor}'
+
+        highlighted_text = colorbox(Color(1, 0, 0), 'hello')
+        assert highlighted_text.build() == '\\colorbox{color1}{hello}'
+        assert highlighted_text.build_preamble() == cleandoc(r'''
+            \usepackage[dvipsnames]{xcolor}
+            \definecolor{color1}{rgb}{1,0,0}''')
+
+        highlighted_text = colorbox(Color(1, 0, 0, color_name='my_color'), 'hello')
+        assert highlighted_text.build() == '\\colorbox{my_color}{hello}'
+        assert highlighted_text.build_preamble() == cleandoc(r'''
+            \usepackage[dvipsnames]{xcolor}
+            \definecolor{my_color}{rgb}{1,0,0}''')
+
+    def test_preamble_appears_in_document(self):
+        doc = Document('test')
+        highlighted_text = colorbox(Color(1, 0, 0, color_name='my_color'), 'hello')
+        doc += highlighted_text
+        assert doc.build(False, False, False) == cleandoc(r'''
+            \documentclass{article}
+            \usepackage[utf8]{inputenc}
+            \usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+            \usepackage[dvipsnames]{xcolor}
+            \definecolor{my_color}{rgb}{1,0,0}
+            \begin{document}
+            \colorbox{my_color}{hello}
+            \end{document}''')
+
+    def test_predefined_colors(self):
+        highlighted_text = colorboxred('hello')
+        assert highlighted_text.build() == '\\colorbox{red}{hello}'
+        assert highlighted_text.build_preamble() == '\\usepackage[dvipsnames]{xcolor}'
+
+        highlighted_text = colorboxOliveGreen('hello')
+        assert highlighted_text.build() == '\\colorbox{OliveGreen}{hello}'
+        assert highlighted_text.build_preamble() == '\\usepackage[dvipsnames]{xcolor}'
+
+    def test_colorbox_callable(self):
+        my_colorbox_callable = colorbox_callable(Color(1, 0, 0, color_name='my_color'))
+        highlighted_text = my_colorbox_callable('hello')
+        assert highlighted_text.build() == '\\colorbox{my_color}{hello}'
+        assert highlighted_text.build_preamble() == cleandoc(r'''
             \usepackage[dvipsnames]{xcolor}
             \definecolor{my_color}{rgb}{1,0,0}''')
