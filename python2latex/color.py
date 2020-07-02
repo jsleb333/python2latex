@@ -39,9 +39,23 @@ class textcolor(TexCommand):
         """
         Args:
             color (Union[str,Color]): Name of the color or instance of Color.
-            text (str): Text to print in bold.
+            text (str): Text to print in color.
         """
         super().__init__('textcolor', color, text)
+        self.add_package('xcolor', 'dvipsnames')
+
+
+class colorbox(TexCommand):
+    """
+    Applies \\colorbox{color}{...} command on text.
+    """
+    def __init__(self, color, text):
+        """
+        Args:
+            color (Union[str,Color]): Name of the color or instance of Color.
+            text (str): Text to print in colorbox.
+        """
+        super().__init__('colorbox', color, text)
         self.add_package('xcolor', 'dvipsnames')
 
 
@@ -51,7 +65,7 @@ def textcolor_callable(color):
     """
     Returns a callable which returns a textcolor from some text. This is useful, for instance, in tables as
     a command to color the text of a cell. Functions for the colors of the xcolor and dvipsnames packages are
-    already defined as "textNAMEOFTHECOLOR" where NAMEOFTHECOLOR is the name given their respective packages.
+    already defined as "textNAMEOFTHECOLOR" where NAMEOFTHECOLOR is the name given by their respective packages.
 
     Example:
         The following code define a text with the defined color:
@@ -71,5 +85,30 @@ def textcolor_callable(color):
     return color_func
 
 
+def colorbox_callable(color):
+    """
+    Returns a callable which returns a colorbox from some text. This is useful, for instance, in tables as
+    a command to highlight the text of a cell. Functions for the colors of the xcolor and dvipsnames packages are
+    already defined as "colorboxNAMEOFTHECOLOR" where NAMEOFTHECOLOR is the name given by their respective packages.
+
+    Example:
+        The following code define a text highlighted by the defined color:
+
+            from python2latex import colorbox_callable, Color
+            my_colorbox_callable = colorbox_callable(Color(1, 0, 0, color_name='my_color'))
+            highlighted_text = my_colorbox_callable('hello')
+
+        The following code define a text highlighted by a predefined color:
+
+            from python2latex import colorboxred
+            highlighted_text = colorboxred('hello')
+
+    """
+    def color_func(text):
+        return colorbox(color, text)
+    return color_func
+
+
 for color in PREDEFINED_COLORS:
     setattr(sys.modules[__name__], 'text' + color, textcolor_callable(color))
+    setattr(sys.modules[__name__], 'colorbox' + color, colorbox_callable(color))

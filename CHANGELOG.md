@@ -2,6 +2,9 @@
 
 ## Version 0.4.0
 
+### July 2, 2020
+- Add support for TeX command 'colorbox'.
+
 ### June 25, 2020
 - Add support for TeX command 'textcolor'.
 
