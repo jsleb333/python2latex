@@ -11,7 +11,7 @@ class TestColor:
     def test_init(self):
         color = Color(3, 4, 5, color_name='spam')
         assert color.build() == 'spam'
-        assert color.build_preamble() == '\n\\definecolor{spam}{rgb}{3,4,5}'
+        assert color.build_preamble() == '\\usepackage{xcolor}\n\\definecolor{spam}{rgb}{3,4,5}'
 
     def test_without_color_name(self):
         color = Color(3, 4, 5)
@@ -28,6 +28,7 @@ class TestColor:
             \documentclass{article}
             \usepackage[utf8]{inputenc}
             \usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+            \usepackage{xcolor}
             \definecolor{color1}{rgb}{1,2,3}
             \begin{document}
             \somecommand{param}[color1]
@@ -51,7 +52,7 @@ class TestColor:
         for model, spec in colors.items():
             color = Color(*spec, color_name='spam', color_model=model)
             assert color.build() == 'spam'
-            assert color.build_preamble() == f'\n\\definecolor{{spam}}{{{model}}}{{{",".join(map(str, spec))}}}'
+            assert color.build_preamble() == f'\\usepackage{{xcolor}}\n\\definecolor{{spam}}{{{model}}}{{{",".join(map(str, spec))}}}'
 
 
 class TestTextColor:
