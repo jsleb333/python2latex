@@ -12,23 +12,23 @@ class _AxisProperty:
         self.param_name = param_name
 
     def __get__(self, obj, cls=None):
-        return obj.axis.kwoptions[
-            self.param_name] if self.param_name in obj.axis.kwoptions else None
+        return obj.kwoptions[
+            self.param_name] if self.param_name in obj.kwoptions else None
 
     def __set__(self, obj, value):
-        obj.axis.kwoptions[self.param_name] = value
+        obj.kwoptions[self.param_name] = value
 
 
 class _AxisTicksProperty(_AxisProperty):
     def __set__(self, obj, value):
         value = '{' + ','.join(f"{v:.3f}" for v in value) + '}'
-        obj.axis.kwoptions[self.param_name] = value
+        obj.kwoptions[self.param_name] = value
 
 
 class _AxisTicksLabelsProperty(_AxisProperty):
     def __set__(self, obj, value):
         value = '{' + ','.join(value) + '}'
-        obj.axis.kwoptions[self.param_name] = value
+        obj.kwoptions[self.param_name] = value
 
 
 class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
@@ -127,6 +127,16 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         if len(X_Y) % 2 != 0:  # Copies matplotlib.pyplot.plot() behavior
             self.axis.add_plot(np.arange(len(X_Y[-1])), X_Y[-1])
 
+    def __getattr__(self, name):
+        if name in ['x_min', 'x_max', 'y_min', 'y_max', 'x_label', 'y_label', 'x_ticks', 'y_ticks', 'x_ticks_labels', 'y_ticks_labels', 'title', 'legend_position']:
+            return getattr(self.axis, name)
+        else:
+            return getattr(self, name)
+
+    def __setattr__(self, name, value):
+        if name in ['x_min', 'x_max', 'y_min', 'y_max', 'x_label', 'y_label', 'x_ticks', 'y_ticks', 'x_ticks_labels', 'y_ticks_labels', 'title', 'legend_position']:
+            setattr(self.axis, name, value)
+        object.__setattr__(self, name, value)
 
     def save_to_csv(self):
         os.makedirs(self.plot_path, exist_ok=True)

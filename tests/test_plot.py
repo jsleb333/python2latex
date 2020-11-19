@@ -71,6 +71,31 @@ class TestPlot:
             ''')
         os.remove('plot_test.csv')
 
+    def test_plot_properties(self):
+        plot = Plot(plot_name='plot_test')
+        plot.x_min = 0
+        plot.x_max = 1
+        plot.y_min = 2
+        plot.y_max = 3
+        plot.x_label = 'X Label'
+        plot.y_label = 'Y Label'
+        plot.x_ticks = .1, .5, .9
+        plot.y_ticks = 2.1, 2.5, 2.9
+        plot.x_ticks_labels = 'xl1', 'xl2', 'xl3'
+        plot.y_ticks_labels = 'yl1', 'yl2', 'yl3'
+        plot.title = 'Spam'
+        plot.legend_position = 'south'
+        assert plot.build() == cleandoc(r'''
+            \begin{figure}[h!]
+            \centering
+            \begin{tikzpicture}
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major, xmin=0, xmax=1, ymin=2, ymax=3, xlabel=X Label, ylabel=Y Label, xtick={0.100,0.500,0.900}, ytick={2.100,2.500,2.900}, xticklabels={xl1,xl2,xl3}, yticklabels={yl1,yl2,yl3}, title=Spam, legend pos=south]
+            \end{axis}
+            \end{tikzpicture}
+            \end{figure}
+            ''')
+        os.remove('plot_test.csv')
+
     def test_save_csv_to_right_path(self):
         filepath = './some_doc_path/'
         plotpath = filepath + 'plot_path/'
