@@ -157,6 +157,20 @@ class TestLinePlot:
         assert l2.id_number == 1
         assert l3.id_number == 2
 
+    def test_adding_a_simple_label(self):
+        lineplot = LinePlot([1, 2, 3], [4, 5, 6], 'red', label='spam')
+        lineplot.plot_filepath = './some/path/file.csv'
+        assert lineplot.build() == cleandoc(r"""
+            \addplot[red, forget plot] table[x=x0, y=y0, col sep=comma]{./some/path/file.csv} node[pos=1, anchor=west] {spam};
+            """)
+
+    def test_adding_a_custom_label(self):
+        lineplot = LinePlot([1, 2, 3], [4, 5, 6], 'red', label='spam', label_pos=.5, label_anchor='north', label_name='the_name', label_options=['draw'])
+        lineplot.plot_filepath = './some/path/file.csv'
+        assert lineplot.build() == cleandoc(r"""
+            \addplot[red, forget plot] table[x=x0, y=y0, col sep=comma]{./some/path/file.csv} node[pos=0.5, anchor=north, draw](the_name) {spam};
+            """)
+
 
 class TestMatrixPlot:
     def teardown(self):

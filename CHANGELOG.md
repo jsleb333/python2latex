@@ -5,6 +5,7 @@
 ### November 19, 2020
 - Color now supports all models from the xcolor package (i.e. rgb, HTML, hsb, etc.)
 - Factored the Axis environement into a standalone class in prevision of adding subplots.
+- Can now add a label to line plots as an alternative to the legend.
 
 ### July 2, 2020
 - Add support for TeX command 'colorbox'.

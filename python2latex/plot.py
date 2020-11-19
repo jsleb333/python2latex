@@ -323,22 +323,48 @@ class LinePlot(_Plot):
     """
     LinePlot object to handle line plots.
     """
-    def __init__(self, X, Y, *options, legend=None, forget_plot=True, **kwoptions):
+    def __init__(self,
+                 X, Y,
+                 *options,
+                 label=None,
+                 label_pos=1,
+                 label_anchor='west',
+                 label_name=None,
+                 label_options=list(),
+                 legend=None,
+                 forget_plot=True,
+                 **kwoptions):
         """
         Adds a plot to the axis.
 
         Args:
             X (sequence of numbers): X coordinates.
             Y (sequence of numbers): Y coordinates.
+
             options (Union[Tuple[str], str, TexObject]): Options for the plot. Colors can be specified here as strings of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+
+            label (str): Label of the line plot. Can be used as an alternative for the legend.
+            label_pos (float between 0 and 1): Position of the node label. Represent the fraction of the plot. For example, at 0, the label will be at the beginning of the plot, at .5 it will be midway and at 1, the label will be at the end.
+            label_anchor (Union[str, int]): Anchor of the node label. Anchors are one of the cardinal directions (north, west, south and east) or a valid combination of them (north west, south east, etc.). Can also be an integer representing the angle in degree of the anchor (0 is equivalent to east, 90 is north, 180 is west and 270 is south).
+            label_name (str): Name of the node label if desired for future usage with TikZ.
+            label_options (List(str)): Options of the node label. See the TikZ documentation for the options.
+
             legend (str): Entry of the plot.
             forget_plot (bool): Either or not to forget plot when adding plot. In some case, like histogram, the forget plot option does not allow to have multiple plots near each other. By default the forget_plot is set to True.
+
             kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
         """
         self.X = np.array(X)
         self.Y = np.array(Y)
         self.legend = legend
         self.forget_plot = forget_plot
+        label_name = '(' + label_name + ')' if label_name is not None else ''
+        label_options = ', '.join(label_options)
+        label_options = ', ' + label_options if label_options else ''
+        self.label = ''
+        if label is not None:
+            self.label = f' node[pos={label_pos}, anchor={label_anchor}{label_options}]{label_name} {{{label}}}'
+
         super().__init__(*options, **kwoptions)
 
     def build(self):
@@ -350,7 +376,7 @@ class LinePlot(_Plot):
             self.options += ('forget plot', )
 
         return super().build(
-        ) + f" table[x=x{self.id_number}, y=y{self.id_number}, col sep=comma]{{{self.plot_filepath}}};" + legend
+        ) + f" table[x=x{self.id_number}, y=y{self.id_number}, col sep=comma]{{{self.plot_filepath}}}{self.label};" + legend
 
 
 class MatrixPlot(_Plot):
