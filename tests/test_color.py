@@ -33,6 +33,26 @@ class TestColor:
             \somecommand{param}[color1]
             \end{document}''')
 
+    def test_color_models(self):
+        colors = {
+            'rgb': (.1, .2, .3),
+            'cmy': (.1, .2, .3),
+            'cmyk': (.1, .2, .3, .4),
+            'hsb': (.1, .2, .3),
+            'Hsb': (100, .2, .3),
+            'tHsb': (100, .2, .3),
+            'gray': (.1,),
+            'RGB': (10, 20, 30),
+            'HTML': ('2266FF',),
+            'HSB': (80, 160, 240),
+            'Gray': (10,),
+            'wave': (500,),
+        }
+        for model, spec in colors.items():
+            color = Color(*spec, color_name='spam', color_model=model)
+            assert color.build() == 'spam'
+            assert color.build_preamble() == f'\n\\definecolor{{spam}}{{{model}}}{{{",".join(map(str, spec))}}}'
+
 
 class TestTextColor:
     def teardown_method(self, mtd):

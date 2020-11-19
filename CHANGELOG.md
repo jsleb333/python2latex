@@ -2,6 +2,9 @@
 
 ## Version 0.4.0
 
+### November 19, 2020
+- Color now supports all models from the xcolor package (i.e. rgb, HTML, hsb, etc.)
+
 ### July 2, 2020
 - Add support for TeX command 'colorbox'.
 
