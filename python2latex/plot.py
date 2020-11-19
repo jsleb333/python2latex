@@ -53,6 +53,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
                  width=r'.8\textwidth',
                  height=r'.45\textwidth',
                  grid=True,
+                 grid_style=('dashed', 'gray!50'),
                  marks=False,
                  lines=True,
                  axis_y='left',
@@ -74,7 +75,9 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             width (str): Width of the figure. Can be any LaTeX length.
             height (str): Height of the figure. Can be any LaTeX length.
 
-            grid (bool or str): Whether if the grid if shown on not. If a string, should be one of pgfplots valid argument for 'grid'.
+            grid (Union[bool, str]): Whether if the grid if shown on not. If a string, should be one of pgfplots valid argument for 'grid' such as 'major', 'minor' and 'none'. Defaults to 'major'.
+            grid_style (Iterable[str]): Iterable of options for the grid.
+
             marks (bool or str): Whether to plot coordinates with or without marks. If a str, should be the radius of the marks with any LaTeX length.
             lines (bool or str): Whether to link coordinates with lines or not. If a str, should be the width of the lines with any LaTeX length.
             axis_x (str, either 'bottom' or 'top'): Where the x axis should appear (bottom or top).
@@ -99,32 +102,129 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
         self.add_package('pgfplots')
         self.add_package('pgfplotstable')
 
-        self.tikzpicture = TexEnvironment('tikzpicture')
-        self.add_text(self.tikzpicture)
-
-        if grid is True:
-            grid = 'major'
-        elif grid is False:
-            grid = 'none'
-
-        options = (
-            'grid style={dashed,gray!50}',
-            f'axis y line*={axis_y}',
-            f'axis x line*={axis_x}',
-            # 'axis line style={-latex}',
-        )
-        self.axis = TexEnvironment('axis',
-                                   options=options,
-                                   width=width,
-                                   height=height,
-                                   grid=grid,
-                                   **axis_kwoptions)
-        self.tikzpicture.add_text(self.axis)
-        # if not marks:
-        #     self.axis.options += ['no marks',]
+        self.tikzpicture = self.new(TexEnvironment('tikzpicture'))
 
         self.plot_name = plot_name or f"plot-{dt.now().strftime(r'%Y-%m-%d %Hh%Mm%Ss')}"
         self.plot_path = plot_path
+        self.plot_filepath = os.path.join(self.plot_path, self.plot_name+'.csv').replace('\\', '/')
+
+        self.axis = Axis(width=width,
+                         height=height,
+                         grid=grid,
+                         grid_style=grid_style,
+                         marks=marks,
+                         lines=lines,
+                         axis_y=axis_y,
+                         axis_x=axis_x,
+                         plot_filepath=self.plot_filepath,
+                         **axis_kwoptions)
+
+        self.tikzpicture.add_text(self.axis)
+
+        iter_X_Y = iter(X_Y)
+        for x, y in zip(iter_X_Y, iter_X_Y):
+            self.axis.add_plot(x, y)
+        if len(X_Y) % 2 != 0:  # Copies matplotlib.pyplot.plot() behavior
+            self.axis.add_plot(np.arange(len(X_Y[-1])), X_Y[-1])
+
+
+    def save_to_csv(self):
+        os.makedirs(self.plot_path, exist_ok=True)
+        plots = self.axis.plots
+        matrix_plot = self.axis.matrix_plot
+
+        with open(self.plot_filepath, 'w', newline='') as file:
+            writer = csv.writer(file)
+
+            titles = [coor for p in plots for coor in (f'x{p.id_number}', f'y{p.id_number}')]
+            if matrix_plot:
+                titles += [
+                    f'x{matrix_plot.id_number}',
+                    f'y{matrix_plot.id_number}',
+                    f'z{matrix_plot.id_number}'
+                ]
+            writer.writerow(titles)
+            data = [x_y for p in plots for x_y in (p.X, p.Y)]
+            if matrix_plot:
+                XX, YY = np.meshgrid(matrix_plot.X, matrix_plot.Y)
+                data += [XX.reshape(-1), YY.reshape(-1), matrix_plot.Z.T.reshape(-1)]
+
+            for row in itertools.zip_longest(*data, fillvalue=''):
+                writer.writerow(row)
+
+    def add_plot(self, *args, **kwargs):
+        return self.axis.add_plot(*args, **kwargs)
+
+    def add_matrix_plot(self, *args, **kwargs):
+        return self.axis.add_matrix_plot(*args, **kwargs)
+
+    def build(self):
+        self.save_to_csv()
+        return super().build()
+
+
+class Axis(TexEnvironment):
+    """
+    Implementation of an axis environment.
+    """
+    def __init__(self,
+                 *options,
+                 width=r'.8\textwidth',
+                 height=r'.45\textwidth',
+                 grid=True,
+                 grid_style=('dashed', 'gray!50'),
+                 marks=False,
+                 lines=True,
+                 axis_y='left',
+                 axis_x='bottom',
+                 plot_filepath=None,
+                 **kwoptions):
+        """
+        Args:
+            options (Tuple[str]): String options to pass to the axis.
+
+            plot_name (str): Name of the plot. Used to save data to a csv.
+            plot_path (str): Path of the plot. Used to save data to a csv. Default is current working directory.
+
+            width (str): Width of the figure. Can be any LaTeX length.
+            height (str): Height of the figure. Can be any LaTeX length.
+
+            grid (Union[bool, str]): Whether if the grid if shown on not. If a string, should be one of pgfplots valid argument for 'grid' such as 'major', 'minor' and 'none'. Defaults to 'major'.
+            grid_style (Iterable[str]): Iterable of options for the grid.
+
+            marks (bool or str): Whether to plot coordinates with or without marks. If a str, should be the radius of the marks with any LaTeX length.
+
+            lines (bool or str): Whether to link coordinates with lines or not. If a str, should be the width of the lines with any LaTeX length.
+
+            axis_x (str, either 'bottom' or 'top'): Where the x axis should appear (bottom or top).
+
+            axis_y (str, either 'left' or 'right'): Where the y axis should appear (left or right).
+
+            plot_filepath (str): Location where the data used for the plot is saved.
+
+            axis_kwoptions (dict): pgfplots keyword options for the axis. All underscore will be replaced by spaces when converted to LaTeX parameters.
+        """
+        options += (
+            f'grid style={{{", ".join(grid_style)}}}',
+            f'axis y line*={axis_y}',
+            f'axis x line*={axis_x}',
+        )
+
+        if grid is True:
+            grid = 'major'
+        elif grid is False or grid is None:
+            grid = 'none'
+
+        super().__init__('axis',
+                         options=options,
+                         width=width,
+                         height=height,
+                         grid=grid,
+                         **kwoptions)
+
+        self.add_package('tikz')
+        self.add_package('pgfplots')
+        self.add_package('pgfplotstable')
 
         if not marks:
             mark_size = '0pt'
@@ -145,14 +245,10 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             'mark size': mark_size,
         }
 
-        iter_X_Y = iter(X_Y)
         self.plots = []
-        for x, y in zip(iter_X_Y, iter_X_Y):
-            self.add_plot(x, y)
-        if len(X_Y) % 2 != 0:  # Copies matplotlib.pyplot.plot() behavior
-            self.add_plot(np.arange(len(X_Y[-1])), X_Y[-1])
-
         self.matrix_plot = None
+
+        self.plot_filepath = plot_filepath
 
     x_max = _AxisProperty('xmax')
     x_min = _AxisProperty('xmin')
@@ -165,7 +261,6 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
     x_ticks_labels = _AxisTicksLabelsProperty('xticklabels')
     y_ticks_labels = _AxisTicksLabelsProperty('yticklabels')
     title = _AxisProperty('title')
-
     legend_position = _AxisProperty('legend pos')
 
     def add_plot(self, X, Y, *options, legend=None, forget_plot=True, **kwoptions):
@@ -180,7 +275,9 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             forget_plot (bool): forget_plot is used to correctly present the legend. Default behavior is to add 'forget plot' option when no legend is provided. However, this can lead to incompatibility when plotting histograms. It is advised to set it to False in that case.
             kwoptions (Dict[str, Union(str, TexObject)): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
         """
-        self.axis += LinePlot(X, Y, *options, legend=legend, forget_plot=forget_plot, **kwoptions)
+        line_plot = LinePlot(X, Y, *options, plot_filepath=self.plot_filepath, legend=legend, forget_plot=forget_plot, **kwoptions)
+        self.plots.append(line_plot)
+        self += line_plot
 
     def add_matrix_plot(self, X, Y, Z, *options, colorbar=True, **kwoptions):
         """
@@ -197,49 +294,12 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             options. All underscores are replaced by spaces when converted to LaTeX.
         """
         if colorbar:
-            self.axis.options += ('colorbar', )
-            # self.axis.kwoptions['enlargelimits'] = 'false'
-        self.axis += MatrixPlot(X, Y, Z, *options, **kwoptions)
-
-    def save_to_csv(self):
-        filepath = os.path.join(self.plot_path, self.plot_name + '.csv')
-        os.makedirs(self.plot_path, exist_ok=True)
-        plots = [obj for obj in self.axis.body if isinstance(obj, _Plot)]
-        matrix_plot = None
-        for i, plot in enumerate(plots):
-            if isinstance(plot, MatrixPlot):
-                matrix_plot = plots.pop(i)
-
-        with open(filepath, 'w', newline='') as file:
-            writer = csv.writer(file)
-
-            titles = [coor for p in plots for coor in (f'x{p.id_number}', f'y{p.id_number}')]
-            if matrix_plot:
-                titles += [
-                    f'x{matrix_plot.id_number}',
-                    f'y{matrix_plot.id_number}',
-                    f'z{matrix_plot.id_number}'
-                ]
-            writer.writerow(titles)
-            data = [x_y for p in plots for x_y in (p.X, p.Y)]
-            if matrix_plot:
-                XX, YY = np.meshgrid(matrix_plot.X, matrix_plot.Y)
-                data += [XX.reshape(-1), YY.reshape(-1), matrix_plot.Z.T.reshape(-1)]
-
-            for row in itertools.zip_longest(*data, fillvalue=''):
-                writer.writerow(row)
+            self.options += ('colorbar', )
+        self.matrix_plot = MatrixPlot(X, Y, Z, *options, plot_filepath=self.plot_filepath, **kwoptions)
+        self += self.matrix_plot
 
     def build(self):
-        for obj in self.axis.body:
-            if isinstance(obj, _Plot):
-                # We cannot use os.path.join, since on Windows it uses backslashes,
-                # but pgfplots can only read paths with forward slashes.
-                plot_filepath = self.plot_path + '/' + self.plot_name + '.csv'
-                obj.plot_filepath = plot_filepath.replace('//', '/')
-
-        self.save_to_csv()
-
-        self.axis.options += (
+        self.options += (
             f"every axis plot/.append style={{{', '.join('='.join([k, v]) for k, v in self.default_plot_kwoptions.items())}}}",
         )
 
@@ -252,10 +312,10 @@ class _Plot(TexCommand):
     """
     plot_count = 0
 
-    def __init__(self, *options, **kwoptions):
+    def __init__(self, *options, plot_filepath=None, **kwoptions):
         self.id_number = 1 * _Plot.plot_count
         _Plot.plot_count += 1
-        self.plot_filepath = None
+        self.plot_filepath = plot_filepath
         super().__init__('addplot', options=options, options_pos='first', **kwoptions)
 
 
