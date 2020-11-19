@@ -1,12 +1,12 @@
-:github_url: https://github.com/davebulaval/python2latex
+:github_url: https://github.com/jsleb333/python2latex
 
 
 .. meta::
 
   :description: Python2LaTeX: The Python to LaTeX converter
-  :keywords: python, latex, pytorch
+  :keywords: python, latex
   :author: Jean-Samuel Leboeuf
-  :property="og:image": https://deepparse.org/_static/logos/logo.png # todo add or not?
+  :property="og:image":  # todo add or not?
 
 
 Python2LaTeX: The Python to LaTeX converter
@@ -22,7 +22,8 @@ Use Python2LaTeX to:
 - Automate table generation direcly from your code.
 - Create effortless LaTeX table using Python.
 
-Read the documentation at `deepparse.org <https://deepparse.org>`_. #todo update link
+Read the documentation at `:github_url:`.
+
 
 Prerequisites
 -------------
@@ -33,7 +34,6 @@ Some LaTeX packages are used, such as ``booktabs``, ``tikz``, ``pgfplots`` and `
 Cite
 ----
 
-# todo to update. (keep or not?)
 .. code-block:: bib
 
    @misc{python2latex,
@@ -72,7 +72,7 @@ To install the package, simply run in your terminal the command
 
 License
 =======
-Python2LaTeX is MIT licensed, as found in the `LICENSE file <https://github.com/jsleb333/python2latex/blob/master/LICENSE>`_.
+Python2LaTeX is MIT licensed, as found in the `LICENSE file <https://github.com/jsleb333/python2latex/blob/master/LICENSE>`.
 
 
 API Reference
