@@ -114,10 +114,8 @@ class TexCommand(TexObject):
             command (str): Name of the command that will be rendered as '\command'.
             parameters: Parameters of the command, appended inside curly braces {}.
             options (Tuple[Union[str, TexObject]): Options to pass to the command, appended inside brackets [].
-            options_pos (str, either 'first', 'second' or 'last'): Position of the options with respect to the
-            parameters.
-            kwoptions (dict of str): Keyword options to pass to the command, appended inside the same brackets as
-            options.
+            options_pos (str, either 'first', 'second' or 'last'): Position of the options with respect to the parameters.
+            kwoptions (dict of str): Keyword options to pass to the command, appended inside the same brackets as options.
         """
         super().__init__(command)
         self.command = command
