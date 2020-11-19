@@ -33,23 +33,18 @@ class _AxisTicksLabelsProperty(_AxisProperty):
 
 class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
     """
-    Implements an easy wrapper to plot curves directly into LaTex. Creates a floating figure if wanted and uses
-    'pgfplots' to draw the curves.
+    Implements an easy wrapper to plot curves directly into LaTex. Creates a floating figure if wanted and uses 'pgfplots' to draw the curves.
 
-    It aims to be as easy as matplotlib to use, but to have more beautiful default parameters and to produce directly
-    in LaTeX for easy integration into papers.
+    It aims to be as easy as matplotlib to use, but to have more beautiful default parameters and to produce directly in LaTeX for easy integration into papers.
 
     Supported options as properties:
     x_min, x_max, y_min, y_max (number): Sets the limits of the axis.
     x_label, y_label (str): Labels of the axes.
     x_ticks, y_ticks (sequence of float): Positions of the ticks on each axis.
-    x_ticks_labels, y_ticks_labels (sequence of str): String to print under each ticks. Should be the same length as
-    x_ticks and y_ticks.
-    legend_position (str): Specifies the corner of the legend. Should be a valid combinaisons of two of 'north', 'west',
-     'south' and 'east'.
+    x_ticks_labels, y_ticks_labels (sequence of str): String to print under each ticks. Should be the same length as x_ticks and y_ticks.
+    legend_position (str): Specifies the corner of the legend. Should be a valid combinaisons of two of 'north', 'west', 'south' and 'east'.
 
-    If you know the pgfplots library, all 'axis' environment's parameters can be accessed and modified via the
-    'self.axis.options' and the 'self.axis.kwoptions' attributes.
+    If you know the pgfplots library, all 'axis' environment's parameters can be accessed and modified via the 'self.axis.options' and the 'self.axis.kwoptions' attributes.
     """
     def __init__(self,
                  *X_Y,
@@ -71,10 +66,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
                  **axis_kwoptions):
         """
         Args:
-            X_Y (tuple of sequences of points to plot): If only one sequence is passed, it will be considered as the Y
-            components of the plot and the X will goes from 0 to len(Y)-1. If more than one sequence is passed,
-            the sequences are treated in pairs (X,Y) of sequences of points.
-            (This behavior copies matplotlib.pyplot.plot).
+            X_Y (tuple of sequences of points to plot): If only one sequence is passed, it will be considered as the Y components of the plot and the X will goes from 0 to len(Y)-1. If more than one sequence is passed, the sequences are treated in pairs (X,Y) of sequences of points. (This behavior copies matplotlib.pyplot.plot).
 
             plot_name (str): Name of the plot. Used to save data to a csv.
             plot_path (str): Path of the plot. Used to save data to a csv. Default is current working directory.
@@ -82,25 +74,19 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             width (str): Width of the figure. Can be any LaTeX length.
             height (str): Height of the figure. Can be any LaTeX length.
 
-            grid (bool or str): Whether if the grid if shown on not. If a string, should be one of pgfplots valid
-            argument for 'grid'.
-            marks (bool or str): Whether to plot coordinates with or without marks. If a str, should be the radius
-            of the marks with any LaTeX length.
-            lines (bool or str): Whether to link coordinates with lines or not. If a str, should be the width of the
-            lines with any LaTeX length.
+            grid (bool or str): Whether if the grid if shown on not. If a string, should be one of pgfplots valid argument for 'grid'.
+            marks (bool or str): Whether to plot coordinates with or without marks. If a str, should be the radius of the marks with any LaTeX length.
+            lines (bool or str): Whether to link coordinates with lines or not. If a str, should be the width of the lines with any LaTeX length.
             axis_x (str, either 'bottom' or 'top'): Where the x axis should appear (bottom or top).
             axis_y (str, either 'left' or 'right'): Where the y axis should appear (left or right).
 
-            position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'.
-            Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
-            as_float_env (bool): If True (default), will wrap a 'tabular' environment with a floating 'table'
-            environment. If False, only the 'tabular' is constructed.
+            position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
+            as_float_env (bool): If True (default), will wrap a 'tikzpicture' environment with a floating 'figure' environment. If False, only the 'tikzpicture' is constructed.
             label (str): Label of the environment.
 
             caption, caption_pos, caption_space: See _FloatingEnvironment for description.
 
-            axis_kwoptions (dict): pgfplots keyword options for the axis. All underscore will be replaced by spaces
-            when converted to LaTeX parameters.
+            axis_kwoptions (dict): pgfplots keyword options for the axis. All underscore will be replaced by spaces when converted to LaTeX parameters.
         """
         super().__init__(as_float_env=as_float_env,
                          position=position,
@@ -284,16 +270,11 @@ class LinePlot(_Plot):
         Args:
             X (sequence of numbers): X coordinates.
             Y (sequence of numbers): Y coordinates.
-            options (Union[Tuple[str], str, TexObject]): Options for the plot. Colors can be specified here as strings
-            of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options.
-            All underscores are replaced by spaces when converted to LaTeX.
+            options (Union[Tuple[str], str, TexObject]): Options for the plot. Colors can be specified here as strings of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
             legend (str): Entry of the plot.
             forget_plot (bool): Either or not to forget plot when adding plot. In some case, like histogram, the forget plot option does not allow to have multiple plots near each other. By default the forget_plot is set to True.
-            kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible
-            options. All underscores are replaced by spaces when converted to LaTeX.
+            kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
         """
-        # self.X = np.array([x for x in X])
-        # self.Y = np.array([y for y in Y])
         self.X = np.array(X)
         self.Y = np.array(Y)
         self.legend = legend
@@ -324,11 +305,9 @@ class MatrixPlot(_Plot):
             X (sequence of numbers): X coordinates. Should have the same length as the first dimension of Z.
             Y (sequence of numbers): Y coordinates. Should have the same length as the second dimension of Z.
             Z (Array of numbers of dim (x_dim, y_dim)): Z coordinates.
-            options (Union[Tuple[str], str, TexObject]): Options for the plot. See pgfplots '\addplot[options]'
-            for possible options. All underscores are replaced by spaces when converted to LaTeX.
+            options (Union[Tuple[str], str, TexObject]): Options for the plot. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
             colorbar (str): Colorbar legend.
-            kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible
-            options. All underscores are replaced by spaces when converted to LaTeX.
+            kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
         """
         self.X = np.array(X)
         self.Y = np.array(Y)
