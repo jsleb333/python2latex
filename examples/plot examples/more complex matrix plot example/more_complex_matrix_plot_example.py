@@ -2,7 +2,7 @@ from python2latex import Document, Plot, Color
 import numpy as np
 
 # Create the document
-filepath = './examples/more complex matrix plot example'
+filepath = './examples/plot examples/more complex matrix plot example'
 filename = 'more_complex_matrix_plot_example'
 doc = Document(filename, doc_type='article', filepath=filepath)
 sec = doc.new_section('More complex matrix plot')
