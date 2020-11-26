@@ -103,7 +103,7 @@ class Palette:
 
 class DynamicPalette:
     def __init__(self,
-                 color_map,
+                 color_map=LinearColorMap(),
                  color_model='hsb',
                  color_transform=None,
                  cmap_range=lambda n_colors: (1/(n_colors+1), 1-1/(n_colors+1)),

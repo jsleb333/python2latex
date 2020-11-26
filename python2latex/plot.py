@@ -4,7 +4,7 @@ import itertools
 import csv
 import numpy as np
 
-from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand
+from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand, DynamicPalette, Color
 
 
 class _AxisProperty:
@@ -56,6 +56,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
                  grid_style=('dashed', 'gray!50'),
                  marks=False,
                  lines=True,
+                 palette=DynamicPalette(),
                  axis_y='left',
                  axis_x='bottom',
                  position='h!',
@@ -82,6 +83,8 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
             lines (bool or str): Whether to link coordinates with lines or not. If a str, should be the width of the lines with any LaTeX length.
             axis_x (str, either 'bottom' or 'top'): Where the x axis should appear (bottom or top).
             axis_y (str, either 'left' or 'right'): Where the y axis should appear (left or right).
+
+            palette (Iterable): Iterable that yields colors to use for line plots. The iterable should yield either tuple of 3 floats between 0 and 1 interpreted as rgb colors, or python2latex Color objects for more flexibility. If the number of colors is less than the number of line plots, it will loop automatically. Default is a dynamic colorblind-friendly palette that will generate as many distinct colors as there are line plots, each equally spaced in the hue and brightness axes.
 
             position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
             as_float_env (bool): If True (default), will wrap a 'tikzpicture' environment with a floating 'figure' environment. If False, only the 'tikzpicture' is constructed.
@@ -114,6 +117,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
                          grid_style=grid_style,
                          marks=marks,
                          lines=lines,
+                         palette=palette,
                          axis_y=axis_y,
                          axis_x=axis_x,
                          plot_filepath=self.plot_filepath,
@@ -185,6 +189,7 @@ class Axis(TexEnvironment):
                  grid_style=('dashed', 'gray!50'),
                  marks=False,
                  lines=True,
+                 palette=DynamicPalette(),
                  axis_y='left',
                  axis_x='bottom',
                  plot_filepath=None,
@@ -205,6 +210,8 @@ class Axis(TexEnvironment):
             marks (bool or str): Whether to plot coordinates with or without marks. If a str, should be the radius of the marks with any LaTeX length.
 
             lines (bool or str): Whether to link coordinates with lines or not. If a str, should be the width of the lines with any LaTeX length.
+
+            palette (Iterable): Iterable that yields colors to use for line plots. The iterable should yield either tuple of 3 floats between 0 and 1 interpreted as rgb colors, or python2latex Color objects for more flexibility. If the number of colors is less than the number of line plots, it will loop automatically. Default is a dynamic colorblind-friendly palette that will generate as many distinct colors as there are line plots, each equally spaced in the hue and brightness axes.
 
             axis_x (str, either 'bottom' or 'top'): Where the x axis should appear (bottom or top).
 
@@ -260,6 +267,8 @@ class Axis(TexEnvironment):
 
         self.plot_filepath = plot_filepath
 
+        self.color_iterator = itertools.cycle(palette)
+
     x_max = _AxisProperty('xmax')
     x_min = _AxisProperty('xmin')
     y_max = _AxisProperty('ymax')
@@ -273,7 +282,7 @@ class Axis(TexEnvironment):
     title = _AxisProperty('title')
     legend_position = _AxisProperty('legend pos')
 
-    def add_plot(self, X, Y, *options, legend=None, forget_plot=True, **kwoptions):
+    def add_plot(self, X, Y, *options, color=None, legend=None, forget_plot=True, **kwoptions):
         """
         Adds a plot to the axis.
 
@@ -281,10 +290,17 @@ class Axis(TexEnvironment):
             X (sequence of numbers): X coordinates.
             Y (sequence of numbers): Y coordinates.
             options (Tuple[Union(str, TexObject]): Options for the plot. Colors can be specified here as strings of the whole color, e.g. 'black', 'red', 'blue', etc. See pgfplots '\addplot[options]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+            color (Union[Tuple[float], str, Color]): Color used for the line plot. Can be a tuple of 3 floats between 0 and 1, interpreted as rgb color, a string corresponding to a valid existing or predefined color (e.g. using the xcolor package with dvipsnames option), or a python2latex Color object. If None, the color palette passed at the initialization will be used. Passing a color will *not use* the next color in the color palette. Note that one can set the color without the keyword 'color', as TikZ does not use the color keyword. This will however skip the next color in the color palette.
             legend (str): Entry of the plot.
             forget_plot (bool): forget_plot is used to correctly present the legend. Default behavior is to add 'forget plot' option when no legend is provided. However, this can lead to incompatibility when plotting histograms. It is advised to set it to False in that case.
             kwoptions (Dict[str, Union(str, TexObject)): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
         """
+        if color is None:
+            options = (next(self.color_iterator),) + options
+        elif isinstance(color, tuple):
+            options += (Color(*color),)
+        else:
+            options += (color,)
         line_plot = LinePlot(X, Y, *options, plot_filepath=self.plot_filepath, legend=legend, forget_plot=forget_plot, **kwoptions)
         self.plots.append(line_plot)
         self += line_plot
