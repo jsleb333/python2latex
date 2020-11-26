@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.lib.arraysetops import isin
 
 from python2latex import Color
 
@@ -103,32 +104,43 @@ class Palette:
 
 class DynamicPalette:
     def __init__(self,
-                 colors,
+                 color_map,
                  color_model='hsb',
                  color_transform=None,
+                 cmap_range=lambda n_colors: (1/(n_colors+1), 1-1/(n_colors+1)),
                  max_n_colors=100_000):
         """
         Args:
-            colors (Callable): Color map used to generate the color palette (i.e. takes as input a scalar and outputs a color in the correct color model).
+            color_map (Callable): Color map used to generate the color palette (i.e. takes as input a scalar and outputs a color in the correct color model).
 
             color_model (str): Color model of the colors. See the Color class documentation.
 
             color_transform (Union[Callable, None]): Transformation to be applied on the color before the Color object is created. For example, can be used to convert JCh colors from a color map to rgb colors.
 
+            cmap_range (Tuple[Union[Callable, float]]): Range of the color map used. If a tuple of floats, the colors will be sampled from the color map in the interval [buffer[0], buffer[1]]. The range can be dynamic if it is a callable which takes as input the number of colors and outputs a tuple of floats.
+
             max_n_colors (int): Upper bound on the number of generated colors to avoid infinite iteration.
         """
-        self.colors = colors
+        self.color_map = color_map
         self.color_model = color_model
         self.color_transform = color_transform or (lambda x: x)
+        if not callable(cmap_range):
+            old_cmap_range = (cmap_range[0], cmap_range[1])
+            cmap_range = lambda n_colors: old_cmap_range
+        self.cmap_range = cmap_range
         self.n_colors = 0
+        self.tex_colors = []
         self.max_n_colors = max_n_colors
 
-        self.tex_colors = []
 
     def __iter__(self):
+        self.n_colors = 0
+        self.tex_colors = []
+
         while self.n_colors < self.max_n_colors:
             self.n_colors += 1
-            color_specs = [self.color_transform(self.colors(frac)) for frac in np.linspace(0, 1, self.n_colors)]
+            start, stop = self.cmap_range(self.n_colors)
+            color_specs = [self.color_transform(self.color_map(frac)) for frac in np.linspace(start, stop, self.n_colors)]
 
             # Update old colors
             for tex_color, color_spec in zip(self.tex_colors, color_specs):
