@@ -45,12 +45,12 @@ class LinearColorMap:
 
     def __call__(self, scalar):
         idx_color_start, idx_color_end = 0, 1
-        while scalar <= self.anchor_pos[idx_color_end]:
+        while scalar > self.anchor_pos[idx_color_end]:
             idx_color_start += 1
             idx_color_end += 1
 
         interval_width = self.anchor_pos[idx_color_end] - self.anchor_pos[idx_color_start]
-        interp_frac = (scalar - self.anchor_pos[idx_color_end])/interval_width
+        interp_frac = (scalar - self.anchor_pos[idx_color_start])/interval_width
 
         interp_color = self._interp_between_colors(interp_frac,
                                                    self.color_anchors[idx_color_start],

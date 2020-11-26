@@ -6,6 +6,9 @@ from python2latex.color import Color
 from python2latex.colormap import LinearColorMap, Palette, DynamicPalette
 
 
+def areclose(tuple1, tuple2):
+    return all(abs(c-a) <= 10e-10 for c, a in zip(tuple1, tuple2))
+
 class TestLinearColorMap:
     def test_lin_interp(self):
         cmap = LinearColorMap('rbg')
@@ -33,31 +36,47 @@ class TestLinearColorMap:
         cmap = LinearColorMap(color_model='hsb')
         color_start = (.1,.2,.3)
         color_end = (.5,.6,.7)
-        assert cmap._interp_between_colors(.25, color_start, color_end) == (.2,.30000000000000004,.39999999999999997)
-
+        assert areclose(cmap._interp_between_colors(.25, color_start, color_end), (.2,.3,.4))
         color_end = (1.7,.6,.7)
-        for c, a in zip(cmap._interp_between_colors(.75, color_start, color_end), (.3,.5,.6)):
-            assert abs(c-a) <= 10e-10
+        assert areclose(cmap._interp_between_colors(.75, color_start, color_end), (.3,.5,.6))
 
     def test_interp_between_colors_model_Hsb(self):
         cmap = LinearColorMap(color_model='Hsb')
         color_start = (36,.2,.3)
         color_end = (180,.6,.7)
-        assert cmap._interp_between_colors(.25, color_start, color_end) == (72,.30000000000000004,.39999999999999997)
-
+        assert areclose(cmap._interp_between_colors(.25, color_start, color_end), (72,.3,.4))
         color_end = (612,.6,.7)
-        for c, a in zip(cmap._interp_between_colors(.75, color_start, color_end), (108,.5,.6)):
-            assert abs(c-a) <= 10e-10
+        assert areclose(cmap._interp_between_colors(.75, color_start, color_end), (108,.5,.6))
 
     def test_interp_between_colors_model_JCh(self):
         cmap = LinearColorMap(color_model='JCh')
         color_start = (.2,.3,36)
         color_end = (.6,.7,180)
-        assert cmap._interp_between_colors(.25, color_start, color_end) == (.30000000000000004,.39999999999999997,72)
-
+        assert areclose(cmap._interp_between_colors(.25, color_start, color_end), (.3,.4,72))
         color_end = (.6,.7,612)
-        for c, a in zip(cmap._interp_between_colors(.75, color_start, color_end), (.5,.6,108)):
-            assert abs(c-a) <= 10e-10
+        assert areclose(cmap._interp_between_colors(.75, color_start, color_end), (.5,.6,108))
 
-    def test_call(self):
-        pass
+    def test_2_anchors(self):
+        c_start, c_stop = (0,0,0), (1,1,1)
+        cmap = LinearColorMap(color_anchors=[c_start, c_stop])
+        assert cmap(.25) == (.25, .25, .25)
+
+    def test_3_anchors_no_positions(self):
+        c_start, c_mid, c_stop = (0,0,0), (.3,.3,.3), (1,1,1)
+        cmap = LinearColorMap(color_anchors=[c_start, c_mid, c_stop])
+        assert cmap(.5) == c_mid
+        assert cmap(.25) == (.15,.15,.15)
+
+    def test_3_anchors_with_positions(self):
+        c_start, c_mid, c_stop = (0,0,0), (.3,.3,.3), (1,1,1)
+        cmap = LinearColorMap(color_anchors=[c_start, c_mid, c_stop],
+                              anchor_pos=[0,.75,1])
+        assert cmap(.75) == c_mid
+        assert areclose(cmap(.5), (.2,.2,.2))
+
+    def test_color_transform(self):
+        c_start, c_stop = (0,0,0), (1,1,1)
+        transform = lambda c: (c[0], c[1]/2, c[2]+100)
+        cmap = LinearColorMap(color_anchors=[c_start, c_stop],
+                              color_transform=transform)
+        assert areclose(cmap(.5), (.5, .25, 100.5))
