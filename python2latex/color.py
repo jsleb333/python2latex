@@ -23,13 +23,13 @@ class Color(TexObject):
         Note: The available color models and their range of specifications are:
             rgb:    red, green, blue                [0, 1]³
             cmy:    cyan, magenta, yellow           [0, 1]³
-            cmyk:   cyan, magenta, yellow, black    [0, 1]4
+            cmyk:   cyan, magenta, yellow, black    [0, 1]⁴
             hsb:    hue, saturation, brightness     [0, 1]³
             Hsb:    hue◦, saturation, brightness    [0, 360] x [0, 1]²
             tHsb:   hue◦, saturation, brightness    [0, 360] x [0, 1]²
             gray:   gray                            [0, 1]
             RGB:    Red, Green, Blue                {0, 1, ..., 255}³
-            HTML:   RRGGBB                          {000000, . . . , FFFFFF}
+            HTML:   RRGGBB                          {000000, ..., FFFFFF}
             HSB:    Hue, Saturation, Brightness     {0, 1, ..., 240}³
             Gray:   Gray                            {0, 1, ..., 15}
             wave:   lambda (nm)                     [363, 814]
