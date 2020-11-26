@@ -90,13 +90,13 @@ class Palette:
         if callable(self.colors):
             color_names = self.color_names or ['' for _ in range(self.n_colors)]
             for frac, color_name in zip(np.linspace(0, 1, self.n_colors), color_names):
-                yield Color(self.color_transform(*self.colors(frac)),
+                yield Color(*self.color_transform(self.colors(frac)),
                             color_name=color_name,
                             color_model=self.color_model)
         else:
             color_names = self.color_names or ['' for _ in range(len(self.colors))]
             for color, color_name in zip(self.colors, color_names):
-                yield Color(self.color_transform(*color),
+                yield Color(*self.color_transform(color),
                             color_name=color_name,
                             color_model=self.color_model)
 
@@ -128,13 +128,13 @@ class DynamicPalette:
     def __iter__(self):
         while self.n_colors < self.max_n_colors:
             self.n_colors += 1
-            color_specs = [self.color_transform(*self.colors(frac)) for frac in np.linspace(0, 1, self.n_colors)]
+            color_specs = [self.color_transform(self.colors(frac)) for frac in np.linspace(0, 1, self.n_colors)]
 
             # Update old colors
             for tex_color, color_spec in zip(self.tex_colors, color_specs):
                 tex_color.color_spec = color_spec
 
-            new_color = Color(color_specs[-1], color_model=self.color_model)
+            new_color = Color(*color_specs[-1], color_model=self.color_model)
             self.tex_colors.append(new_color)
 
             yield new_color

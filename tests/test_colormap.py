@@ -80,3 +80,54 @@ class TestLinearColorMap:
         cmap = LinearColorMap(color_anchors=[c_start, c_stop],
                               color_transform=transform)
         assert areclose(cmap(.5), (.5, .25, 100.5))
+
+
+class TestPalette:
+    def test_color_from_list(self):
+        c_start, c_mid, c_stop = (0,0,0), (.3,.3,.3), (1,1,1)
+        colors = [c_start, c_mid, c_stop]
+
+        palette = Palette(colors)
+        for i, color in enumerate(palette):
+            assert color.color_spec == colors[i]
+            assert color.color_model == 'hsb'
+
+        palette = Palette(colors, color_model='rgb')
+        for i, color in enumerate(palette):
+            assert color.color_spec == colors[i]
+            assert color.color_model == 'rgb'
+
+    def test_color_from_iterable_with_names(self):
+        c_start, c_mid, c_stop = (0,0,0), (.3,.3,.3), (1,1,1)
+        colors = [c_start, c_mid, c_stop]
+        names = ['mycolor1', 'col2', 'col3']
+        palette = Palette((c for c in colors), color_names=names)
+
+        for i, color in enumerate(palette):
+            assert color.color_spec == colors[i]
+            assert color.color_name == names[i]
+
+    def test_color_transform(self):
+        c_start, c_mid, c_stop = (0,0,0), (.3,.3,.3), (1,1,1)
+        colors = [c_start, c_mid, c_stop]
+        transform = lambda c: (c[0], c[1]/2, c[2]+100)
+
+        palette = Palette(colors, color_transform=transform)
+        palette = Palette(colors, color_transform=transform)
+        for i, color in enumerate(palette):
+            assert color.color_spec == transform(colors[i])
+            assert color.color_model == 'hsb'
+
+    def test_color_from_cmap(self):
+        c_start, c_mid, c_stop = (0,0,0), (.3,.3,.3), (1,1,1)
+        color_anchors = [c_start, c_mid, c_stop]
+        cmap = LinearColorMap(color_anchors=color_anchors, color_model='rgb')
+
+        palette = Palette(cmap, n_colors=3, color_model='rgb')
+        for i, color in enumerate(palette):
+            assert color.color_spec == color_anchors[i]
+
+        palette = Palette(cmap, n_colors=5, color_model='rgb')
+        for color, answer in zip(palette, (c_start, (.15,.15,.15), c_mid, (.65,.65,.65), c_stop)):
+            assert color.color_spec == answer
+
