@@ -17,7 +17,7 @@ class TestPlot:
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
             \end{axis}
             \end{tikzpicture}
             \end{figure}
@@ -31,7 +31,7 @@ class TestPlot:
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
             \addplot[color1, red, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
             \addlegendentry{Legend};
             \end{axis}
@@ -47,7 +47,7 @@ class TestPlot:
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
             \addplot[color1, forget plot, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
             \end{axis}
             \end{tikzpicture}
@@ -63,7 +63,7 @@ class TestPlot:
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
             \addplot[spam, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
             \addlegendentry{Legend};
             \end{axis}
@@ -90,7 +90,7 @@ class TestPlot:
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major, xmin=0, xmax=1, ymin=2, ymax=3, xlabel=X Label, ylabel=Y Label, xtick={0.100,0.500,0.900}, ytick={2.100,2.500,2.900}, xticklabels={xl1,xl2,xl3}, yticklabels={yl1,yl2,yl3}, title=Spam, legend pos=south]
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major, xmin=0, xmax=1, ymin=2, ymax=3, xlabel=X Label, ylabel=Y Label, xtick={0.100,0.500,0.900}, ytick={2.100,2.500,2.900}, xticklabels={xl1,xl2,xl3}, yticklabels={yl1,yl2,yl3}, title=Spam, legend pos=south]
             \end{axis}
             \end{tikzpicture}
             \end{figure}
@@ -128,7 +128,7 @@ class TestPlot:
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, colorbar, every axis plot/.append style={line width=0pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=none]
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, colorbar, every axis plot/.append style={no markers}, width=.8\textwidth, height=.45\textwidth, grid=none]
             \addplot[matrix plot*, point meta=explicit, mesh/rows=10, mesh/cols=10] table[x=x0, y=y0, meta=z0, col sep=comma]{./matrix_plot_test.csv};
             \end{axis}
             \end{tikzpicture}

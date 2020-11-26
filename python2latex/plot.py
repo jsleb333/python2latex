@@ -243,24 +243,25 @@ class Axis(TexEnvironment):
         self.add_package('pgfplots')
         self.add_package('pgfplotstable')
 
-        if not marks:
-            mark_size = '0pt'
-        elif isinstance(marks, str):
-            mark_size = marks
-        else:
-            mark_size = '2pt'
+        self.default_plot_kwoptions = {}
+        self.default_plot_options = []
 
-        if not lines:
-            line_width = '0pt'
-        elif isinstance(lines, str):
-            line_width = lines
+        if not marks or marks == '0pt':
+            marks = False
+            self.default_plot_options.append('no markers')
         else:
-            line_width = '1.25pt'
+            if not isinstance(marks, str):
+                marks = '2pt'
+            self.default_plot_kwoptions['mark size'] = marks
 
-        self.default_plot_kwoptions = {
-            'line width': line_width,
-            'mark size': mark_size,
-        }
+        if not lines or lines == '0pt':
+            if marks:
+                self.default_plot_options.append('only marks')
+        else:
+            if not isinstance(lines, str):
+                lines = '1.25pt'
+            self.default_plot_kwoptions['line width'] = lines
+
 
         self.plots = []
         self.matrix_plot = None
@@ -325,8 +326,12 @@ class Axis(TexEnvironment):
         self += self.matrix_plot
 
     def build(self):
+        every_plot_options = ', '.join(self.default_plot_options)
+        every_plot_kwoptions = ', '.join('='.join([k, v]) for k, v in self.default_plot_kwoptions.items())
+        if every_plot_kwoptions:
+            every_plot_options += ', ' + every_plot_kwoptions
         self.options += (
-            f"every axis plot/.append style={{{', '.join('='.join([k, v]) for k, v in self.default_plot_kwoptions.items())}}}",
+            f"every axis plot/.append style={{{every_plot_options}}}",
         )
 
         return super().build()
