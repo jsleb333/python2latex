@@ -4,7 +4,7 @@ import itertools
 import csv
 import numpy as np
 
-from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand, DynamicPalette, Color
+from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand, Palette, Color
 
 
 class _AxisProperty:
@@ -56,7 +56,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
                  grid_style=('dashed', 'gray!50'),
                  marks=False,
                  lines=True,
-                 palette=DynamicPalette(),
+                 palette=Palette(),
                  axis_y='left',
                  axis_x='bottom',
                  position='h!',
@@ -189,7 +189,7 @@ class Axis(TexEnvironment):
                  grid_style=('dashed', 'gray!50'),
                  marks=False,
                  lines=True,
-                 palette=DynamicPalette(),
+                 palette=Palette(),
                  axis_y='left',
                  axis_x='bottom',
                  plot_filepath=None,

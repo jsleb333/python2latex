@@ -3,7 +3,7 @@ import shutil
 from inspect import cleandoc
 
 from python2latex.color import Color
-from python2latex.colormap import LinearColorMap, Palette, DynamicPalette
+from python2latex.colormap import LinearColorMap, Palette
 
 
 def areclose(tuple1, tuple2):
@@ -118,55 +118,48 @@ class TestPalette:
             assert color.color_spec == transform(colors[i])
             assert color.color_model == 'hsb'
 
-    def test_color_from_cmap(self):
+    def test_from_cmap_static(self):
         c_start, c_mid, c_stop = (0,0,0), (.3,.3,.3), (1,1,1)
         color_anchors = [c_start, c_mid, c_stop]
         cmap = LinearColorMap(color_anchors=color_anchors, color_model='rgb')
 
-        palette = Palette(cmap, n_colors=3, color_model='rgb')
+        palette = Palette(cmap, n_colors=3, color_model='rgb', cmap_range=(0,1))
         for i, color in enumerate(palette):
             assert color.color_spec == color_anchors[i]
 
-        palette = Palette(cmap, n_colors=5, color_model='rgb')
+        palette = Palette(cmap, n_colors=5, color_model='rgb', cmap_range=(0,1))
         for color, answer in zip(palette, (c_start, (.15,.15,.15), c_mid, (.65,.65,.65), c_stop)):
             assert color.color_spec == answer
 
-
-class TestDynamicPalette:
-    def test_default_behavior(self):
+    def test_from_cmap_dynamic(self):
         c_start, c_mid, c_stop = (0,0,0), (.3,.3,.3), (1,1,1)
         color_anchors = [c_start, c_mid, c_stop]
         cmap = LinearColorMap(color_anchors=color_anchors, color_model='rgb')
 
-        palette = DynamicPalette(cmap, color_model='rgb', cmap_range=(0,1))
+        palette = Palette(cmap, color_model='rgb', cmap_range=(0,1))
         palette_it = iter(palette)
         assert len(palette.tex_colors) == 0
-        assert palette.n_colors == 0
         color1 = next(palette_it)
         assert len(palette.tex_colors) == 1
-        assert palette.n_colors == 1
         assert color1.color_spec == c_start
         color2 = next(palette_it)
         assert len(palette.tex_colors) == 2
-        assert palette.n_colors == 2
         assert color2.color_spec == c_stop
         color3 = next(palette_it)
         assert len(palette.tex_colors) == 3
-        assert palette.n_colors == 3
         assert color2.color_spec == c_mid
         assert color3.color_spec == c_stop
 
         palette_it = iter(palette)
         next(palette_it)
         assert len(palette.tex_colors) == 1
-        assert palette.n_colors == 1
 
     def test_palette_is_contained_in_tex_colors_at_the_end(self):
         c_start, c_mid, c_stop = (0,0,0), (.3,.3,.3), (1,1,1)
         color_anchors = [c_start, c_mid, c_stop]
         cmap = LinearColorMap(color_anchors=color_anchors, color_model='rgb')
 
-        palette = DynamicPalette(cmap, color_model='rgb')
+        palette = Palette(cmap, color_model='rgb')
         for _, color in zip(range(3), palette):
             continue
 
@@ -177,23 +170,21 @@ class TestDynamicPalette:
         color_anchors = [c_start, c_stop]
         cmap = LinearColorMap(color_anchors=color_anchors, color_model='rgb')
 
-        palette = DynamicPalette(cmap, color_model='rgb')
+        palette = Palette(cmap, color_model='rgb')
         for _, color in zip(range(3), palette):
             continue
         for color, answer in zip(palette.tex_colors, [(.25,.25,.25), (.5,.5,.5), (.75,.75,.75)]):
             assert color.color_spec == answer
 
-    def test_color_transform(self):
+    def test_color_transform_with_dynamic(self):
         c_start, c_mid, c_stop = (0,0,0), (.3,.3,.3), (1,1,1)
         color_anchors = [c_start, c_mid, c_stop]
         cmap = LinearColorMap(color_anchors=color_anchors, color_model='rgb')
 
         transform = lambda c: (c[0], c[1]/2, c[2]+100)
-        palette = DynamicPalette(cmap, color_model='rgb', cmap_range=(0,1), color_transform=transform)
+        palette = Palette(cmap, color_model='rgb', cmap_range=(0,1), color_transform=transform)
         palette_it = iter(palette)
         assert len(palette.tex_colors) == 0
-        assert palette.n_colors == 0
         color1 = next(palette_it)
         assert len(palette.tex_colors) == 1
-        assert palette.n_colors == 1
         assert color1.color_spec == transform(c_start)

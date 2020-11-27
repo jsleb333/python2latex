@@ -1,5 +1,5 @@
 from colorspacious.ciecam02 import NegativeAError
-from python2latex import Document, Plot, DynamicPalette, Palette, LinearColorMap
+from python2latex import Document, Plot, Palette, Palette, LinearColorMap
 from python2latex.utils import rgb2gray
 import numpy as np
 from colorspacious import cspace_converter
@@ -9,7 +9,7 @@ In this example, we explore color maps and palettes.
 
 A color map is understood as a function taking as input a scalar between 0 and 1 and outputs and color in some format. The class LinearColorMap takes as input a sequence of colors and interpolates linearly the colors in-between to yield a color map.
 
-A palette is simply a collection of colors. python2latex defines a Palette object that handles the boilerplating related to the creation of Color objects from a sequence of colors or from a color map. The DynamicPalette object modifies dynamically the colors generated according to the number of colors needed so that colors never repeat, as opposed to a standard palette which loops back to the beginning when colors are exhausted.
+A palette is simply a collection of colors. python2latex defines a Palette object that handles the boilerplating related to the creation of Color objects from a sequence of colors or from a color map. The Palette object modifies dynamically the colors generated according to the number of colors needed so that colors never repeat, as opposed to a standard palette which loops back to the beginning when colors are exhausted.
 """
 # First create a conversion function
 JCh2rgb = cspace_converter('JCh', 'sRGB1')
