@@ -1,6 +1,6 @@
 import numpy as np
 
-from python2latex import Color
+from python2latex import Color, Plot
 
 
 class LinearColorMap:
@@ -18,6 +18,19 @@ class LinearColorMap:
                  anchor_pos=None,
                  color_model='hsb',
                  color_transform=None):
+        """
+        Creates a linear color map from a sequence of key color anchors.
+
+        Args:
+            color_anchors (Sequence[tuple], optional):
+                Sequence of colors used as key points to interpolate colors in-between. Colors should be a sequence of floats or int representing the colors in the appropriate color model. If using a cyclic variable such as the hue, one can use larger or smaller values than the standard range of accepted values to get different color maps (e.g. in hsb, one can start at blue (h=0.5) and end at orange (h=0.1) without passing by green by adding 1 to the hue of the end color (h=1.1)). Cyclic variable are outputed after the modulo is taken.
+            anchor_pos (Sequence[float], optional):
+                Positions of the color anchors relative to one another on the interval [0,1]. By default, colors are evenly spaced on the interval (e.g. if there are 4 color anchors, the positions will be [0, .33, .66, 1]). Should has the same length as 'color_anchors' and must be in increasing order.
+            color_model (str, optional):
+                Color model (AKA color space) of the colors. Accepted models are 'RGB', 'rgb', 'hsb', 'Hsb' and 'JCh'. Defaults to 'hsb'. The hue being cyclic, the output color is taken modulo the periodicity. Other color model can be used using the 'rgb' model (which is just a basic linear interpolation) and apply further transformation at the end using the 'color_transform' argument.
+            color_transform (Callable[[tuple], tuple], optional):
+                Callable that takes an interpolated color as input and outputs a transformed color. Useful for unsupported color models.
+        """
         self.color_anchors = color_anchors
         self.anchor_pos = anchor_pos or np.linspace(0, 1, len(color_anchors))
         self.color_model = color_model
@@ -62,6 +75,14 @@ class LinearColorMap:
 
 
 class Palette:
+    """
+    We define a Palette as an iterable that yields colors. In this implementation, it yields python2latex Color object ready to be used anywhere.
+
+    This Palette has three modes:
+        1. (Default) From a color map, produce dynamically evenly spaced colors from a color map as needed (at each iteration, recomputes all the colors).
+        2. From a color map, produce exactly n_colors evenly spaced colors from a color map.
+        3. From an iterable of tuples representing colors, produce python2latex Color objects.
+    """
     def __init__(self,
                  colors=LinearColorMap(),
                  color_model='hsb',
@@ -74,19 +95,20 @@ class Palette:
         The default behavior of this palette is to create dynamically evenly spaced colors from a color map as needed. One can change this behavior by specifying a fixed number of colors, or by passing an iterable of colors instead of a color map.
 
         Args:
-            colors (Union[Iterable, Callable]): Colors used to generate the color palette. If is an iterable, should be a sequence of valid color specifications as explained in the documentation of the Color class. If a callable, the callable should be a color map (i.e. takes as input a scalar and outputs a color in the correct color model in the form of a tuple).
-
-            color_model (str): Color model of the colors. See the Color class documentation.
-
-            n_colors (Union[int, None]): Number of colors to sample from colors if it is a callable. If colors is a sequence, n_colors is ignored.
-
-            color_names (Union[Iterable[str], None]): If colors is a sequence, one can provide the names of the colors to be used in the TeX file. Must be the same length as colors.
-
-            cmap_range (Tuple[Union[Callable, float]]): Range of the color map used. Ignored if 'colors' is an iterable. If is a tuple of floats, the colors will be sampled from the color map in the interval [cmap_range[0], cmap_range[1]]. The range can be dynamic if it is a callable which takes as input the number of colors and outputs a tuple of floats.
-
-            color_transform (Union[Callable, None]): Transformation to be applied on the color before the Color object is created. For example, can be used to convert JCh colors from a color map to rgb or hsb colors.
-
-            max_n_colors (int): Upper bound on the number of generated colors to avoid infinite iteration when generating dynamically the palette from a color map.
+            colors (Union[Iterable, Callable]):
+                Colors used to generate the color palette. If is an iterable, should be a sequence of valid color specifications as explained in the documentation of the Color class. If a callable, the callable should be a color map (i.e. takes as input a scalar and outputs a color in the correct color model in the form of a tuple).
+            color_model (str):
+                Color model of the colors. See the Color class documentation.
+            n_colors (Union[int, None]):
+                Number of colors to sample from colors if it is a callable. If colors is a sequence, n_colors is ignored.
+            color_names (Union[Iterable[str], None]):
+                If colors is a sequence, one can provide the names of the colors to be used in the TeX file. Must be the same length as colors.
+            cmap_range (Union[Tuple[float], Callable[[int], Tuple]]):
+                Range of the color map used. Ignored if 'colors' is an iterable. If is a tuple of floats, the colors will be sampled from the color map in the interval [cmap_range[0], cmap_range[1]]. The range can be dynamic if it is a callable which takes as input the number of colors and outputs a tuple of floats.
+            color_transform (Union[Callable, None]):
+                Transformation to be applied on the color before the Color object is created. For example, can be used to convert JCh colors from a color map to rgb or hsb colors.
+            max_n_colors (int):
+                Upper bound on the number of generated colors to avoid infinite iteration when generating dynamically the palette from a color map.
         """
         self.colors = colors
         self.color_model = color_model
