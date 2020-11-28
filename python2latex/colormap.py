@@ -1,6 +1,6 @@
 import numpy as np
 
-from python2latex import Color, Plot
+from python2latex import Color
 
 
 class LinearColorMap:
