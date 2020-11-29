@@ -25,6 +25,7 @@ doc = Document(filename, doc_type='article', filepath=filepath)
 color1 = rgb2JCh(hsv_to_rgb((.3, .9, .3)))
 color2 = rgb2JCh(hsv_to_rgb((.29, .9, 1)))
 color2 = (color2[0], color2[1], color2[2]+360)
+print(color1, color2)
 # color1 = (20, 30, 200)
 # color2 = (70, 60, 480)
 # Create the color map
