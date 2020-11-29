@@ -295,6 +295,8 @@ class Axis(TexEnvironment):
             legend (str): Entry of the plot.
             forget_plot (bool): forget_plot is used to correctly present the legend. Default behavior is to add 'forget plot' option when no legend is provided. However, this can lead to incompatibility when plotting histograms. It is advised to set it to False in that case.
             kwoptions (Dict[str, Union(str, TexObject)): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible options. All underscores are replaced by spaces when converted to LaTeX.
+
+        Returns: LinePlot object.
         """
         if color is None:
             options = (next(self.color_iterator),) + options
@@ -305,6 +307,8 @@ class Axis(TexEnvironment):
         line_plot = LinePlot(X, Y, *options, plot_filepath=self.plot_filepath, legend=legend, forget_plot=forget_plot, **kwoptions)
         self.plots.append(line_plot)
         self += line_plot
+
+        return line_plot
 
     def add_matrix_plot(self, X, Y, Z, *options, colorbar=True, **kwoptions):
         """
@@ -319,11 +323,15 @@ class Axis(TexEnvironment):
             colorbar (str): Colorbar legend.
             kwoptions (tuple of str): Keyword options for the plot. See pgfplots '\addplot[kwoptions]' for possible
             options. All underscores are replaced by spaces when converted to LaTeX.
+
+        Returns: MatrixPlot object.
         """
         if colorbar:
             self.options += ('colorbar', )
         self.matrix_plot = MatrixPlot(X, Y, Z, *options, plot_filepath=self.plot_filepath, **kwoptions)
         self += self.matrix_plot
+
+        return self.matrix_plot
 
     def build(self):
         every_plot_options = ', '.join(self.default_plot_options)
