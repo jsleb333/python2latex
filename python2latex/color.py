@@ -39,10 +39,10 @@ class Color(TexObject):
         self.color_model = color_model
         Color.color_count += 1
         self.color_name = color_name or f'color{Color.color_count}'
-        self.add_to_preamble(DefineColor(self.color_name, self.color_model, *self.color_spec))
         self.add_package('xcolor')
 
     def build(self):
+        self.add_to_preamble(DefineColor(self.color_name, self.color_model, *self.color_spec))
         return self.color_name
 
 
