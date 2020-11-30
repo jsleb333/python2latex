@@ -173,7 +173,7 @@ class TestPalette:
         palette = Palette(cmap, color_model='rgb')
         for _, color in zip(range(3), palette):
             continue
-        for color, answer in zip(palette.tex_colors, [(.25,.25,.25), (.5,.5,.5), (.75,.75,.75)]):
+        for color, answer in zip(palette.tex_colors, [(1/6,1/6,1/6), (1/2,1/2,1/2), (5/6,5/6,5/6)]):
             assert color.color_spec == answer
 
     def test_color_transform_with_dynamic(self):

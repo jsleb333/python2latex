@@ -2,6 +2,8 @@ import sys
 import os
 import subprocess
 import numpy as np
+from colorspacious import cspace_converter, cspace_convert
+from matplotlib.colors import hsv_to_rgb, rgb_to_hsv
 
 
 def open_file_with_default_program(filename, filepath):
@@ -47,3 +49,28 @@ def rgb2gray_linear(rgb):
 
 def rgb2gray(rgb):
     return gamma_compress(rgb2gray_linear(gamma_decompress(np.array(rgb))))
+
+
+def JCh2rgb(JCh):
+    J, C, h = JCh
+    return np.clip(cspace_convert((J, C, h%360), 'JCh', 'sRGB1'), 0, 1)
+
+def rgb2JCh(rgb):
+    return cspace_convert(rgb, 'sRGB1', 'JCh')
+
+
+def JCh2hsb(JCh, restrict_hue_domain=True):
+    J, C, h = JCh
+    hue = h % 360
+    hsb = rgb_to_hsv(JCh2rgb((J, C, hue)))
+    if not restrict_hue_domain:
+        hsb[0] += (h - hue)/360
+    return hsb
+
+def hsb2JCh(hsb, restrict_hue_domain=True):
+    h, s, b = hsb
+    hue = h % 1
+    JCh = rgb2JCh(hsv_to_rgb((hue, s, b)))
+    if not restrict_hue_domain:
+        JCh[2] += (h - hue)*360
+    return JCh

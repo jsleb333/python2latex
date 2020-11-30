@@ -21,11 +21,11 @@ palette = Palette(colors=cmap,
 pal = Palette(colors=cmap, n_colors=2)
 
 # Create the data
-X = np.linspace(-1, 1, 100)
+X = np.linspace(-1, 1, 50)
 Y = lambda c: np.exp(X*c) + c
 
 # Let us compare the different color palettes generated for different number of line plots
-for n_colors in [2, 3, 6, 11]:
+for n_colors in [2, 3, 5, 10]:
     # Create a plot
     plot = doc.new(Plot(plot_name=filename + f'n_colors={n_colors}',
                         plot_path=filepath,

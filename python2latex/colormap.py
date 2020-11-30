@@ -1,3 +1,4 @@
+from python2latex.utils import JCh2rgb
 import numpy as np
 
 from python2latex import Color
@@ -88,7 +89,7 @@ class Palette:
                  color_model='hsb',
                  n_colors=None,
                  color_names=None,
-                 cmap_range=lambda n_colors: (1/(n_colors+1), 1-1/(n_colors+1)),
+                 cmap_range=lambda n_colors: (1/(2*n_colors), 1-1/(2*n_colors)),
                  color_transform=None,
                  max_n_colors=10_000):
         """
@@ -104,7 +105,7 @@ class Palette:
             color_names (Union[Iterable[str], None]):
                 If colors is a sequence, one can provide the names of the colors to be used in the TeX file. Must be the same length as colors.
             cmap_range (Union[Tuple[float], Callable[[int], Tuple]]):
-                Range of the color map used. Ignored if 'colors' is an iterable. If is a tuple of floats, the colors will be sampled from the color map in the interval [cmap_range[0], cmap_range[1]]. The range can be dynamic if it is a callable which takes as input the number of colors and outputs a tuple of floats.
+                Range of the color map used. Ignored if 'colors' is an iterable. If is a tuple of floats, the colors will be sampled from the color map in the interval [cmap_range[0], cmap_range[1]]. The range can be dynamic if it is a callable which takes as input the number of colors and outputs a tuple of floats. The default is dynamic and is designed to spread colors equally in hue space (given that the color maps covers 360 of hue).
             color_transform (Union[Callable, None]):
                 Transformation to be applied on the color before the Color object is created. For example, can be used to convert JCh colors from a color map to rgb or hsb colors.
             max_n_colors (int):
@@ -160,3 +161,22 @@ class Palette:
                 yield Color(*self.color_transform(color),
                             color_name=name,
                             color_model=self.color_model)
+
+
+predefined_cmaps = {
+    'aube': LinearColorMap(color_anchors=[(26.2, 46.5, 235.2), (71.7, 58.5, 450.1)],
+                           color_model='JCh'),
+    'aurore': LinearColorMap(color_anchors=[(14.6, 50.9, 317.0), (83.5, 73.8, 107.3)],
+                             color_model='JCh'),
+}
+
+predefined_palettes = {
+    'aube': Palette(predefined_cmaps['aube'],
+                    color_model='rgb',
+                    cmap_range=lambda n_colors: (0, 1-1/(2*n_colors+2)),
+                    color_transform=JCh2rgb),
+    'aurore': Palette(predefined_cmaps['aurore'],
+                      color_model='rgb',
+                      cmap_range=lambda n_colors: (1/(3*n_colors), 1-1/(3*n_colors)),
+                      color_transform=JCh2rgb),
+}
