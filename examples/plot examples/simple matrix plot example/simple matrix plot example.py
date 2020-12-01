@@ -2,7 +2,7 @@ from python2latex import Document, Plot
 import numpy as np
 
 # Create the document
-filepath = './examples/simple matrix plot example'
+filepath = './examples/plot examples/simple matrix plot example'
 filename = 'simple_matrix_plot_example'
 doc = Document(filename, doc_type='standalone', filepath=filepath, border='1cm')
 

@@ -4,17 +4,18 @@ from subprocess import DEVNULL, STDOUT, check_call
 
 def build(obj, parent=None):
     """
-    Safely builds the object by calling its method 'build' only if 'obj' is not a string. If a parent is passed, all
-    packages and preamble lines needed to the object will be added to the packages and preamble of the parent.
+    Safely builds the object by calling its method 'build' only if 'obj' possesses a 'build' method. Otherwise, will convert it to a string using the 'str' function. If a parent is passed, all packages and preamble lines needed to the object will be added to the packages and preamble of the parent.
     """
     if isinstance(obj, TexObject):
         built_obj = obj.build()
-        if parent:
+        if parent is not None:
             for package_name, package in obj.packages.items():
                 parent.add_package(package_name, *package.options, **package.kwoptions)
             for line in obj.preamble:
                 parent.add_to_preamble(line)
         return built_obj
+    elif hasattr(obj, 'build'):
+        built_obj = obj.build()
     else:
         return str(obj)
 
@@ -101,7 +102,7 @@ class TexObject:
 
     def build(self):
         """
-        Builds the object. Should return a valid LaTeX string.
+        Builds the object. Should return a valid LaTeX string and *should not modify* self (i.e. should be read-only).
         """
         return ''
 
@@ -113,10 +114,8 @@ class TexCommand(TexObject):
             command (str): Name of the command that will be rendered as '\command'.
             parameters: Parameters of the command, appended inside curly braces {}.
             options (Tuple[Union[str, TexObject]): Options to pass to the command, appended inside brackets [].
-            options_pos (str, either 'first', 'second' or 'last'): Position of the options with respect to the
-            parameters.
-            kwoptions (dict of str): Keyword options to pass to the command, appended inside the same brackets as
-            options.
+            options_pos (str, either 'first', 'second' or 'last'): Position of the options with respect to the parameters.
+            kwoptions (dict of str): Keyword options to pass to the command, appended inside the same brackets as options.
         """
         super().__init__(command)
         self.command = command

@@ -10,13 +10,14 @@ from python2latex.plot import Plot, LinePlot, MatrixPlot, _Plot
 class TestPlot:
     def teardown(self):
         _Plot.plot_count = 0
+        Color.color_count = 0
 
     def test_default_plot(self):
         assert Plot(plot_name='plot_test').build() == cleandoc(r'''
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
             \end{axis}
             \end{tikzpicture}
             \end{figure}
@@ -30,8 +31,8 @@ class TestPlot:
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
-            \addplot[red, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \addplot[color1, red, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
             \addlegendentry{Legend};
             \end{axis}
             \end{tikzpicture}
@@ -41,13 +42,13 @@ class TestPlot:
 
     def test_add_plot_without_legend(self):
         plot = Plot(plot_name='plot_test')
-        plot.add_plot(list(range(10)), list(range(10)), 'red', line_width='2pt')
+        plot.add_plot(list(range(10)), list(range(10)), line_width='2pt')
         assert plot.build() == cleandoc(r'''
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
-            \addplot[red, forget plot, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \addplot[color1, forget plot, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
             \end{axis}
             \end{tikzpicture}
             \end{figure}
@@ -56,15 +57,72 @@ class TestPlot:
 
     def test_add_plot_with_color_obj(self):
         plot = Plot(plot_name='plot_test')
-        color = Color(.1, .2, .3, 'spam')
-        plot.add_plot(list(range(10)), list(range(10)), color, legend='Legend', line_width='2pt')
+        color = Color(.1, .2, .3, color_name='spam')
+        plot.add_plot(list(range(10)), list(range(10)), color=color, legend='Legend', line_width='2pt')
         assert plot.build() == cleandoc(r'''
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={line width=1.25pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
             \addplot[spam, line width=2pt] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
             \addlegendentry{Legend};
+            \end{axis}
+            \end{tikzpicture}
+            \end{figure}
+            ''')
+        os.remove('plot_test.csv')
+
+    def test_non_default_palette(self):
+        plot = Plot(plot_name='plot_test', palette='aube')
+        plot.add_plot(list(range(10)), list(range(10)))
+        assert plot.build() == cleandoc(r'''
+            \begin{figure}[h!]
+            \centering
+            \begin{tikzpicture}
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \addplot[color1, forget plot] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
+            \end{axis}
+            \end{tikzpicture}
+            \end{figure}
+            ''')
+        os.remove('plot_test.csv')
+
+    def test_palette_from_iterable(self):
+        plot = Plot(plot_name='plot_test', palette=((0,0,0), (1,0,0), (0,1,0), (0,0,1), (1,1,1)))
+        plot.add_plot(list(range(10)), list(range(10)))
+        plot.add_plot(list(range(10)), list(range(10)))
+        assert plot.build() == cleandoc(r'''
+            \begin{figure}[h!]
+            \centering
+            \begin{tikzpicture}
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \addplot[color1, forget plot] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
+            \addplot[color2, forget plot] table[x=x1, y=y1, col sep=comma]{./plot_test.csv};
+            \end{axis}
+            \end{tikzpicture}
+            \end{figure}
+            ''')
+        os.remove('plot_test.csv')
+
+    def test_plot_properties(self):
+        plot = Plot(plot_name='plot_test')
+        plot.x_min = 0
+        plot.x_max = 1
+        plot.y_min = 2
+        plot.y_max = 3
+        plot.x_label = 'X Label'
+        plot.y_label = 'Y Label'
+        plot.x_ticks = .1, .5, .9
+        plot.y_ticks = 2.1, 2.5, 2.9
+        plot.x_ticks_labels = 'xl1', 'xl2', 'xl3'
+        plot.y_ticks_labels = 'yl1', 'yl2', 'yl3'
+        plot.title = 'Spam'
+        plot.legend_position = 'south'
+        assert plot.build() == cleandoc(r'''
+            \begin{figure}[h!]
+            \centering
+            \begin{tikzpicture}
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major, xmin=0, xmax=1, ymin=2, ymax=3, xlabel=X Label, ylabel=Y Label, xtick={0.100,0.500,0.900}, ytick={2.100,2.500,2.900}, xticklabels={xl1,xl2,xl3}, yticklabels={yl1,yl2,yl3}, title=Spam, legend pos=south]
             \end{axis}
             \end{tikzpicture}
             \end{figure}
@@ -102,7 +160,7 @@ class TestPlot:
             \begin{figure}[h!]
             \centering
             \begin{tikzpicture}
-            \begin{axis}[grid style={dashed,gray!50}, axis y line*=left, axis x line*=bottom, colorbar, every axis plot/.append style={line width=0pt, mark size=0pt}, width=.8\textwidth, height=.45\textwidth, grid=none]
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, colorbar, every axis plot/.append style={no markers}, width=.8\textwidth, height=.45\textwidth, grid=none]
             \addplot[matrix plot*, point meta=explicit, mesh/rows=10, mesh/cols=10] table[x=x0, y=y0, meta=z0, col sep=comma]{./matrix_plot_test.csv};
             \end{axis}
             \end{tikzpicture}
@@ -156,6 +214,20 @@ class TestLinePlot:
         assert l1.id_number == 0
         assert l2.id_number == 1
         assert l3.id_number == 2
+
+    def test_adding_a_simple_label(self):
+        lineplot = LinePlot([1, 2, 3], [4, 5, 6], 'red', label='spam')
+        lineplot.plot_filepath = './some/path/file.csv'
+        assert lineplot.build() == cleandoc(r"""
+            \addplot[red, forget plot] table[x=x0, y=y0, col sep=comma]{./some/path/file.csv} node[pos=1, anchor=west] {spam};
+            """)
+
+    def test_adding_a_custom_label(self):
+        lineplot = LinePlot([1, 2, 3], [4, 5, 6], 'red', label='spam', label_pos=.5, label_anchor='north', label_name='the_name', label_options=['draw'])
+        lineplot.plot_filepath = './some/path/file.csv'
+        assert lineplot.build() == cleandoc(r"""
+            \addplot[red, forget plot] table[x=x0, y=y0, col sep=comma]{./some/path/file.csv} node[pos=0.5, anchor=north, draw](the_name) {spam};
+            """)
 
 
 class TestMatrixPlot:

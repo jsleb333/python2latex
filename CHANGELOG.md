@@ -1,5 +1,38 @@
 # Change log
 
+## Version 0.4.0
+
+### Decembre 1, 2020
+- Add color maps and palettes (dynamic and static), with examples, tests, and predefined cmaps.
+- Plot now supports palette as objects or iterable. Defaults to the 'holi' palette.
+
+### November 19, 2020
+- Color now supports all models from the xcolor package (i.e. rgb, HTML, hsb, etc.)
+- Factored the Axis environement into a standalone class in prevision of adding subplots.
+- Can now add a label to line plots as an alternative to the legend.
+
+### July 2, 2020
+- Add support for TeX command 'colorbox'.
+
+### June 25, 2020
+- Add support for TeX command 'textcolor'.
+
+### June 21, 2020
+- Tables now support every kind of int and float by using the Integral and Real types.
+- Bad indexing in Tables raises an exception.
+
+### June 16, 2020
+- Breaking changes:
+    - SelectedArea 'change_format' method removed for a 'format_spec' property and a 'apply_command' method.
+    - SelectedArea 'highlight' method removed, as it overlapped the 'apply_command' method purpose.
+- Complete rework of Table:
+    - New Tabular object handling the mechanics of the table.
+    - Table is now a "shell" for a Tabular object, with main purpose to have a floating 'table' environment without boilerplate.
+    - Build phase is simplified and more clear. Steps are: Number formatting, individual cell building and then command applications.
+- Added 'decimal_separator' parameter to allow comma for other languages typesetting such as French.
+- Added 'mean_with_std_table_example.py' with applications for machine learning practitioners.
+- Complete test coverage for features of Table.
+
 ## Version 0.3.0
 
 ### May 1, 2020
