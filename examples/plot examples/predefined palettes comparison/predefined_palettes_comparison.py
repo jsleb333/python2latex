@@ -8,7 +8,13 @@ from matplotlib.colors import hsv_to_rgb
 
 
 class Node(TexObject):
-    def __init__(self, pos, text='', fill=None, minimum_width='.9cm', minimum_height='.9cm'):
+    """Basic TikZ node object that implements a minimal number of options."""
+    def __init__(self,
+                 pos,
+                 text='',
+                 fill=None,
+                 minimum_width='.9cm',
+                 minimum_height='.9cm'):
         super().__init__(self)
         self.pos = pos
         self.text = text
@@ -30,15 +36,17 @@ def plot_palette(doc, palette_name):
     cmap = predefined_cmaps[palette_name]
     palette = predefined_palettes[palette_name]
 
+    # Numer of colors shown in the plot
     n_colors = 25
     interp_param = np.linspace(0, 1, n_colors+1)
 
+    # Plot the hue(h)-lightness(J) space
     for i, JCh_color in zip(range(n_colors), palette):
-        # Plot the hue(h)-lightness(J) space
-        cmap.color_model = 'rgb'
+        cmap.color_model = 'rgb' # Default JCh color model takes the hue mod 360 to be a valid color, but this makes the color map look non-continuous. The rgb color model does not process any of the components.
         J1, C1, h1 = cmap(interp_param[i])
         J2, C2, h2 = cmap(interp_param[i+1])
-        cmap.color_model = 'JCh'
+        cmap.color_model = 'JCh' # Resetting the color model to the original
+
         plot.add_plot([h1, h2], [J1, J2], color=JCh_color, line_cap='round')
 
     plot.x_label = 'Hue angle $h$'
@@ -46,14 +54,13 @@ def plot_palette(doc, palette_name):
 
     plot.caption = f'The \\texttt{{{palette_name}}} color map'
 
-
+    # Show the generated colors in squares using TikZ.
     for n_colors in [2, 3, 4, 5, 6, 9]:
         doc += f'{n_colors} colors: \\hspace{{10pt}}'
-        tikzpicture = doc.new(TexEnvironment('tikzpicture'))
+        tikzpicture = doc.new(TexEnvironment('tikzpicture', options=['baseline=-.5ex']))
         for i, color in zip(range(n_colors), palette):
             tikzpicture += Node((i,0), fill=color)
-        doc += '\n'
-
+        doc += ' '
 
 
 if __name__ == "__main__":
