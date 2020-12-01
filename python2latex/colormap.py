@@ -124,6 +124,27 @@ class Palette:
         self.max_n_colors = max_n_colors
 
         self.tex_colors = []
+        if not (callable(self.colors) and self.n_colors is None): # Not a dynamic palette
+            self._init_colors()
+
+    def _init_colors(self):
+        if callable(self.colors): # Create iterable from color map if needed
+            if self.n_colors is not None:
+                start, stop = self.cmap_range(self.n_colors)
+                colors = [self.colors(frac) for frac in np.linspace(start, stop, self.n_colors)]
+            else:
+                raise ValueError('Variable n_colors must be set when colors is a color map.')
+        else:
+            colors = self.colors
+
+        color_names = self.color_names or ('' for _ in colors)
+        for color, name in zip(colors, color_names):
+            self.tex_colors.append(Color(*self.color_transform(color),
+                                            color_name=name,
+                                            color_model=self.color_model))
+
+    def __getitem__(self, idx):
+        return self.tex_colors[idx]
 
     def _iter_dynamic(self):
         n_colors = 0
@@ -146,25 +167,11 @@ class Palette:
     def __iter__(self):
         if callable(self.colors) and self.n_colors is None: # Dynamic palette
             yield from self._iter_dynamic()
-
         else: # Static palette
-            if callable(self.colors): # Create iterable from color map if needed
-                if self.n_colors is not None:
-                    start, stop = self.cmap_range(self.n_colors)
-                    colors = [self.colors(frac) for frac in np.linspace(start, stop, self.n_colors)]
-                else:
-                    raise ValueError('Variable n_colors must be set when colors is a color map.')
-            else:
-                colors = self.colors
-
-            color_names = self.color_names or ('' for _ in colors)
-            for color, name in zip(colors, color_names):
-                yield Color(*self.color_transform(color),
-                            color_name=name,
-                            color_model=self.color_model)
+            yield from self.tex_colors
 
     def __len__(self):
-        return self.n_colors or self.max_n_colors
+        return len(self.tex_colors)
 
 
 class aube_cmap(LinearColorMap):
@@ -180,10 +187,10 @@ class aurore_cmap(LinearColorMap):
 class holi_cmap(LinearColorMap):
     def __init__(self):
         super().__init__(color_anchors=[(10, 60, 190),
-                                        (40, 74, 350),
-                                        (80, 130, 480),
-                                        (90, 50, 575)],
-                         anchor_pos=[0,.39,.71,1],
+                                        (35, 74, 350),
+                                        (67, 130, 475),
+                                        (70, 20, 560)],
+                         anchor_pos=[0,.29,.55,1],
                          color_model='JCh')
 
 
@@ -208,7 +215,7 @@ class holi(Palette):
         super().__init__(holi_cmap(),
                          color_model='rgb',
                          n_colors=n_colors,
-                         cmap_range=lambda n_colors: (1/(n_colors+3.25),1-1/(n_colors**1.2)),
+                         cmap_range=lambda n_colors: (1/(n_colors+4),1-1/(n_colors**.3+.7)),
                          color_transform=JCh2rgb)
 
 
