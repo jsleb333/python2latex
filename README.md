@@ -105,7 +105,7 @@ tex = doc.build()
 ```
 _Result:_
 <p>
-<img src="https://github.com/jsleb333/python2latex/blob/master/examples/simple%20plot%20example/simple_plot_example.jpg" alt="Simple plot result">
+<img src="https://github.com/jsleb333/python2latex/blob/master/examples/plot%20examples/simple%20plot%20example/simple_plot_example.jpg" alt="Simple plot result">
 </p>
 
 
@@ -160,7 +160,7 @@ tex = doc.build()
 <i> Click to unfold result </i>
 </summary>
 <p>
-<img src="https://github.com/jsleb333/python2latex/blob/master/examples/more%20complex%20plot%20example/more_complex_plot_example.jpg" alt="More complex plot result">
+<img src="https://github.com/jsleb333/python2latex/blob/master/examples/plot%20examples/more%20complex%20plot%20example/more_complex_plot_example.jpg" alt="More complex plot result">
 </p>
 </details>
 
@@ -198,7 +198,7 @@ tex = doc.build()
 ```
 _Result:_
 <p>
-<img src="https://github.com/jsleb333/python2latex/blob/master/examples/simple%20matrix%20plot%20example/simple_matrix_plot_example.jpg" alt="Simple matrix plot result">
+<img src="https://github.com/jsleb333/python2latex/blob/master/examples/plot%20examples/simple%20matrix%20plot%20example/simple_matrix_plot_example.jpg" alt="Simple matrix plot result">
 </p>
 
 Be sure to check our more complex matrix plot example too!
