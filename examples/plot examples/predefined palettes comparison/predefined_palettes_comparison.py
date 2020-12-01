@@ -1,7 +1,7 @@
 from python2latex.document import Section
 from python2latex.tex_base import TexObject, build
 from python2latex import Document, TexEnvironment
-from python2latex import Plot, Palette, LinearColorMap, predefined_cmaps, predefined_palettes
+from python2latex import Plot, Palette, LinearColorMap, PREDEFINED_CMAPS, PREDEFINED_PALETTES
 from python2latex.utils import JCh2rgb, rgb2JCh, hsb2JCh, JCh2hsb
 import numpy as np
 from matplotlib.colors import hsv_to_rgb
@@ -33,8 +33,8 @@ def plot_palette(doc, palette_name):
                         lines='3pt',
                         height='6cm',
                         ))
-    cmap = predefined_cmaps[palette_name]
-    palette = predefined_palettes[palette_name]
+    cmap = PREDEFINED_CMAPS[palette_name]
+    palette = PREDEFINED_PALETTES[palette_name]
 
     # Numer of colors shown in the plot
     n_colors = 25
@@ -66,7 +66,7 @@ def plot_palette(doc, palette_name):
 if __name__ == "__main__":
     # Create document
     filepath = './examples/plot examples/predefined palettes comparison/'
-    filename = 'predefined_palettes_comparison'
+    filename = 'PREDEFINED_PALETTES_comparison'
     doc = Document(filename, doc_type='article', filepath=filepath)
 
     # Insert title

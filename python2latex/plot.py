@@ -4,7 +4,7 @@ import itertools
 import csv
 import numpy as np
 
-from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand, Color, default_palette, predefined_palettes
+from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand, Color, default_palette, PREDEFINED_PALETTES
 
 
 class _AxisProperty:
@@ -282,7 +282,7 @@ class Axis(TexEnvironment):
         self.plot_filepath = plot_filepath
 
         if isinstance(palette, str):
-            palette = predefined_palettes[palette]
+            palette = PREDEFINED_PALETTES[palette]
         self.color_iterator = itertools.cycle(palette)
 
     x_max = _AxisProperty('xmax')

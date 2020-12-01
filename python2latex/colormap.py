@@ -163,7 +163,7 @@ class Palette:
                             color_model=self.color_model)
 
 
-predefined_cmaps = {
+PREDEFINED_CMAPS = {
     'aube': LinearColorMap(color_anchors=[(26.2, 46.5, 235.2), (71.7, 58.5, 450.1)],
                            color_model='JCh'),
     'aurore': LinearColorMap(color_anchors=[(14.6, 50.9, 317.0), (83.5, 73.8, 107.3)],
@@ -176,19 +176,19 @@ predefined_cmaps = {
                            color_model='JCh'),
 }
 
-predefined_palettes = {
-    'aube': Palette(predefined_cmaps['aube'],
+PREDEFINED_PALETTES = {
+    'aube': Palette(PREDEFINED_CMAPS['aube'],
                     color_model='rgb',
                     cmap_range=lambda n_colors: (0, 1-1/(2*n_colors+2)),
                     color_transform=JCh2rgb),
-    'aurore': Palette(predefined_cmaps['aurore'],
+    'aurore': Palette(PREDEFINED_CMAPS['aurore'],
                       color_model='rgb',
                       cmap_range=lambda n_colors: (1/(3*n_colors), 1-1/(3*n_colors)),
                       color_transform=JCh2rgb),
-    'holi': Palette(predefined_cmaps['holi'],
+    'holi': Palette(PREDEFINED_CMAPS['holi'],
                     color_model='rgb',
                     cmap_range=lambda n_colors: (1/(n_colors+3.25),1-1/(n_colors**1.2)),
                     color_transform=JCh2rgb),
 }
 
-default_palette = predefined_palettes['holi']
+default_palette = PREDEFINED_PALETTES['holi']
