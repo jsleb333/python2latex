@@ -168,6 +168,12 @@ predefined_cmaps = {
                            color_model='JCh'),
     'aurore': LinearColorMap(color_anchors=[(14.6, 50.9, 317.0), (83.5, 73.8, 107.3)],
                              color_model='JCh'),
+    'holi': LinearColorMap(color_anchors=[(10, 60, 190),
+                                          (40, 74, 350),
+                                          (80, 130, 480),
+                                          (90, 50, 575)],
+                           anchor_pos=[0,.39,.71,1],
+                           color_model='JCh'),
 }
 
 predefined_palettes = {
@@ -179,4 +185,8 @@ predefined_palettes = {
                       color_model='rgb',
                       cmap_range=lambda n_colors: (1/(3*n_colors), 1-1/(3*n_colors)),
                       color_transform=JCh2rgb),
+    'holi': Palette(predefined_cmaps['holi'],
+                    color_model='rgb',
+                    cmap_range=lambda n_colors: (1/(n_colors+3.25),1-1/(n_colors**1.2)),
+                    color_transform=JCh2rgb),
 }

@@ -20,33 +20,31 @@ class Node(TexObject):
         return f'\\node[fill={build(self.fill, self)}, minimum width={self.minimum_width}, minimum height={self.minimum_height}] at {self.pos} {{{self.text}}};'
 
 
-def plot_palette(doc, cmap, palette):
+def plot_palette(doc, palette_name):
     # Create plots to compare the cmaps
     plot = doc.new(Plot(plot_path=filepath,
-                        plot_name=filename+'_color',
+                        plot_name=filename+'_'+palette_name,
                         lines='3pt',
                         height='6cm',
                         ))
+    cmap = predefined_cmaps[palette_name]
+    palette = predefined_palettes[palette_name]
 
     n_colors = 25
     interp_param = np.linspace(0, 1, n_colors+1)
-    h_start = cmap.color_anchors[0][2]
-    h_end = cmap.color_anchors[-1][2]
-
-    def unfold_hue(h):
-        if (h_start-0.001 <= h <= h_end+0.001) or (h_end-0.001 <= h <= h_start+0.001):
-            return h
-        else:
-            return (h - h_start + 0.01) % 360 + h_start - 0.01
 
     for i, JCh_color in zip(range(n_colors), palette):
         # Plot the hue(h)-lightness(J) space
+        cmap.color_model = 'rgb'
         J1, C1, h1 = cmap(interp_param[i])
         J2, C2, h2 = cmap(interp_param[i+1])
-        plot.add_plot([unfold_hue(h1), unfold_hue(h2)], [J1, J2], color=JCh_color, line_cap='round')
+        cmap.color_model = 'JCh'
+        plot.add_plot([h1, h2], [J1, J2], color=JCh_color, line_cap='round')
 
     plot.x_label = 'Hue angle $h$'
     plot.y_label = 'Lightness $J$'
+
+    plot.caption = f'The \\texttt{{{palette_name}}} color map'
 
 
     for n_colors in [2, 3, 4, 5, 6, 9]:
@@ -64,30 +62,32 @@ if __name__ == "__main__":
     filename = 'predefined_palettes_comparison'
     doc = Document(filename, doc_type='article', filepath=filepath)
 
-    # plot_palette(doc, predefined_cmaps['aurore'], predefined_palettes['aurore'])
+    # Insert title
+    center = doc.new(TexEnvironment('center'))
+    center += r"\huge \bf Predefined color maps and palettes"
 
-    # Let us create a color map in the JCh color model, which parametrizes the colors according to human perception of colors instead of actual physical properties of light.
-    # Choose the color anchors of the color map defined in the JCh color space
-    color1_hsb = [.4, .99, .35]
-    color1_JCh = hsb2JCh(color1_hsb, False)
-    color2_hsb = [1.3, .99, .9]
-    color2_JCh = hsb2JCh(color2_hsb, False)
+    doc += """\\noindent
+    python2latex provides three color maps natively. They are defined in the JCh axes of the CIECAM02 color model, which is linear to human perception of colors. Moreover, three ``dynamic'' palettes have been defined, one for each color map. They are dynamic in that the range of colors used to produce the palette changes with the number of colors needed. This allows for a good repartition of hues and brightness for all choices of number of colors.
 
-    color1_JCh = [28, 50, 200.1]
-    color2_JCh = [50, 74, 380]
-    color3_JCh = [80, 97, 470]
-    print(color1_JCh, color2_JCh, color3_JCh)
+    All three color maps have been designed to be colorblind friendly for all types of colorblindness. To do so, all color maps are only increasing or decreasing in lightness, which helps to distinguish hues that may look similar to a colorblind. This also has the advantage that the palettes are also viable in levels of gray.
+    """
 
-    # Add full hue circle for color interpolation
-    # color2_JCh[2] += 360
+    # First section
+    sec = doc.new_section(r'The \texttt{holi} color map')
+    sec += """
+    The holi color map is designed to provide a set of easily distinguishable hues for any needed number of colors. It is optimized for palettes of 5 or 6 colors, but other numbers of color also generate very viable palettes. It is colorblind friendly for all types of colorblindness for up to 5 colors, but can still be acceptable for more colors.
 
-    cmap = LinearColorMap(color_anchors=[color1_JCh, color2_JCh, color3_JCh],
-                          anchor_pos=[0,.55,1],
-                          color_model='JCh')
-    pal = Palette(cmap,
-                  color_model='rgb',
-                  cmap_range=lambda n_colors: (1/(2*n_colors**.8),1-1/(2*n_colors+1)),
-                  color_transform=JCh2rgb)
-    plot_palette(doc, cmap, pal)
+    Below is a graph of the color map in the J-h axes of the CIECAM02 color model, followed by the colors generated according to the number of colors needed.
+    """
+    plot_palette(doc, 'holi')
+    doc += r'\clearpage'
+
+    sec = doc.new_section(r'The \texttt{aube} color map')
+    plot_palette(doc, 'aube')
+    doc += r'\clearpage'
+
+    sec = doc.new_section(r'The \texttt{aurore} color map')
+    plot_palette(doc, 'aurore')
+    doc += r'\clearpage'
 
     tex = doc.build()
