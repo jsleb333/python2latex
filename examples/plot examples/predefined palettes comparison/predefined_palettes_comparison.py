@@ -75,7 +75,7 @@ if __name__ == "__main__":
     # First section
     sec = doc.new_section(r'The \texttt{holi} color map')
     sec += """
-    The holi color map is designed to provide a set of easily distinguishable hues for any needed number of colors. It is optimized for palettes of 5 or 6 colors, but other numbers of color also generate very viable palettes. It is colorblind friendly for all types of colorblindness for up to 5 colors, but can still be acceptable for more colors.
+    The ``holi'' color map was designed to provide a set of easily distinguishable hues for any needed number of colors. It is optimized for palettes of 5 or 6 colors, but other numbers of color also generate very good palettes. It is colorblind friendly for all types of colorblindness for up to 5 colors, but can still be acceptable for more colors. The name ``holi'' comes from the Hindu festival of colors. This is the default color map of python2latex.
 
     Below is a graph of the color map in the J-h axes of the CIECAM02 color model, followed by the colors generated according to the number of colors needed.
     """
@@ -83,10 +83,20 @@ if __name__ == "__main__":
     doc += r'\clearpage'
 
     sec = doc.new_section(r'The \texttt{aube} color map')
+    sec += """
+    The ``aube'' color map was designed to cover blue and red hues, setting aside green. It is best suited for one to five colors palettes, but can be acceptable for more. It is perceptually linear in hue and in brightness. These properties makes it colorblind friendly for any colorblindness. The name ``aube'' is the French word for dawn.
+
+    Below is a graph of the color map in the J-h axes of the CIECAM02 color model, followed by the colors generated according to the number of colors needed.
+    """
     plot_palette(doc, 'aube')
     doc += r'\clearpage'
 
     sec = doc.new_section(r'The \texttt{aurore} color map')
+    sec += """
+    The ``aurore'' color map was designed to cover blue and green hues, setting aside red. While similar to the popular ``viridis'' color map, its yellow end does not becomes as light to help provide acceptable contrast on white paper. It is best suited for one to five colors palettes, but can be acceptable for more. It is perceptually linear in hue and in brightness. These properties makes it colorblind friendly for protanopia (red-blindness) and deuteranopia (green-blindness). It can also work for tritanopia (blue-blindness), but it may look monochromatic, going from dark blue to light blue to light gray. The name ``aurore'' is the French word for aurora.
+
+    Below is a graph of the color map in the J-h axes of the CIECAM02 color model, followed by the colors generated according to the number of colors needed.
+    """
     plot_palette(doc, 'aurore')
     doc += r'\clearpage'
 
