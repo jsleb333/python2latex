@@ -72,6 +72,38 @@ class TestPlot:
             ''')
         os.remove('plot_test.csv')
 
+    def test_non_default_palette(self):
+        plot = Plot(plot_name='plot_test', palette='aube')
+        plot.add_plot(list(range(10)), list(range(10)))
+        assert plot.build() == cleandoc(r'''
+            \begin{figure}[h!]
+            \centering
+            \begin{tikzpicture}
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \addplot[color1, forget plot] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
+            \end{axis}
+            \end{tikzpicture}
+            \end{figure}
+            ''')
+        os.remove('plot_test.csv')
+
+    def test_palette_from_iterable(self):
+        plot = Plot(plot_name='plot_test', palette=((0,0,0), (1,0,0), (0,1,0), (0,0,1), (1,1,1)))
+        plot.add_plot(list(range(10)), list(range(10)))
+        plot.add_plot(list(range(10)), list(range(10)))
+        assert plot.build() == cleandoc(r'''
+            \begin{figure}[h!]
+            \centering
+            \begin{tikzpicture}
+            \begin{axis}[grid style={dashed, gray!50}, axis y line*=left, axis x line*=bottom, every axis plot/.append style={no markers, line width=1.25pt}, width=.8\textwidth, height=.45\textwidth, grid=major]
+            \addplot[color1, forget plot] table[x=x0, y=y0, col sep=comma]{./plot_test.csv};
+            \addplot[color2, forget plot] table[x=x1, y=y1, col sep=comma]{./plot_test.csv};
+            \end{axis}
+            \end{tikzpicture}
+            \end{figure}
+            ''')
+        os.remove('plot_test.csv')
+
     def test_plot_properties(self):
         plot = Plot(plot_name='plot_test')
         plot.x_min = 0

@@ -4,7 +4,7 @@ import itertools
 import csv
 import numpy as np
 
-from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand, Palette, Color
+from python2latex import FloatingFigure, FloatingEnvironmentMixin, TexEnvironment, TexCommand, Color, default_palette, predefined_palettes
 
 
 class _AxisProperty:
@@ -56,7 +56,7 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
                  grid_style=('dashed', 'gray!50'),
                  marks=False,
                  lines=True,
-                 palette=Palette(),
+                 palette=default_palette,
                  axis_y='left',
                  axis_x='bottom',
                  position='h!',
@@ -68,31 +68,40 @@ class Plot(FloatingEnvironmentMixin, super_class=FloatingFigure):
                  **axis_kwoptions):
         """
         Args:
-            X_Y (tuple of sequences of points to plot): If only one sequence is passed, it will be considered as the Y components of the plot and the X will goes from 0 to len(Y)-1. If more than one sequence is passed, the sequences are treated in pairs (X,Y) of sequences of points. (This behavior copies matplotlib.pyplot.plot).
-
-            plot_name (str): Name of the plot. Used to save data to a csv.
-            plot_path (str): Path of the plot. Used to save data to a csv. Default is current working directory.
-
-            width (str): Width of the figure. Can be any LaTeX length.
-            height (str): Height of the figure. Can be any LaTeX length.
-
-            grid (Union[bool, str]): Whether if the grid if shown on not. If a string, should be one of pgfplots valid argument for 'grid' such as 'major', 'minor' and 'none'. Defaults to 'major'.
-            grid_style (Iterable[str]): Iterable of options for the grid.
-
-            marks (bool or str): Whether to plot coordinates with or without marks. If a str, should be the radius of the marks with any LaTeX length.
-            lines (bool or str): Whether to link coordinates with lines or not. If a str, should be the width of the lines with any LaTeX length.
-            axis_x (str, either 'bottom' or 'top'): Where the x axis should appear (bottom or top).
-            axis_y (str, either 'left' or 'right'): Where the y axis should appear (left or right).
-
-            palette (Iterable): Iterable that yields colors to use for line plots. The iterable should yield either tuple of 3 floats between 0 and 1 interpreted as rgb colors, or python2latex Color objects for more flexibility. If the number of colors is less than the number of line plots, it will loop automatically. Default is a dynamic colorblind-friendly palette that will generate as many distinct colors as there are line plots, each equally spaced in the hue and brightness axes.
-
-            position (str, either 'h', 't', 'b', with optional '!'): Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
-            as_float_env (bool): If True (default), will wrap a 'tikzpicture' environment with a floating 'figure' environment. If False, only the 'tikzpicture' is constructed.
-            label (str): Label of the environment.
-
-            caption, caption_pos, caption_space: See _FloatingEnvironment for description.
-
-            axis_kwoptions (dict): pgfplots keyword options for the axis. All underscore will be replaced by spaces when converted to LaTeX parameters.
+            X_Y (tuple of sequences of points to plot):
+                If only one sequence is passed, it will be considered as the Y components of the plot and the X will goes from 0 to len(Y)-1. If more than one sequence is passed, the sequences are treated in pairs (X,Y) of sequences of points. (This behavior copies matplotlib.pyplot.plot).
+            plot_name (str):
+                Name of the plot. Used to save data to a csv.
+            plot_path (str):
+                Path of the plot. Used to save data to a csv. Default is current working directory.
+            width (str):
+                Width of the figure. Can be any LaTeX length.
+            height (str):
+                Height of the figure. Can be any LaTeX length.
+            grid (Union[bool, str]):
+                Whether if the grid if shown on not. If a string, should be one of pgfplots valid argument for 'grid' such as 'major', 'minor' and 'none'. Defaults to 'major'.
+            grid_style (Iterable[str]):
+                Iterable of options for the grid.
+            marks (bool or str):
+                Whether to plot coordinates with or without marks. If a str, should be the radius of the marks with any LaTeX length.
+            lines (bool or str):
+                Whether to link coordinates with lines or not. If a str, should be the width of the lines with any LaTeX length.
+            axis_x (str, either 'bottom' or 'top'):
+                Where the x axis should appear (bottom or top).
+            axis_y (str, either 'left' or 'right'):
+                Where the y axis should appear (left or right).
+            palette (Union[str, Iterable]):
+                Iterable that yields colors to use for line plots or name of the palette. The string can be 'holi' (default), 'aube' and 'aurore' (See the example 'predefined palettes comparison' for details). The iterable should yield either tuple of 3 floats between 0 and 1 interpreted as rgb colors, or python2latex Color objects for more flexibility. If the number of colors is less than the number of line plots, it will loop automatically. Default is 'holi', a dynamic colorblind-friendly palette that will generate as many distinct colors as there are line plots.
+            position (str, either 'h', 't', 'b', with optional '!'):
+                Position of the float environment. Default is 't'. Combinaisons of letters allow more flexibility. Only valid if as_float_env is True.
+            as_float_env (bool):
+                If True (default), will wrap a 'tikzpicture' environment with a floating 'figure' environment. If False, only the 'tikzpicture' is constructed.
+            label (str):
+                Label of the environment.
+            caption, caption_pos, caption_space:
+                See _FloatingEnvironment for description.
+            axis_kwoptions (dict):
+                pgfplots keyword options for the axis. All underscore will be replaced by spaces when converted to LaTeX parameters.
         """
         super().__init__(as_float_env=as_float_env,
                          position=position,
@@ -189,37 +198,41 @@ class Axis(TexEnvironment):
                  grid_style=('dashed', 'gray!50'),
                  marks=False,
                  lines=True,
-                 palette=Palette(),
+                 palette=default_palette,
                  axis_y='left',
                  axis_x='bottom',
                  plot_filepath=None,
                  **kwoptions):
         """
         Args:
-            options (Tuple[str]): String options to pass to the axis.
-
-            plot_name (str): Name of the plot. Used to save data to a csv.
-            plot_path (str): Path of the plot. Used to save data to a csv. Default is current working directory.
-
-            width (str): Width of the figure. Can be any LaTeX length.
-            height (str): Height of the figure. Can be any LaTeX length.
-
-            grid (Union[bool, str]): Whether if the grid if shown on not. If a string, should be one of pgfplots valid argument for 'grid' such as 'major', 'minor' and 'none'. Defaults to 'major'.
-            grid_style (Iterable[str]): Iterable of options for the grid.
-
-            marks (bool or str): Whether to plot coordinates with or without marks. If a str, should be the radius of the marks with any LaTeX length.
-
-            lines (bool or str): Whether to link coordinates with lines or not. If a str, should be the width of the lines with any LaTeX length.
-
-            palette (Iterable): Iterable that yields colors to use for line plots. The iterable should yield either tuple of 3 floats between 0 and 1 interpreted as rgb colors, or python2latex Color objects for more flexibility. If the number of colors is less than the number of line plots, it will loop automatically. Default is a dynamic colorblind-friendly palette that will generate as many distinct colors as there are line plots, each equally spaced in the hue and brightness axes.
-
-            axis_x (str, either 'bottom' or 'top'): Where the x axis should appear (bottom or top).
-
-            axis_y (str, either 'left' or 'right'): Where the y axis should appear (left or right).
-
-            plot_filepath (str): Location where the data used for the plot is saved.
-
-            axis_kwoptions (dict): pgfplots keyword options for the axis. All underscore will be replaced by spaces when converted to LaTeX parameters.
+            options (Tuple[str]):
+                String options to pass to the axis.
+            plot_name (str):
+                Name of the plot. Used to save data to a csv.
+            plot_path (str):
+                Path of the plot. Used to save data to a csv. Default is current working directory.
+            width (str):
+                Width of the figure. Can be any LaTeX length.
+            height (str):
+                Height of the figure. Can be any LaTeX length.
+            grid (Union[bool, str]):
+                Whether if the grid if shown on not. If a string, should be one of pgfplots valid argument for 'grid' such as 'major', 'minor' and 'none'. Defaults to 'major'.
+            grid_style (Iterable[str]):
+                Iterable of options for the grid.
+            marks (bool or str):
+                Whether to plot coordinates with or without marks. If a str, should be the radius of the marks with any LaTeX length.
+            lines (bool or str):
+                Whether to link coordinates with lines or not. If a str, should be the width of the lines with any LaTeX length.
+            palette (Union[str, Iterable]):
+                Iterable that yields colors to use for line plots or name of the palette. The string can be 'holi' (default), 'aube' and 'aurore' (See the example 'predefined palettes comparison' for details). The iterable should yield either tuple of 3 floats between 0 and 1 interpreted as rgb colors, or python2latex Color objects for more flexibility. If the number of colors is less than the number of line plots, it will loop automatically. Default is 'holi', a dynamic colorblind-friendly palette that will generate as many distinct colors as there are line plots.
+            axis_x (str, either 'bottom' or 'top'):
+                Where the x axis should appear (bottom or top).
+            axis_y (str, either 'left' or 'right'):
+                Where the y axis should appear (left or right).
+            plot_filepath (str):
+                Location where the data used for the plot is saved.
+            axis_kwoptions (dict):
+                pgfplots keyword options for the axis. All underscore will be replaced by spaces when converted to LaTeX parameters.
         """
         options += (
             f'grid style={{{", ".join(grid_style)}}}',
@@ -268,6 +281,8 @@ class Axis(TexEnvironment):
 
         self.plot_filepath = plot_filepath
 
+        if isinstance(palette, str):
+            palette = predefined_palettes[palette]
         self.color_iterator = itertools.cycle(palette)
 
     x_max = _AxisProperty('xmax')
@@ -298,12 +313,16 @@ class Axis(TexEnvironment):
 
         Returns: LinePlot object.
         """
-        if color is None:
-            options = (next(self.color_iterator),) + options
-        elif isinstance(color, tuple):
-            options += (Color(*color),)
+        if color is None: # Color should precede passed options
+            color = next(self.color_iterator)
+            if isinstance(color, tuple):
+                color = Color(*color)
+            options = (color,) + options
         else:
+            if isinstance(color, tuple): # Color should follow other options
+                color = Color(*color)
             options += (color,)
+
         line_plot = LinePlot(X, Y, *options, plot_filepath=self.plot_filepath, legend=legend, forget_plot=forget_plot, **kwoptions)
         self.plots.append(line_plot)
         self += line_plot

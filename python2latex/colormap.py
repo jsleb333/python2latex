@@ -190,3 +190,5 @@ predefined_palettes = {
                     cmap_range=lambda n_colors: (1/(n_colors+3.25),1-1/(n_colors**1.2)),
                     color_transform=JCh2rgb),
 }
+
+default_palette = predefined_palettes['holi']
