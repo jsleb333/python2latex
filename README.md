@@ -89,7 +89,7 @@ from python2latex import Document, Plot
 import numpy as np
 
 # Document type 'standalone' will only show the plot, but does not support all tex environments.
-filepath = './examples/simple plot example/'
+filepath = './examples/plot examples/simple plot example/'
 filename = 'simple_plot_example'
 doc = Document(filename, doc_type='standalone', filepath=filepath)
 
@@ -117,7 +117,7 @@ from python2latex import Document, Plot
 import numpy as np
 
 # Create the document
-filepath = './examples/more complex plot example/'
+filepath = './examples/plot examples/more complex plot example/'
 filename = 'more_complex_plot_example'
 doc = Document(filename, doc_type='article', filepath=filepath)
 sec = doc.new_section('More complex plot')
@@ -171,7 +171,7 @@ from python2latex import Document, Plot
 import numpy as np
 
 # Create the document
-filepath = './examples/simple matrix plot example'
+filepath = './examples/plot examples/simple matrix plot example'
 filename = 'simple_matrix_plot_example'
 doc = Document(filename, doc_type='standalone', filepath=filepath, border='1cm')
 
