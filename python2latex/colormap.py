@@ -189,7 +189,7 @@ class holi_cmap(LinearColorMap):
 
 class aube(Palette):
     def __init__(self, n_colors=None):
-        super().__init__(aube_cmap,
+        super().__init__(aube_cmap(),
                          color_model='rgb',
                          n_colors=n_colors,
                          cmap_range=lambda n_colors: (0, 1-1/(2*n_colors+2)),
@@ -197,7 +197,7 @@ class aube(Palette):
 
 class aurore(Palette):
     def __init__(self, n_colors=None):
-        super().__init__(aurore_cmap,
+        super().__init__(aurore_cmap(),
                          color_model='rgb',
                          n_colors=n_colors,
                          cmap_range=lambda n_colors: (1/(3*n_colors), 1-1/(3*n_colors)),
@@ -205,7 +205,7 @@ class aurore(Palette):
 
 class holi(Palette):
     def __init__(self, n_colors=None):
-        super().__init__(holi_cmap,
+        super().__init__(holi_cmap(),
                          color_model='rgb',
                          n_colors=n_colors,
                          cmap_range=lambda n_colors: (1/(n_colors+3.25),1-1/(n_colors**1.2)),
