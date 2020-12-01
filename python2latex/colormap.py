@@ -1,7 +1,8 @@
-from python2latex.utils import JCh2rgb
 import numpy as np
+import sys
 
 from python2latex import Color
+from python2latex.utils import JCh2rgb
 
 
 class LinearColorMap:
@@ -162,33 +163,73 @@ class Palette:
                             color_name=name,
                             color_model=self.color_model)
 
+    def __len__(self):
+        return self.n_colors or self.max_n_colors
+
+
+class aube_cmap(LinearColorMap):
+    def __init__(self):
+        super().__init__(color_anchors=[(26.2, 46.5, 235.2), (71.7, 58.5, 450.1)],
+                         color_model='JCh')
+
+class aurore_cmap(LinearColorMap):
+    def __init__(self):
+        super().__init__(color_anchors=[(14.6, 50.9, 317.0), (83.5, 73.8, 107.3)],
+                         color_model='JCh')
+
+class holi_cmap(LinearColorMap):
+    def __init__(self):
+        super().__init__(color_anchors=[(10, 60, 190),
+                                        (40, 74, 350),
+                                        (80, 130, 480),
+                                        (90, 50, 575)],
+                         anchor_pos=[0,.39,.71,1],
+                         color_model='JCh')
+
+
+class aube(Palette):
+    def __init__(self, n_colors=None):
+        super().__init__(aube_cmap,
+                         color_model='rgb',
+                         n_colors=n_colors,
+                         cmap_range=lambda n_colors: (0, 1-1/(2*n_colors+2)),
+                         color_transform=JCh2rgb)
+
+class aurore(Palette):
+    def __init__(self, n_colors=None):
+        super().__init__(aurore_cmap,
+                         color_model='rgb',
+                         n_colors=n_colors,
+                         cmap_range=lambda n_colors: (1/(3*n_colors), 1-1/(3*n_colors)),
+                         color_transform=JCh2rgb)
+
+class holi(Palette):
+    def __init__(self, n_colors=None):
+        super().__init__(holi_cmap,
+                         color_model='rgb',
+                         n_colors=n_colors,
+                         cmap_range=lambda n_colors: (1/(n_colors+3.25),1-1/(n_colors**1.2)),
+                         color_transform=JCh2rgb)
+
+
 
 PREDEFINED_CMAPS = {
-    'aube': LinearColorMap(color_anchors=[(26.2, 46.5, 235.2), (71.7, 58.5, 450.1)],
-                           color_model='JCh'),
-    'aurore': LinearColorMap(color_anchors=[(14.6, 50.9, 317.0), (83.5, 73.8, 107.3)],
-                             color_model='JCh'),
-    'holi': LinearColorMap(color_anchors=[(10, 60, 190),
-                                          (40, 74, 350),
-                                          (80, 130, 480),
-                                          (90, 50, 575)],
-                           anchor_pos=[0,.39,.71,1],
-                           color_model='JCh'),
+    'aube': aube_cmap(),
+    'aurore': aurore_cmap(),
+    'holi': holi_cmap(),
 }
 
-PREDEFINED_PALETTES = {
-    'aube': Palette(PREDEFINED_CMAPS['aube'],
-                    color_model='rgb',
-                    cmap_range=lambda n_colors: (0, 1-1/(2*n_colors+2)),
-                    color_transform=JCh2rgb),
-    'aurore': Palette(PREDEFINED_CMAPS['aurore'],
-                      color_model='rgb',
-                      cmap_range=lambda n_colors: (1/(3*n_colors), 1-1/(3*n_colors)),
-                      color_transform=JCh2rgb),
-    'holi': Palette(PREDEFINED_CMAPS['holi'],
-                    color_model='rgb',
-                    cmap_range=lambda n_colors: (1/(n_colors+3.25),1-1/(n_colors**1.2)),
-                    color_transform=JCh2rgb),
-}
+class _PredefinedPalettes:
+    def __getitem__(self, palette_name):
+        for cmap_name in PREDEFINED_CMAPS.keys():
+            if palette_name.startswith(cmap_name):
+                remainder = palette_name[len(cmap_name):]
+                if remainder == '':
+                    remainder = None
+                else:
+                    remainder = int(remainder)
+                return getattr(sys.modules[__name__], cmap_name)(remainder)
 
-default_palette = PREDEFINED_PALETTES['holi']
+PREDEFINED_PALETTES = _PredefinedPalettes()
+
+default_palette = holi()

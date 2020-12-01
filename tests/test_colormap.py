@@ -3,7 +3,7 @@ import shutil
 from inspect import cleandoc
 
 from python2latex.color import Color
-from python2latex.colormap import LinearColorMap, Palette
+from python2latex.colormap import LinearColorMap, Palette, PREDEFINED_CMAPS, PREDEFINED_PALETTES
 
 
 def areclose(tuple1, tuple2):
@@ -188,3 +188,15 @@ class TestPalette:
         color1 = next(palette_it)
         assert len(palette.tex_colors) == 1
         assert color1.color_spec == transform(c_start)
+
+
+class TestPredefined:
+    def test_predefined_exist(self):
+        for name in ['aube', 'aurore', 'holi']:
+            PREDEFINED_CMAPS[name]
+            PREDEFINED_PALETTES[name]
+
+    def test_predefined_with_number_works(self):
+        for n in range(1, 5):
+            for name in ['aube', 'aurore', 'holi']:
+                assert len(PREDEFINED_PALETTES[name+str(n)]) == n
