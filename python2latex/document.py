@@ -1,3 +1,5 @@
+import os
+
 from python2latex import TexFile, TexEnvironment, TexCommand, build
 from python2latex.utils import open_file_with_default_program
 
@@ -64,14 +66,19 @@ class Document(TexEnvironment):
         """
         return self.new(Section(name, label=label))
 
-    def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True):
+    def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True, delete_files=list()):
         """
         Builds the document to a tex file and optionally compiles it into tex and show the output pdf in the default pdf reader of the system.
 
         Args:
-            save_to_disk (bool): If True, the built tex will be save to disk automatically. Else, one can recover the tex string from the return of the current method.
-            compile_to_pdf (bool): If True, automatically call pdflatex to compile the generated tex file to pdf. Only used if 'save_to_disk' is True.
-            show_pdf (bool): If True, the default pdf reader will be called to show the compiled pdf. This may not work well with non-read-only pdf viewer such as Acrobat Reader or Foxit Reader. Only used if 'save_to_disk' and 'compile_to_pdf' are True.
+            save_to_disk (bool):
+                If True, the built tex will be save to disk automatically. Else, one can recover the tex string from the return of the current method.
+            compile_to_pdf (bool):
+                If True, automatically call pdflatex to compile the generated tex file to pdf. Only used if 'save_to_disk' is True.
+            show_pdf (bool):
+                If True, the default pdf reader will be called to show the compiled pdf. This may not work well with non-read-only pdf viewer such as Acrobat Reader or Foxit Reader. Only used if 'save_to_disk' and 'compile_to_pdf' are True.
+            delete_files (Union[str, Iterable[str]]):
+                Extensions of the files to delete after compilation. By default no files saved on disk are deleted. Valid extensions are 'tex', 'aux', 'log' and 'pdf'. 'all' is also accepted and will delete everything except the pdf.
 
         Returns:
             The tex string of the file.
@@ -82,12 +89,21 @@ class Document(TexEnvironment):
         if save_to_disk:
             self.file.save(tex)
 
-        if save_to_disk and compile_to_pdf:
-            self.file.save(tex)
-            self.file.compile_to_pdf()
+            if compile_to_pdf:
+                self.file.compile_to_pdf()
 
-        if save_to_disk and compile_to_pdf and show_pdf:
-            open_file_with_default_program(self.filename, self.filepath)
+                if show_pdf:
+                    open_file_with_default_program(self.filename, self.filepath)
+
+                if isinstance(delete_files, str):
+                    if delete_files == 'all':
+                        delete_files = ['tex', 'aux', 'log']
+                    else:
+                        delete_files = [delete_files]
+
+                for ext in delete_files:
+                    if ext in ['tex', 'aux', 'log', 'pdf']:
+                        os.remove(f'{self.filepath}/{self.filename}.{ext}')
 
         return tex
 

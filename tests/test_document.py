@@ -84,6 +84,45 @@ class TestDocument:
         finally:
             shutil.rmtree('./some_doc_path/')
 
+    def test_deletes_files_all(self):
+        filepath = './some_doc_path/'
+        doc_name = 'doc_name'
+        doc = Document(doc_name, filepath=filepath)
+        doc += 'Some text'
+        try:
+            doc.build(show_pdf=False, delete_files='all')
+            assert not os.path.exists(filepath + doc_name + '.tex')
+            assert os.path.exists(filepath + doc_name + '.pdf')
+        finally:
+            shutil.rmtree('./some_doc_path/')
+
+    def test_deletes_files_aux(self):
+        filepath = './some_doc_path/'
+        doc_name = 'doc_name'
+        doc = Document(doc_name, filepath=filepath)
+        doc += 'Some text'
+        try:
+            doc.build(show_pdf=False, delete_files='aux')
+            assert not os.path.exists(filepath + doc_name + '.aux')
+            assert os.path.exists(filepath + doc_name + '.pdf')
+            assert os.path.exists(filepath + doc_name + '.tex')
+            assert os.path.exists(filepath + doc_name + '.log')
+        finally:
+            shutil.rmtree('./some_doc_path/')
+
+    def test_deletes_files_aux_and_log(self):
+        filepath = './some_doc_path/'
+        doc_name = 'doc_name'
+        doc = Document(doc_name, filepath=filepath)
+        doc += 'Some text'
+        try:
+            doc.build(show_pdf=False, delete_files=['aux', 'log'])
+            assert not os.path.exists(filepath + doc_name + '.aux')
+            assert not os.path.exists(filepath + doc_name + '.log')
+            assert os.path.exists(filepath + doc_name + '.pdf')
+            assert os.path.exists(filepath + doc_name + '.tex')
+        finally:
+            shutil.rmtree('./some_doc_path/')
 
 class TestSection:
     def test_new_subsection(self):
