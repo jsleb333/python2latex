@@ -265,6 +265,7 @@ class Axis(TexEnvironment):
         else:
             if not isinstance(marks, str):
                 marks = '2pt'
+            self.default_plot_kwoptions['mark'] = '*'
             self.default_plot_kwoptions['mark size'] = marks
 
         if not lines or lines == '0pt':
