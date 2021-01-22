@@ -40,8 +40,7 @@ class TexFile:
     def compile_to_pdf(self):
         # os.chdir(self.filepath)
         check_call([
-            'pdflatex', '-halt-on-error', '--output-directory', self.filepath,
-            self.filepath + '/' + self.filename + '.tex'
+            'pdflatex', '-halt-on-error', '--output-directory', self.filepath, self.path
         ],
                    stdout=DEVNULL,
                    stderr=STDOUT)
