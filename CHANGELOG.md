@@ -5,7 +5,7 @@
 ### January 12, 2021
 - Add option to delete automatically auxiliary files after compilation.
 
-### Decembre 1, 2020
+### December 1, 2020
 - Add color maps and palettes (dynamic and static), with examples, tests, and predefined cmaps.
 - Plot now supports palette as objects or iterable. Defaults to the 'holi' palette.
 
