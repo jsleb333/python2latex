@@ -1,5 +1,10 @@
 # Change log
 
+## Version 0.5.0
+
+### April 30, 2021
+- Better repr for Colors
+
 ## Version 0.4.0
 
 ### January 12, 2021
