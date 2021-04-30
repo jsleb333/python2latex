@@ -41,6 +41,9 @@ class Color(TexObject):
         self.color_name = color_name or f'color{Color.color_count}'
         self.add_package('xcolor')
 
+    def __repr__(self):
+        return f'Color({", ".join(map(str, self.color_spec))}, color_name={self.color_name}, color_model={self.color_model})'
+
     def build(self):
         self.add_to_preamble(DefineColor(self.color_name, self.color_model, *self.color_spec))
         return self.color_name

@@ -4,7 +4,7 @@ from inspect import cleandoc
 
 from python2latex.color import Color
 from python2latex.colormap import LinearColorMap, Palette, PREDEFINED_CMAPS, PREDEFINED_PALETTES
-
+from python2latex.utils import JCh2rgb
 
 def areclose(tuple1, tuple2):
     return all(abs(c-a) <= 10e-10 for c, a in zip(tuple1, tuple2))
@@ -153,6 +153,34 @@ class TestPalette:
         palette_it = iter(palette)
         next(palette_it)
         assert len(palette.tex_colors) == 1
+
+    def test_dynamic_is_same_as_static(self):
+        n_colors = 5
+
+        cmap = LinearColorMap(color_anchors=[(100, 10, 220), # White
+                                             (20, 50, 320)], # Indigo
+                              color_model='JCh')
+
+        static_palette = Palette(
+            colors=cmap,
+            n_colors=n_colors,
+            cmap_range=(0,1),
+            color_model='rgb',
+            color_transform=JCh2rgb
+        )
+        dynamic_palette = Palette(
+            colors=cmap,
+            cmap_range=(0,1),
+            color_model='rgb',
+            color_transform=JCh2rgb
+        )
+
+        for _ in zip(range(n_colors), dynamic_palette):
+            continue
+
+        assert len(static_palette) == len(dynamic_palette)
+        for d_color, s_color in zip(dynamic_palette.tex_colors, static_palette.tex_colors):
+            assert tuple(d_color.color_spec) == tuple(s_color.color_spec)
 
     def test_palette_is_contained_in_tex_colors_at_the_end(self):
         c_start, c_mid, c_stop = (0,0,0), (.3,.3,.3), (1,1,1)
