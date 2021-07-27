@@ -1,5 +1,10 @@
 # Change log
 
+## Version 0.5.0
+
+### July 27, 2021
+- Fix problem in Color where the preamble was added only at build time by creating a new PreambleObject linked to a Color object.
+
 ## Version 0.4.0
 
 ### January 12, 2021
