@@ -1,6 +1,6 @@
 from functools import wraps
 
-from python2latex import TexObject, TexCommand, build
+from python2latex.tex_base import TexObject, TexCommand, build
 
 
 class begin(TexCommand):
@@ -166,7 +166,7 @@ class TexEnvironment(TexObject):
         """
         tex = [build(part, self) for part in list_to_build]
         return '\n'.join([part for part in tex if part])
-    
+
     def _build_body(self):
         return self._build_list(self.body)
 

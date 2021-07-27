@@ -1,6 +1,6 @@
 # Basics must be loaded first
 from .tex_base import *
-from .tex_environment import TexEnvironment, Label
+from .tex_environment import *
 
 # Other features
 from .document import Document, Section, Subsection
