@@ -40,10 +40,19 @@ class Color(TexObject):
         Color.color_count += 1
         self.color_name = color_name or f'color{Color.color_count}'
         self.add_package('xcolor')
+        self.add_to_preamble(PreambleColor(self))
 
     def build(self):
-        self.add_to_preamble(DefineColor(self.color_name, self.color_model, *self.color_spec))
         return self.color_name
+
+
+class PreambleColor(TexObject):
+    def __init__(self, color) -> None:
+        super().__init__('preamble_color')
+        self.color = color
+
+    def build(self):
+        return DefineColor(self.color.color_name, self.color.color_model, *self.color.color_spec).build()
 
 
 class textcolor(TexCommand):
