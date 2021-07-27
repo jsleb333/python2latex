@@ -2,8 +2,12 @@
 
 ## Version 0.5.0
 
+### July 27, 2021
+- Fix problem in Color where the preamble was added only at build time by creating a new PreambleObject linked to a Color object.
+
 ### April 30, 2021
 - Better repr for Colors
+
 
 ## Version 0.4.0
 
