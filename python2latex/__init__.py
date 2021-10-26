@@ -10,3 +10,5 @@ from .floating_environment import FloatingFigure, FloatingTable, FloatingEnviron
 from .plot import Plot, LinePlot, MatrixPlot
 from .template import Template
 from .table import Table, Tabular
+
+from version import __version__
