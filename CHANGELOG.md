@@ -1,6 +1,6 @@
 # Change log
 
-## Version 0.5.0
+## Version 0.4.1
 
 ### October 26, 2021
 - Add option to build from current working directory or from source directory containing the TeX file for more flexibility with Plots.
