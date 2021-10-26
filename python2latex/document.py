@@ -66,8 +66,13 @@ class Document(TexEnvironment):
         """
         return self.new(Section(name, label=label))
 
-    def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True, delete_files=list()):
-        """
+    def build(self,
+              save_to_disk=True,
+              compile_to_pdf=True,
+              show_pdf=True,
+              delete_files=list(),
+              build_from_dir='cwd'):
+        r"""
         Builds the document to a tex file and optionally compiles it into tex and show the output pdf in the default pdf reader of the system.
 
         Args:
@@ -79,6 +84,12 @@ class Document(TexEnvironment):
                 If True, the default pdf reader will be called to show the compiled pdf. This may not work well with non-read-only pdf viewer such as Acrobat Reader or Foxit Reader. Only used if 'save_to_disk' and 'compile_to_pdf' are True.
             delete_files (Union[str, Iterable[str]]):
                 Extensions of the files to delete after compilation. By default no files saved on disk are deleted. Valid extensions are 'tex', 'aux', 'log' and 'pdf'. 'all' is also accepted and will delete everything except the pdf.
+            build_from_dir (str, either 'source' or 'cwd'):
+                Directory to build from. With the 'source' option, pdflatex will be called from the directory containing the TeX file, like this:
+                    ~/some/path/to/tex_file> pdflatex './filename.tex'
+                With the 'cwd' option, pdflatex will be called from the current working directory, like this:
+                    ~/some/path/to/cwd> pdflatex 'filepath/filename.tex'
+                This can be important if you include content in the TeX file, such as with the command \input{<path_to_some_file>}, where 'path_to_some_file' should be relative to the directory where pdflatex is called.
 
         Returns:
             The tex string of the file.
@@ -90,7 +101,7 @@ class Document(TexEnvironment):
             self.file.save(tex)
 
             if compile_to_pdf:
-                self.file.compile_to_pdf()
+                self.file.compile_to_pdf(build_from_dir=build_from_dir)
 
                 if show_pdf:
                     open_file_with_default_program(self.filename, self.filepath)

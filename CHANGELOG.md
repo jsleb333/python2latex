@@ -2,6 +2,9 @@
 
 ## Version 0.5.0
 
+### October 26, 2021
+- Add option to build from current working directory or from source directory containing the TeX file for more flexibility with Plots.
+
 ### July 27, 2021
 - Fix problem in Color where the preamble was added only at build time by creating a new PreambleObject linked to a Color object.
 

@@ -72,17 +72,29 @@ class TestDocument:
             \end{section}
             \end{document}''')
 
-    def test_build_to_other_relative_path(self):
+    def test_build_with_relative_path_from_cwd(self):
         filepath = './some_doc_path/'
         doc_name = 'Doc name'
         doc = Document(doc_name, filepath=filepath)
         doc += 'Some text'
         try:
-            doc.build(show_pdf=False)
+            doc.build(show_pdf=False, build_from_dir='cwd')
             assert os.path.exists(filepath + doc_name + '.tex')
             assert os.path.exists(filepath + doc_name + '.pdf')
         finally:
-            shutil.rmtree('./some_doc_path/')
+            if os.path.exists(filepath): shutil.rmtree(filepath)
+
+    def test_build_with_relative_path_from_source(self):
+        filepath = './some_doc_path/'
+        doc_name = 'Doc name'
+        doc = Document(doc_name, filepath=filepath)
+        doc += 'Some text'
+        try:
+            doc.build(show_pdf=False, build_from_dir='source')
+            assert os.path.exists(filepath + doc_name + '.tex')
+            assert os.path.exists(filepath + doc_name + '.pdf')
+        finally:
+            if os.path.exists(filepath): shutil.rmtree(filepath)
 
     def test_deletes_files_all(self):
         filepath = './some_doc_path/'
@@ -94,7 +106,7 @@ class TestDocument:
             assert not os.path.exists(filepath + doc_name + '.tex')
             assert os.path.exists(filepath + doc_name + '.pdf')
         finally:
-            shutil.rmtree('./some_doc_path/')
+            if os.path.exists(filepath): shutil.rmtree(filepath)
 
     def test_deletes_files_aux(self):
         filepath = './some_doc_path/'
@@ -108,7 +120,7 @@ class TestDocument:
             assert os.path.exists(filepath + doc_name + '.tex')
             assert os.path.exists(filepath + doc_name + '.log')
         finally:
-            shutil.rmtree('./some_doc_path/')
+            if os.path.exists(filepath): shutil.rmtree(filepath)
 
     def test_deletes_files_aux_and_log(self):
         filepath = './some_doc_path/'
@@ -122,7 +134,7 @@ class TestDocument:
             assert os.path.exists(filepath + doc_name + '.pdf')
             assert os.path.exists(filepath + doc_name + '.tex')
         finally:
-            shutil.rmtree('./some_doc_path/')
+            if os.path.exists(filepath): shutil.rmtree(filepath)
 
 class TestSection:
     def test_new_subsection(self):
