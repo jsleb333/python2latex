@@ -20,23 +20,28 @@ class TestNode:
         n2 = Node('n2')
         assert Node.n_instances == 2
 
-    def test_default_node_name(self):
+    def test_default_name(self):
         n = Node('')
         assert n.name == 'node1'
         n = Node('')
         assert n.name == 'node2'
 
-    def test_non_default_node_name(self):
-        n = Node('', node_name='name')
+    def test_non_default_name(self):
+        n = Node('', name='name')
         assert n.name == 'name'
 
     def test_build_default(self):
         n = Node('label')
-        assert n.build() == r'\node(node1) at (0, 0) {label};'
+        assert n.build() == r'\node(node1) {label};'
 
     def test_build_with_options(self):
-        n = Node('label', 'draw', node_name='node name', align='center')
-        assert n.build() == r'\node[draw, align=center](node name) at (0, 0) {label};'
+        n = Node('label', options=['draw'], position=(1,0), name='node name', align='center')
+        assert n.build() == r'\node[draw, align=center](node name) at (1, 0) {label};'
+
+    def test_node_anchors(self):
+        n = Node(name='name')
+        assert build(n.north) == 'name.north'
+        assert build(n.south_west) == 'name.south west'
 
 
 class TestCoordinate:

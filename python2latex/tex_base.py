@@ -1,5 +1,6 @@
 import os
 from subprocess import DEVNULL, STDOUT, check_call
+from typing import Callable
 
 
 def build(obj, parent=None):
@@ -64,15 +65,18 @@ class TexObject:
     Provides a 'add_package' method to add packages needed for this object.
     Inherited classes should redefine the 'build' method.
     """
-    def __init__(self, obj_name):
+    def __init__(self, obj_name, build_func: Callable = lambda: ''):
         """
         Args:
             obj_name (str): Name of the object.
+            build_func (Callable): Function to call on build. Must return a string or another TexObject.
         """
         self.name = obj_name
 
         self.packages = {}
         self.preamble = []
+
+        self.build_func = build_func
 
     def add_package(self, package, *options, **kwoptions):
         """
@@ -115,7 +119,7 @@ class TexObject:
         """
         Builds the object. Should return a valid LaTeX string and *should not modify* self (i.e. should be read-only).
         """
-        return ''
+        return build(self.build_func())
 
 
 class TexCommand(TexObject):

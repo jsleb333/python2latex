@@ -1,6 +1,7 @@
 import numpy as np
 from python2latex import TexCommand, TexEnvironment, build
 from python2latex import FloatingFigure, FloatingEnvironmentMixin
+from python2latex.tex_base import TexObject
 
 
 class TikzPicture(FloatingEnvironmentMixin, super_class=FloatingFigure):
@@ -16,32 +17,49 @@ class TikzPicture(FloatingEnvironmentMixin, super_class=FloatingFigure):
 
 class Node(TexCommand):
     """
-    This is a tikz node.
+    This is a TikZ node.
     """
     n_instances = 0
-    def __init__(self, label, *options, node_name=None, position=(0,0), **kwoptions):
+    def __init__(self,
+                 label: str = '',
+                 name: str = None,
+                 position: tuple[float] = None,
+                 options: list = list(),
+                 **kwoptions):
         """
         Args:
-            label (str): Tex string that appears in the node.
-            node_name (str): Name of the node to be refered inside the Tex document.
-            options: Options of the node.
-            position (tuple of numbers or Position object or other Node or Coordinate): Position of the node inside the picture.
-            kwoptions: Keyword options of the node. Underscores will be replaced by spaces.
+            label (str):
+                Tex string that appears in the node.
+            name (str):
+                Name of the node to be refered inside the Tex document.
+            position (tuple[float]):
+                Position of the node inside the picture.
+            options:
+                Options of the node.
+            kwoptions:
+                Keyword options of the node. Underscores will be replaced by spaces.
         """
         super().__init__('node', options=options, **kwoptions)
         type(self).n_instances += 1
-        self.name = node_name or f'node{self.n_instances}'
+        self.name = name or f'node{self.n_instances}'
         self.label = label
-        self.position = Position(*position)
+        self.position = Position(*position) if position else None
 
     def build(self):
         command = super().build()
 
-        command += f'({self.name})'
-        command += f' at {self.position} '
+        command += f'({self.name}) '
+        if self.position:
+            command += f'at {self.position} '
         command += f'{{{self.label}}};'
 
         return command
+
+    def __getattr__(self, attr):
+        if attr in ['north', 'north_west', 'west', 'south_west', 'south', 'south_east', 'east', 'north_east', 'center']:
+            obj = TexObject('node_anchor',
+                            lambda: f'{self.name}.{attr.replace("_", " ")}')
+            return obj
 
 
 class Coordinate(TexCommand):
