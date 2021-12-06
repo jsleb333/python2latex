@@ -2,7 +2,7 @@ from python2latex import Document, Plot
 import numpy as np
 
 # Document type 'standalone' will only show the plot, but does not support all tex environments.
-filepath = './examples/simple plot example/'
+filepath = './examples/plot examples/simple plot example/'
 filename = 'simple_plot_example'
 doc = Document(filename, doc_type='standalone', filepath=filepath)
 

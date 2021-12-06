@@ -1,6 +1,7 @@
-import subprocess, os, sys
+import os
 
 from python2latex import TexFile, TexEnvironment, TexCommand, build
+from python2latex.utils import open_file_with_default_program
 
 
 class Document(TexEnvironment):
@@ -15,8 +16,9 @@ class Document(TexEnvironment):
             filename (str): Name of the file without extension.
             filepath (str): Path where the files will be saved and compiled to pdf.
             doc_type (str): Any document type LaTeX supports, like 'article', 'standalone', etc.
-            options (tuple of str): Any options that goes between brackets. See template further.
-            kwoptions (keyword options of the document type): Options should be strings. The dict is converted to string when building to tex. See template below.
+            options (Union[Tuple[str], str, TexObject]): Any options that goes between brackets. See template further.
+            kwoptions (keyword options of the document type): Options should be strings. The dict is converted to string
+            when building to tex. See template below.
 
         The doc_type, options and kwoptions arguments will be compiled in the following way:
             \documentclass[*options, **kwoptions]{doc_type}
@@ -26,7 +28,11 @@ class Document(TexEnvironment):
         self.filepath = filepath
         self.file = TexFile(filename, filepath)
 
-        self.doc_class = TexCommand('documentclass', doc_type, options=options, options_pos='first', **kwoptions)
+        self.doc_class = TexCommand('documentclass',
+                                    doc_type,
+                                    options=options,
+                                    options_pos='first',
+                                    **kwoptions)
 
         self.add_package('inputenc', 'utf8')
         self.set_margins('2.5cm')
@@ -40,7 +46,8 @@ class Document(TexEnvironment):
 
         Args:
             margins (str): Default value for all sides.
-            top, bottom, left, right (str, any valid LaTeX length): Overrides the 'margins' argument with the specified length.
+            top, bottom, left, right (str, any valid LaTeX length): Overrides the 'margins' argument with the specified
+            length.
         """
         top = top or margins
         bottom = bottom or margins
@@ -59,14 +66,30 @@ class Document(TexEnvironment):
         """
         return self.new(Section(name, label=label))
 
-    def build(self, save_to_disk=True, compile_to_pdf=True, show_pdf=True):
-        """
+    def build(self,
+              save_to_disk=True,
+              compile_to_pdf=True,
+              show_pdf=True,
+              delete_files=list(),
+              build_from_dir='cwd'):
+        r"""
         Builds the document to a tex file and optionally compiles it into tex and show the output pdf in the default pdf reader of the system.
 
         Args:
-            save_to_disk (bool): If True, the built tex will be save to disk automatically. Else, one can recover the tex string from the return of the current methond.
-            compile_to_pdf (bool): If True, automatically call pdflatex to compile the generated tex file to pdf.
-            show_pdf (bool): If True, the default pdf reader will be called to show the compiled pdf. This may not work well with non-read-only pdf viewer such as Acrobat Reader or Foxit Reader.
+            save_to_disk (bool):
+                If True, the built tex will be save to disk automatically. Else, one can recover the tex string from the return of the current method.
+            compile_to_pdf (bool):
+                If True, automatically call pdflatex to compile the generated tex file to pdf. Only used if 'save_to_disk' is True.
+            show_pdf (bool):
+                If True, the default pdf reader will be called to show the compiled pdf. This may not work well with non-read-only pdf viewer such as Acrobat Reader or Foxit Reader. Only used if 'save_to_disk' and 'compile_to_pdf' are True.
+            delete_files (Union[str, Iterable[str]]):
+                Extensions of the files to delete after compilation. By default no files saved on disk are deleted. Valid extensions are 'tex', 'aux', 'log' and 'pdf'. 'all' is also accepted and will delete everything except the pdf.
+            build_from_dir (str, either 'source' or 'cwd'):
+                Directory to build from. With the 'source' option, pdflatex will be called from the directory containing the TeX file, like this:
+                    ~/some/path/to/tex_file> pdflatex './filename.tex'
+                With the 'cwd' option, pdflatex will be called from the current working directory, like this:
+                    ~/some/path/to/cwd> pdflatex 'filepath/filename.tex'
+                This can be important if you include content in the TeX file, such as with the command \input{<path_to_some_file>}, where 'path_to_some_file' should be relative to the directory where pdflatex is called.
 
         Returns:
             The tex string of the file.
@@ -77,22 +100,21 @@ class Document(TexEnvironment):
         if save_to_disk:
             self.file.save(tex)
 
-        if compile_to_pdf:
-            self.file.save(tex)
-            self.file._compile_to_pdf()
+            if compile_to_pdf:
+                self.file.compile_to_pdf(build_from_dir=build_from_dir)
 
-        if show_pdf:
-            cwd = os.getcwd()
-            try:
-                os.chdir(self.filepath)
-                if sys.platform.startswith('linux'):
-                    open_command = 'xdg-open'
-                    subprocess.run([open_command, self.filename + ".pdf"])
-                else:
-                    open_command = 'start'
-                    subprocess.run([open_command, self.filename + ".pdf"], shell=True)
-            finally:
-                os.chdir(cwd)
+                if show_pdf:
+                    open_file_with_default_program(self.filename, self.filepath)
+
+                if isinstance(delete_files, str):
+                    if delete_files == 'all':
+                        delete_files = ['tex', 'aux', 'log']
+                    else:
+                        delete_files = [delete_files]
+
+                for ext in delete_files:
+                    if ext in ['tex', 'aux', 'log', 'pdf']:
+                        os.remove(f'{self.filepath}/{self.filename}.{ext}')
 
         return tex
 

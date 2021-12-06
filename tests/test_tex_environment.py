@@ -1,8 +1,7 @@
-import pytest
 from inspect import cleandoc
 
-from python2latex.tex_environment import *
 from python2latex.tex_base import *
+from python2latex.tex_environment import *
 
 
 class TestTexEnvironment:
@@ -51,7 +50,10 @@ class TestTexEnvironment:
 
     def test_bind_two_objects(self):
         env = TexEnvironment('test')
-        class SubTexObj(TexObject): pass
+
+        class SubTexObj(TexObject):
+            pass
+
         BindedObject, BindedSubObject = env.bind(TexObject, SubTexObj)
         other = BindedObject('OtherObject')
         subother = BindedSubObject('OtherSubObject')
@@ -65,16 +67,14 @@ class TestTexEnvironment:
         env = TexEnvironment('test', label='some_label')
         env.add_text('some text')
 
-        assert env.build() == cleandoc(
-            r'''
+        assert env.build() == cleandoc(r'''
             \begin{test}
             \label{test:some_label}
             some text
             \end{test}
             ''')
         env.label_pos = 'bottom'
-        assert env.build() == cleandoc(
-            r'''
+        assert env.build() == cleandoc(r'''
             \begin{test}
             some text
             \label{test:some_label}
@@ -82,32 +82,27 @@ class TestTexEnvironment:
             ''')
 
     def test_build_with_parameters(self):
-        assert TexEnvironment('test', 'param1', 'param2').build() == cleandoc(
-            r'''
+        assert TexEnvironment('test', 'param1', 'param2').build() == cleandoc(r'''
             \begin{test}{param1}{param2}
             \end{test}
             ''')
 
     def test_build_with_options(self):
-        assert TexEnvironment('test', options='option1').build() == cleandoc(
-            r'''
+        assert TexEnvironment('test', options='option1').build() == cleandoc(r'''
             \begin{test}[option1]
             \end{test}
             ''')
-        assert TexEnvironment('test', options=('option1', 'option2')).build() == cleandoc(
-            r'''
+        assert TexEnvironment('test', options=('option1', 'option2')).build() == cleandoc(r'''
             \begin{test}[option1, option2]
             \end{test}
             ''')
-        assert TexEnvironment('test', options=('spam', 'egg'), answer=42).build() == cleandoc(
-            r'''
+        assert TexEnvironment('test', options=('spam', 'egg'), answer=42).build() == cleandoc(r'''
             \begin{test}[spam, egg, answer=42]
             \end{test}
             ''')
 
     def test_build_with_parameters_and_options(self):
-        assert TexEnvironment('test', 'param1', 'param2', options=('spam', 'egg'), answer=42).build() == cleandoc(
-            r'''
+        assert TexEnvironment('test', 'param1', 'param2', options=('spam', 'egg'), answer=42).build() == cleandoc(r'''
             \begin{test}[spam, egg, answer=42]{param1}{param2}
             \end{test}
             ''')
@@ -117,12 +112,31 @@ class TestTexEnvironment:
         level1.add_text('level1')
         level2 = level1.new(TexEnvironment('level2'))
         level2.add_text('level2')
-        assert level1.build() == cleandoc(
-            r'''
+        assert level1.build() == cleandoc(r'''
             \begin{level1}
             level1
             \begin{level2}
             level2
             \end{level2}
             \end{level1}
+            ''')
+
+    def test_star_env(self):
+        star_env = TexEnvironment('figure', star_env=True)
+        assert star_env.build() == cleandoc(
+            r'''
+            \begin{figure*}
+            \end{figure*}
+            ''')
+
+    def test_build_ignores_empty_str(self):
+        env = TexEnvironment('test')
+        env += 'text 1'
+        env += ''
+        env += 'text 2'
+        env.build() == cleandoc(r'''
+            \begin{test}
+            text 1
+            text 2
+            \end{test}
             ''')

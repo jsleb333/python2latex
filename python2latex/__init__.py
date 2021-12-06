@@ -1,8 +1,15 @@
+# Basics must be loaded first
 from .tex_base import *
-from .tex_environment import TexEnvironment
+from .tex_environment import *
+
+# Other features
 from .document import Document, Section, Subsection
+from .color import *
+from .colormap import *
 from .floating_environment import FloatingFigure, FloatingTable, FloatingEnvironmentMixin
-from .table import Table
 from .plot import Plot, LinePlot, MatrixPlot
-from .color import Color
 from .tikzpicture import *
+from .template import Template
+from .table import Table, Tabular
+
+from version import __version__

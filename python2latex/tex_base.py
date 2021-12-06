@@ -4,16 +4,18 @@ from subprocess import DEVNULL, STDOUT, check_call
 
 def build(obj, parent=None):
     """
-    Safely builds the object by calling its method 'build' only if 'obj' is not a string. If a parent is passed, all packages and preamble lines needed to the object will be added to the packages and preamble of the parent.
+    Safely builds the object by calling its method 'build' only if 'obj' possesses a 'build' method. Otherwise, will convert it to a string using the 'str' function. If a parent is passed, all packages and preamble lines needed to the object will be added to the packages and preamble of the parent.
     """
     if isinstance(obj, TexObject):
         built_obj = obj.build()
-        if parent:
+        if parent is not None:
             for package_name, package in obj.packages.items():
                 parent.add_package(package_name, *package.options, **package.kwoptions)
             for line in obj.preamble:
                 parent.add_to_preamble(line)
         return built_obj
+    elif hasattr(obj, 'build'):
+        built_obj = obj.build()
     else:
         return str(obj)
 
@@ -23,21 +25,37 @@ class TexFile:
     Class that compiles python to tex code. Manages write/read tex.
     """
     def __init__(self, filename, filepath):
-        self.filename = filename + '.tex'
+        self.filename = filename
         self.filepath = filepath
+
+    @property
+    def path(self):
+        return os.path.join(self.filepath, self.filename + '.tex').replace('\\', '/')
 
     def save(self, tex):
         os.makedirs(self.filepath, exist_ok=True)
-        filename = os.path.join(self.filepath, self.filename)
-        with open(filename, 'w', encoding='utf8') as file:
+        with open(self.path, 'w', encoding='utf8') as file:
             file.write(tex)
 
-    def _compile_to_pdf(self):
-        # os.chdir(self.filepath)
-        check_call(['pdflatex', '-halt-on-error',
-                    '--output-directory', self.filepath,
-                    self.filepath + '/' + self.filename],
-                   stdout=DEVNULL, stderr=STDOUT)
+    def compile_to_pdf(self, build_from_dir):
+        r"""
+        Args:
+            build_from_dir (str, either 'source' or 'cwd'):
+                Directory to build from. With the 'source' option, pdflatex will be called from the directory containing the TeX file, like this:
+                    ~/some/path/to/tex_file> pdflatex './filename.tex'
+                With the 'cwd' option, pdflatex will be called from the current working directory, like this:
+                    ~/some/path/to/cwd> pdflatex 'filepath/filename.tex'
+                This can be important if you include content in the TeX file, such as with the command \input{<path_to_some_file>}, where 'path_to_some_file' should be relative to the directory where pdflatex is called.
+        """
+        if build_from_dir == 'cwd':
+            call = ['pdflatex', '-halt-on-error', '--output-directory', self.filepath, self.path]
+            cwd = '.'
+        elif build_from_dir == 'source':
+            call = ['pdflatex', '-halt-on-error', self.filename + '.tex']
+            cwd = self.filepath
+        else:
+            raise ValueError("Invalid 'build_from_dir' option. Should be one of 'source' or 'cwd'. See documentation for details.")
+        check_call(call, stdout=DEVNULL, stderr=STDOUT, cwd=cwd)
 
 
 class TexObject:
@@ -62,7 +80,7 @@ class TexObject:
 
         Args:
             package (str): The package name.
-            options (tuple of str): Options to pass to the package in brackets.
+            options (Tuple[Union[str, TexObject]): Options to pass to the package in brackets.
             kwoptions (dict of str): Keyword options to pass to the package in brackets.
         """
         if not package in self.packages:
@@ -77,7 +95,8 @@ class TexObject:
 
     def build_preamble(self):
         packages = self.build_packages()
-        preamble = dict((build(line, self),'') for line in self.preamble) # Removes duplicate while keeping order
+        preamble = dict((build(line, self), '')
+                        for line in self.preamble)  # Removes duplicate while keeping order
         preamble = '\n'.join([packages] + list(preamble.keys()))
 
         return preamble
@@ -94,7 +113,7 @@ class TexObject:
 
     def build(self):
         """
-        Builds the object. Should return a valid LaTeX string.
+        Builds the object. Should return a valid LaTeX string and *should not modify* self (i.e. should be read-only).
         """
         return ''
 
@@ -105,7 +124,7 @@ class TexCommand(TexObject):
         Args:
             command (str): Name of the command that will be rendered as '\command'.
             parameters: Parameters of the command, appended inside curly braces {}.
-            options (str or list of str): Options to pass to the command, appended inside brackets [].
+            options (Tuple[Union[str, TexObject]): Options to pass to the command, appended inside brackets [].
             options_pos (str, either 'first', 'second' or 'last'): Position of the options with respect to the parameters.
             kwoptions (dict of str): Keyword options to pass to the command, appended inside the same brackets as options.
         """
@@ -121,13 +140,12 @@ class TexCommand(TexObject):
         options = ''
 
         if self.options or self.kwoptions:
-            kwoptions = ', '.join('='.join((build(key, self).replace('_', ' '), build(value, self))) for key, value in self.kwoptions.items())
+            kwoptions = ', '.join('='.join((build(key, self).replace('_', ' '), build(value, self)))
+                                  for key, value in self.kwoptions.items())
             options = ', '.join([build(opt, self) for opt in self.options])
             if kwoptions and options:
                 options += ', '
             options = f'[{options}{kwoptions}]'
-        if self.parameters:
-            parameters = f"{{{'}{'.join([build(param, self) for param in self.parameters])}}}"
 
         if self.options_pos == 'first':
             command += options
@@ -152,7 +170,11 @@ class Package(TexCommand):
     'usepackage' tex command wrapper.
     """
     def __init__(self, package_name, *options, **kwoptions):
-        super().__init__('usepackage', package_name, options=options, options_pos='first', **kwoptions)
+        super().__init__('usepackage',
+                         package_name,
+                         options=options,
+                         options_pos='first',
+                         **kwoptions)
 
 
 class bold(TexCommand):

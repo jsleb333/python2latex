@@ -2,7 +2,7 @@ from python2latex import Document, Plot, Color
 import numpy as np
 
 # Create the document
-filepath = './examples/more complex plot example/'
+filepath = './examples/plot examples/more complex plot example/'
 filename = 'more_complex_plot_example'
 doc = Document(filename, doc_type='article', filepath=filepath)
 sec = doc.new_section('More complex plot')
@@ -21,7 +21,8 @@ nice_blue = Color(.07, .22, .29, color_name='nice_blue')
 nice_orange = Color(.85, .33, .28, color_name='nice_orange')
 
 plot.add_plot(X, Y1, nice_blue, 'dashed', legend='sine') # Add colors and legend to the plot
-plot.add_plot(X, Y2, nice_orange, line_width='3pt', legend='cosine')
+line_plot = plot.add_plot(X, Y2, line_width='3pt', legend='cosine')
+line_plot.options += (nice_orange,) # Add options to the line plot object after creation if desired.
 plot.legend_position = 'south east' # Place the legend where you want
 
 # Add a label to each axis
@@ -38,7 +39,7 @@ plot.y_ticks = np.linspace(-1,1,9)
 # Choose the displayed text for the ticks
 plot.x_ticks_labels = r'0', r'$\frac{\pi}{2}$', r'$\pi$', r'$\frac{3\pi}{2}$', r'$2\pi$'
 
-# Use the tex environment 'axis' keyword options to use unimplemented features if needed.
+# The 'axis' TeX environment can be accessed via the axis attribute. Options can be passed to the environment using the 'options' and 'kwoptions' attributes to customize unimplemented features if needed.
 plot.axis.kwoptions['y tick label style'] = '{/pgf/number format/fixed zerofill}' # This makes all numbers with the same number of 0 (fills if necessary).
 
 tex = doc.build()
