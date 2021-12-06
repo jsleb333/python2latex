@@ -30,20 +30,32 @@ class TexFile:
 
     @property
     def path(self):
-        return os.path.join(self.filepath, self.filename + '.tex')
+        return os.path.join(self.filepath, self.filename + '.tex').replace('\\', '/')
 
     def save(self, tex):
         os.makedirs(self.filepath, exist_ok=True)
         with open(self.path, 'w', encoding='utf8') as file:
             file.write(tex)
 
-    def compile_to_pdf(self):
-        # os.chdir(self.filepath)
-        check_call([
-            'pdflatex', '-halt-on-error', '--output-directory', self.filepath, self.path
-        ],
-                   stdout=DEVNULL,
-                   stderr=STDOUT)
+    def compile_to_pdf(self, build_from_dir):
+        r"""
+        Args:
+            build_from_dir (str, either 'source' or 'cwd'):
+                Directory to build from. With the 'source' option, pdflatex will be called from the directory containing the TeX file, like this:
+                    ~/some/path/to/tex_file> pdflatex './filename.tex'
+                With the 'cwd' option, pdflatex will be called from the current working directory, like this:
+                    ~/some/path/to/cwd> pdflatex 'filepath/filename.tex'
+                This can be important if you include content in the TeX file, such as with the command \input{<path_to_some_file>}, where 'path_to_some_file' should be relative to the directory where pdflatex is called.
+        """
+        if build_from_dir == 'cwd':
+            call = ['pdflatex', '-halt-on-error', '--output-directory', self.filepath, self.path]
+            cwd = '.'
+        elif build_from_dir == 'source':
+            call = ['pdflatex', '-halt-on-error', self.filename + '.tex']
+            cwd = self.filepath
+        else:
+            raise ValueError("Invalid 'build_from_dir' option. Should be one of 'source' or 'cwd'. See documentation for details.")
+        check_call(call, stdout=DEVNULL, stderr=STDOUT, cwd=cwd)
 
 
 class TexObject:
