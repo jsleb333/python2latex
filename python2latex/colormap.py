@@ -38,27 +38,28 @@ class LinearColorMap:
         self.color_model = color_model
         self.color_transform = color_transform or (lambda x: x)
 
-    def _interp_between_colors(self, frac, color_start, color_end):
+    def interpolate_between_colors(self, frac, color_start, color_end, cyclic=True):
         color = [self._lin_interp(frac, c1, c2) for c1, c2 in zip(color_start, color_end)]
 
         if self.color_model == 'RGB':
             color = [int(c) for c in color]
 
-        if self.color_model == 'hsb':
-            color[0] %= 1
+        if cyclic:
+            if self.color_model == 'hsb':
+                color[0] %= 1
 
-        if self.color_model == 'Hsb':
-            color[0] %= 360
+            if self.color_model == 'Hsb':
+                color[0] %= 360
 
-        if self.color_model == 'JCh':
-            color[2] %= 360
+            if self.color_model == 'JCh':
+                color[2] %= 360
 
         return tuple(color)
 
     def _lin_interp(self, frac, scalar_1, scalar_2):
         return scalar_1*(1-frac) + scalar_2*frac
 
-    def __call__(self, scalar):
+    def __call__(self, scalar: float, cyclic: bool = True):
         idx_color_start, idx_color_end = 0, 1
         while scalar > self.anchor_pos[idx_color_end]:
             idx_color_start += 1
@@ -67,9 +68,12 @@ class LinearColorMap:
         interval_width = self.anchor_pos[idx_color_end] - self.anchor_pos[idx_color_start]
         interp_frac = (scalar - self.anchor_pos[idx_color_start])/interval_width
 
-        interp_color = self._interp_between_colors(interp_frac,
-                                                   self.color_anchors[idx_color_start],
-                                                   self.color_anchors[idx_color_end])
+        interp_color = self.interpolate_between_colors(
+            interp_frac,
+            self.color_anchors[idx_color_start],
+            self.color_anchors[idx_color_end],
+            cyclic
+        )
         if self.color_transform is not None:
             interp_color = self.color_transform(interp_color)
 
