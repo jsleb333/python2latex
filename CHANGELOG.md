@@ -1,9 +1,9 @@
 # Change log
 
-## Version 0.4.1
-
 ### December 6, 2021
 - Add option to make color interpolation non-cyclic in LinearColorMap for more flexibility.
+
+## Version 0.4.1
 
 ### October 26, 2021
 - Add option to build from current working directory or from source directory containing the TeX file for more flexibility with Plots.
