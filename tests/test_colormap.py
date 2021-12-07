@@ -20,41 +20,41 @@ class TestLinearColorMap:
         assert cmap._lin_interp(.1, 25, 125) == 35
         assert cmap._lin_interp(.5, 280, 160) == 220
 
-    def test_interp_between_colors_model_rgb(self):
+    def test_interpolate_between_colors_model_rgb(self):
         cmap = LinearColorMap(color_model='rgb')
         color_start = (.1,.2,.3)
         color_end = (.5,.6,.7)
-        assert cmap._interp_between_colors(.5, color_start, color_end) == (.3,.4,.5)
+        assert cmap.interpolate_between_colors(.5, color_start, color_end) == (.3,.4,.5)
 
-    def test_interp_between_colors_model_RGB(self):
+    def test_interpolate_between_colors_model_RGB(self):
         cmap = LinearColorMap(color_model='RGB')
         color_start = (1,2,3)
         color_end = (10,11,12)
-        assert cmap._interp_between_colors(.25, color_start, color_end) == (3,4,5)
+        assert cmap.interpolate_between_colors(.25, color_start, color_end) == (3,4,5)
 
-    def test_interp_between_colors_model_hsb(self):
+    def test_interpolate_between_colors_model_hsb(self):
         cmap = LinearColorMap(color_model='hsb')
         color_start = (.1,.2,.3)
         color_end = (.5,.6,.7)
-        assert areclose(cmap._interp_between_colors(.25, color_start, color_end), (.2,.3,.4))
+        assert areclose(cmap.interpolate_between_colors(.25, color_start, color_end), (.2,.3,.4))
         color_end = (1.7,.6,.7)
-        assert areclose(cmap._interp_between_colors(.75, color_start, color_end), (.3,.5,.6))
+        assert areclose(cmap.interpolate_between_colors(.75, color_start, color_end), (.3,.5,.6))
 
-    def test_interp_between_colors_model_Hsb(self):
+    def test_interpolate_between_colors_model_Hsb(self):
         cmap = LinearColorMap(color_model='Hsb')
         color_start = (36,.2,.3)
         color_end = (180,.6,.7)
-        assert areclose(cmap._interp_between_colors(.25, color_start, color_end), (72,.3,.4))
+        assert areclose(cmap.interpolate_between_colors(.25, color_start, color_end), (72,.3,.4))
         color_end = (612,.6,.7)
-        assert areclose(cmap._interp_between_colors(.75, color_start, color_end), (108,.5,.6))
+        assert areclose(cmap.interpolate_between_colors(.75, color_start, color_end), (108,.5,.6))
 
-    def test_interp_between_colors_model_JCh(self):
+    def test_interpolate_between_colors_model_JCh(self):
         cmap = LinearColorMap(color_model='JCh')
         color_start = (.2,.3,36)
         color_end = (.6,.7,180)
-        assert areclose(cmap._interp_between_colors(.25, color_start, color_end), (.3,.4,72))
+        assert areclose(cmap.interpolate_between_colors(.25, color_start, color_end), (.3,.4,72))
         color_end = (.6,.7,612)
-        assert areclose(cmap._interp_between_colors(.75, color_start, color_end), (.5,.6,108))
+        assert areclose(cmap.interpolate_between_colors(.75, color_start, color_end), (.5,.6,108))
 
     def test_2_anchors(self):
         c_start, c_stop = (0,0,0), (1,1,1)
