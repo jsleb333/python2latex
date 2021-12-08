@@ -148,18 +148,20 @@ class Palette:
     def __getitem__(self, idx):
         return self.tex_colors[idx]
 
-    def __call__(self, n_colors: int):
-        """Returns a new Palette object with the same parameters, but with a new fixed number of colors (i.e., transforms a dynamic palette into a static palette).
+    def __call__(self, n_colors: int = None):
+        """Returns a new Palette object with the same parameters, but with a new number of colors (i.e., transforms a dynamic palette into a static palette or vice versa).
 
         Args:
-            n_colors (int): New number of colors in the palette.
+            n_colors (int or None): New number of colors in the palette.
 
         Returns:
             Palette: A new Palette object.
         """
         palette = deepcopy(self)
         palette.n_colors = n_colors
-        palette._init_colors()
+        palette.tex_colors = []
+        if not callable(palette.colors) or palette.n_colors is not None: # Static palette
+            palette._init_colors()
         return palette
 
     def _iter_dynamic(self):
@@ -190,56 +192,52 @@ class Palette:
         return len(self.tex_colors)
 
 
-class aube_cmap(LinearColorMap):
-    def __init__(self):
-        super().__init__(color_anchors=[(26.2, 46.5, 235.2), (71.7, 58.5, 450.1)],
-                         color_model='JCh')
+aube_cmap = LinearColorMap(color_anchors=[(26.2, 46.5, 235.2), (71.7, 58.5, 450.1)],
+                           color_model='JCh')
 
-class aurore_cmap(LinearColorMap):
-    def __init__(self):
-        super().__init__(color_anchors=[(14.6, 50.9, 317.0), (83.5, 73.8, 107.3)],
-                         color_model='JCh')
+aurore_cmap = LinearColorMap(color_anchors=[(14.6, 50.9, 317.0), (83.5, 73.8, 107.3)],
+                             color_model='JCh')
 
-class holi_cmap(LinearColorMap):
-    def __init__(self):
-        super().__init__(color_anchors=[(10, 60, 190),
-                                        (35, 74, 350),
-                                        (67, 130, 475),
-                                        (70, 20, 560)],
-                         anchor_pos=[0,.29,.55,1],
-                         color_model='JCh')
+holi_cmap = LinearColorMap(color_anchors=[(10, 60, 190),
+                                          (35, 74, 350),
+                                          (67, 130, 475),
+                                          (70, 20, 560)],
+                           anchor_pos=[0,.29,.55,1],
+                           color_model='JCh')
 
 
-class aube(Palette):
-    def __init__(self, n_colors=None):
-        super().__init__(aube_cmap(),
-                         color_model='rgb',
-                         n_colors=n_colors,
-                         cmap_range=lambda n_colors: (0, 1-1/(2*n_colors+2)),
-                         color_transform=JCh2rgb)
+aube = Palette(aube_cmap,
+               color_model='rgb',
+               n_colors=None,
+               cmap_range=lambda n_colors: (0, 1-1/(2*n_colors+2)),
+               color_transform=JCh2rgb)
 
-class aurore(Palette):
-    def __init__(self, n_colors=None):
-        super().__init__(aurore_cmap(),
-                         color_model='rgb',
-                         n_colors=n_colors,
-                         cmap_range=lambda n_colors: (1/(3*n_colors), 1-1/(3*n_colors)),
-                         color_transform=JCh2rgb)
+aurore = Palette(aurore_cmap,
+                 color_model='rgb',
+                 n_colors=None,
+                 cmap_range=lambda n_colors: (1/(3*n_colors), 1-1/(3*n_colors)),
+                 color_transform=JCh2rgb)
 
-class holi(Palette):
-    def __init__(self, n_colors=None):
-        super().__init__(holi_cmap(),
-                         color_model='rgb',
-                         n_colors=n_colors,
-                         cmap_range=lambda n_colors: (1/(n_colors+4),1-1/(n_colors**.3+.7)),
-                         color_transform=JCh2rgb)
+def _holi_cmap_range(n_colors):
+    if n_colors == 2:
+        return (.18, .48)
+    elif n_colors == 3:
+        return (.195, .57)
+    else:
+        return (max(0, (.14-.21)/2*(n_colors-4)+.21),
+                min(1, (.71-.68)/2*(n_colors**1.1-4)+.66))
 
+holi = Palette(holi_cmap,
+               color_model='rgb',
+               n_colors=None,
+               cmap_range=_holi_cmap_range,
+               color_transform=JCh2rgb)
 
 
 PREDEFINED_CMAPS = {
-    'aube': aube_cmap(),
-    'aurore': aurore_cmap(),
-    'holi': holi_cmap(),
+    'aube': aube_cmap,
+    'aurore': aurore_cmap,
+    'holi': holi_cmap,
 }
 
 class _PredefinedPalettes:
@@ -247,12 +245,11 @@ class _PredefinedPalettes:
         for cmap_name in PREDEFINED_CMAPS.keys():
             if palette_name.startswith(cmap_name):
                 remainder = palette_name[len(cmap_name):]
-                if remainder == '':
-                    remainder = None
-                else:
-                    remainder = int(remainder)
-                return getattr(sys.modules[__name__], cmap_name)(remainder)
+                palette = getattr(sys.modules[__name__], cmap_name)
+                if remainder != '':
+                    palette = palette(int(remainder))
+                return palette
 
 PREDEFINED_PALETTES = _PredefinedPalettes()
 
-default_palette = holi()
+default_palette = holi

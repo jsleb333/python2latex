@@ -2,6 +2,9 @@
 
 ### December 8, 2021
 - Add option to call instanciated Palette object to create a new one with fixed number of colors from a dynamic one.
+- Changed 'holi' cmap and palette to be optimized for all number of colors instead of just for 5 or 6. Examples have been updated accordingly.
+- [POTENTIAL BREAKING CHANGE] Changed predefined cmaps and palettes to be instances of LinearColorMap and Palette instead of subclasses. Precautions have been taken to minimize breaking changes.
+
 ### December 6, 2021
 - Add option to make color interpolation non-cyclic in LinearColorMap for more flexibility.
 
