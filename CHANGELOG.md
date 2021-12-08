@@ -1,5 +1,7 @@
 # Change log
 
+### December 8, 2021
+- Add option to call instanciated Palette object to create a new one with fixed number of colors from a dynamic one.
 ### December 6, 2021
 - Add option to make color interpolation non-cyclic in LinearColorMap for more flexibility.
 
