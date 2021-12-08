@@ -189,6 +189,14 @@ class TestPalette:
         assert len(palette.tex_colors) == 1
         assert color1.color_spec == transform(c_start)
 
+    def test_make_dynamic_into_static(self):
+        cmap = LinearColorMap(color_anchors=[(0,0,0), (1,1,1)], color_model='rgb')
+        dyn_palette = Palette(cmap, color_model='JCh', max_n_colors=100)
+        stat_palette = dyn_palette(5)
+        assert dyn_palette is not stat_palette
+        assert len(dyn_palette.tex_colors) == 0
+        assert len(stat_palette.tex_colors) == 5
+
 
 class TestPredefined:
     def test_predefined_exist(self):

@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+from copy import deepcopy
 
 from python2latex import Color
 from python2latex.utils import JCh2rgb
@@ -133,11 +134,8 @@ class Palette:
 
     def _init_colors(self):
         if callable(self.colors): # Create iterable from color map if needed
-            if self.n_colors is not None:
-                start, stop = self.cmap_range(self.n_colors)
-                colors = [self.colors(frac) for frac in np.linspace(start, stop, self.n_colors)]
-            else:
-                raise ValueError('Variable n_colors must be set when colors is a color map.')
+            start, stop = self.cmap_range(self.n_colors)
+            colors = [self.colors(frac) for frac in np.linspace(start, stop, self.n_colors)]
         else:
             colors = self.colors
 
@@ -149,6 +147,20 @@ class Palette:
 
     def __getitem__(self, idx):
         return self.tex_colors[idx]
+
+    def __call__(self, n_colors: int):
+        """Returns a new Palette object with the same parameters, but with a new fixed number of colors (i.e., transforms a dynamic palette into a static palette).
+
+        Args:
+            n_colors (int): New number of colors in the palette.
+
+        Returns:
+            Palette: A new Palette object.
+        """
+        palette = deepcopy(self)
+        palette.n_colors = n_colors
+        palette._init_colors()
+        return palette
 
     def _iter_dynamic(self):
         n_colors = 0
