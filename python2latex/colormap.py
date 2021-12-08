@@ -198,13 +198,20 @@ aube_cmap = LinearColorMap(color_anchors=[(26.2, 46.5, 235.2), (71.7, 58.5, 450.
 aurore_cmap = LinearColorMap(color_anchors=[(14.6, 50.9, 317.0), (83.5, 73.8, 107.3)],
                              color_model='JCh')
 
-holi_cmap = LinearColorMap(color_anchors=[(10, 60, 190),
-                                          (35, 74, 350),
-                                          (67, 130, 475),
-                                          (70, 20, 560)],
-                           anchor_pos=[0,.29,.55,1],
-                           color_model='JCh')
+_holi_anchors = {
+    0: (10, 65, 200),
+    .18: (27, 70, 265),
+    .35: (45, 85, 380),
+    .59: (71, 143, 460),
+    .74: (75, 90, 492),
+    .78: (79.5, 70, 505),
+    .83: (87, 56, 527),
+    1: (95, 25, 570)
+}
 
+holi_cmap = LinearColorMap(color_anchors=list(_holi_anchors.values()),
+                           anchor_pos=list(_holi_anchors.keys()),
+                           color_model='JCh')
 
 aube = Palette(aube_cmap,
                color_model='rgb',
