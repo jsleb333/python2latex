@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+from copy import deepcopy
 
 from python2latex import Color
 from python2latex.utils import JCh2rgb
@@ -38,27 +39,28 @@ class LinearColorMap:
         self.color_model = color_model
         self.color_transform = color_transform or (lambda x: x)
 
-    def _interp_between_colors(self, frac, color_start, color_end):
+    def interpolate_between_colors(self, frac, color_start, color_end, cyclic=True):
         color = [self._lin_interp(frac, c1, c2) for c1, c2 in zip(color_start, color_end)]
 
         if self.color_model == 'RGB':
             color = [int(c) for c in color]
 
-        if self.color_model == 'hsb':
-            color[0] %= 1
+        if cyclic:
+            if self.color_model == 'hsb':
+                color[0] %= 1
 
-        if self.color_model == 'Hsb':
-            color[0] %= 360
+            if self.color_model == 'Hsb':
+                color[0] %= 360
 
-        if self.color_model == 'JCh':
-            color[2] %= 360
+            if self.color_model == 'JCh':
+                color[2] %= 360
 
         return tuple(color)
 
     def _lin_interp(self, frac, scalar_1, scalar_2):
         return scalar_1*(1-frac) + scalar_2*frac
 
-    def __call__(self, scalar):
+    def __call__(self, scalar: float, cyclic: bool = True):
         idx_color_start, idx_color_end = 0, 1
         while scalar > self.anchor_pos[idx_color_end]:
             idx_color_start += 1
@@ -67,9 +69,12 @@ class LinearColorMap:
         interval_width = self.anchor_pos[idx_color_end] - self.anchor_pos[idx_color_start]
         interp_frac = (scalar - self.anchor_pos[idx_color_start])/interval_width
 
-        interp_color = self._interp_between_colors(interp_frac,
-                                                   self.color_anchors[idx_color_start],
-                                                   self.color_anchors[idx_color_end])
+        interp_color = self.interpolate_between_colors(
+            interp_frac,
+            self.color_anchors[idx_color_start],
+            self.color_anchors[idx_color_end],
+            cyclic
+        )
         if self.color_transform is not None:
             interp_color = self.color_transform(interp_color)
 
@@ -129,11 +134,8 @@ class Palette:
 
     def _init_colors(self):
         if callable(self.colors): # Create iterable from color map if needed
-            if self.n_colors is not None:
-                start, stop = self.cmap_range(self.n_colors)
-                colors = [self.colors(frac) for frac in np.linspace(start, stop, self.n_colors)]
-            else:
-                raise ValueError('Variable n_colors must be set when colors is a color map.')
+            start, stop = self.cmap_range(self.n_colors)
+            colors = [self.colors(frac) for frac in np.linspace(start, stop, self.n_colors)]
         else:
             colors = self.colors
 
@@ -145,6 +147,22 @@ class Palette:
 
     def __getitem__(self, idx):
         return self.tex_colors[idx]
+
+    def __call__(self, n_colors: int = None):
+        """Returns a new Palette object with the same parameters, but with a new number of colors (i.e., transforms a dynamic palette into a static palette or vice versa).
+
+        Args:
+            n_colors (int or None): New number of colors in the palette.
+
+        Returns:
+            Palette: A new Palette object.
+        """
+        palette = deepcopy(self)
+        palette.n_colors = n_colors
+        palette.tex_colors = []
+        if not callable(palette.colors) or palette.n_colors is not None: # Static palette
+            palette._init_colors()
+        return palette
 
     def _iter_dynamic(self):
         n_colors = 0
@@ -174,56 +192,59 @@ class Palette:
         return len(self.tex_colors)
 
 
-class aube_cmap(LinearColorMap):
-    def __init__(self):
-        super().__init__(color_anchors=[(26.2, 46.5, 235.2), (71.7, 58.5, 450.1)],
-                         color_model='JCh')
+aube_cmap = LinearColorMap(color_anchors=[(26.2, 46.5, 235.2), (71.7, 58.5, 450.1)],
+                           color_model='JCh')
 
-class aurore_cmap(LinearColorMap):
-    def __init__(self):
-        super().__init__(color_anchors=[(14.6, 50.9, 317.0), (83.5, 73.8, 107.3)],
-                         color_model='JCh')
+aurore_cmap = LinearColorMap(color_anchors=[(14.6, 50.9, 317.0), (83.5, 73.8, 107.3)],
+                             color_model='JCh')
 
-class holi_cmap(LinearColorMap):
-    def __init__(self):
-        super().__init__(color_anchors=[(10, 60, 190),
-                                        (35, 74, 350),
-                                        (67, 130, 475),
-                                        (70, 20, 560)],
-                         anchor_pos=[0,.29,.55,1],
-                         color_model='JCh')
+_holi_anchors = {
+    0: (10, 65, 200),
+    .18: (27, 70, 265),
+    .35: (45, 85, 380),
+    .59: (71, 143, 460),
+    .74: (75, 90, 492),
+    .78: (79.5, 70, 505),
+    .83: (87, 56, 527),
+    1: (95, 25, 570)
+}
 
+holi_cmap = LinearColorMap(color_anchors=list(_holi_anchors.values()),
+                           anchor_pos=list(_holi_anchors.keys()),
+                           color_model='JCh')
 
-class aube(Palette):
-    def __init__(self, n_colors=None):
-        super().__init__(aube_cmap(),
-                         color_model='rgb',
-                         n_colors=n_colors,
-                         cmap_range=lambda n_colors: (0, 1-1/(2*n_colors+2)),
-                         color_transform=JCh2rgb)
+aube = Palette(aube_cmap,
+               color_model='rgb',
+               n_colors=None,
+               cmap_range=lambda n_colors: (0, 1-1/(2*n_colors+2)),
+               color_transform=JCh2rgb)
 
-class aurore(Palette):
-    def __init__(self, n_colors=None):
-        super().__init__(aurore_cmap(),
-                         color_model='rgb',
-                         n_colors=n_colors,
-                         cmap_range=lambda n_colors: (1/(3*n_colors), 1-1/(3*n_colors)),
-                         color_transform=JCh2rgb)
+aurore = Palette(aurore_cmap,
+                 color_model='rgb',
+                 n_colors=None,
+                 cmap_range=lambda n_colors: (1/(3*n_colors), 1-1/(3*n_colors)),
+                 color_transform=JCh2rgb)
 
-class holi(Palette):
-    def __init__(self, n_colors=None):
-        super().__init__(holi_cmap(),
-                         color_model='rgb',
-                         n_colors=n_colors,
-                         cmap_range=lambda n_colors: (1/(n_colors+4),1-1/(n_colors**.3+.7)),
-                         color_transform=JCh2rgb)
+def _holi_cmap_range(n_colors):
+    if n_colors == 2:
+        return (.18, .48)
+    elif n_colors == 3:
+        return (.195, .57)
+    else:
+        return (max(0, (.14-.21)/2*(n_colors-4)+.21),
+                min(1, (.71-.68)/2*(n_colors**1.1-4)+.66))
 
+holi = Palette(holi_cmap,
+               color_model='rgb',
+               n_colors=None,
+               cmap_range=_holi_cmap_range,
+               color_transform=JCh2rgb)
 
 
 PREDEFINED_CMAPS = {
-    'aube': aube_cmap(),
-    'aurore': aurore_cmap(),
-    'holi': holi_cmap(),
+    'aube': aube_cmap,
+    'aurore': aurore_cmap,
+    'holi': holi_cmap,
 }
 
 class _PredefinedPalettes:
@@ -231,12 +252,11 @@ class _PredefinedPalettes:
         for cmap_name in PREDEFINED_CMAPS.keys():
             if palette_name.startswith(cmap_name):
                 remainder = palette_name[len(cmap_name):]
-                if remainder == '':
-                    remainder = None
-                else:
-                    remainder = int(remainder)
-                return getattr(sys.modules[__name__], cmap_name)(remainder)
+                palette = getattr(sys.modules[__name__], cmap_name)
+                if remainder != '':
+                    palette = palette(int(remainder))
+                return palette
 
 PREDEFINED_PALETTES = _PredefinedPalettes()
 
-default_palette = holi()
+default_palette = holi

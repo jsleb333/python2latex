@@ -4,7 +4,10 @@ from python2latex import TexObject, TexCommand
 
 class DefineColor(TexCommand):
     def __init__(self, color_name, color_model, *color_spec):
-        super().__init__('definecolor', color_name, color_model, ','.join(map(str, color_spec)))
+        super().__init__('definecolor',
+                         color_name,
+                         color_model,
+                         ','.join(c if isinstance(c, str) else f'{c:.3f}'.rstrip('0').rstrip('.') for c in color_spec))
 
 
 class Color(TexObject):
@@ -59,8 +62,8 @@ class PreambleColor(TexObject):
 
 
 class textcolor(TexCommand):
-    """
-    Applies \\textcolor{color}{...} command on text.
+    r"""
+    Applies \textcolor{color}{...} command on text.
     """
     def __init__(self, color, text):
         """
@@ -73,7 +76,7 @@ class textcolor(TexCommand):
 
 
 class colorbox(TexCommand):
-    """
+    r"""
     Applies \colorbox{color}{...} command on text.
     """
     def __init__(self, color, text):
